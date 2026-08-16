@@ -76,42 +76,65 @@ func createTables() {
 		log.Fatalf("Failed to create settings table: %v", err)
 	}
 
+	// Program Kerja Table
+	_, err = DB.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS program_kerja (
+			id SERIAL PRIMARY KEY,
+			title VARCHAR(255) NOT NULL,
+			description TEXT NOT NULL,
+			icon_name VARCHAR(100) NOT NULL
+		);
+	`)
+	if err != nil {
+		log.Fatalf("Failed to create program_kerja table: %v", err)
+	}
+
 	fmt.Println("Database schemas verified/created.")
 }
 
 func seedData() {
 	ctx := context.Background()
 
-	// 1. Seed Settings if empty
-	var settingsCount int
-	err := DB.QueryRow(ctx, "SELECT COUNT(*) FROM settings").Scan(&settingsCount)
-	if err != nil {
-		log.Fatalf("Failed to check settings count: %v", err)
+	// 1. Seed Settings (insert missing keys using ON CONFLICT DO NOTHING)
+	defaultSettings := map[string]string{
+		"hero_title":    "DSDMPT",
+		"hero_subtitle": "Akses semua layanan Sumber Daya Manusia dan Pengembangan Talenta melalui sistem terintegrasi kami.",
+		"hero_image":    "/uploads/ui_rectorate_hero.png",
+		
+		"about_title": "Tentang Direktorat SDM dan Pengembangan Talenta",
+		"about_text":  "Direktorat SDM dan Pengembangan Talenta adalah salah satu Direktorat yang di bawah Wakil Rektor bidang Perencanaan, Keuangan, dan SDM. Menjadikan UI sebagai Pusat Talenta terbaik merupakan sasaran strategis yang diamanahkan kepada Direktorat SDM dan Pengembangan Talenta sebagaimana tertuang dalam Rencana Strategis (Renstra) Universitas Indonesia tahun 2024-2029.",
+		"about_image": "/uploads/ui_staff_group.png",
+		
+		"values_title": "9 Nilai Dasar Universitas Indonesia",
+		"values_text":  "Demi Mewujudkan Visi Universitas Indonesia, Miliki 9 Nilai Dasar Sesuai dengan fungsi universitas sebagai rumah dan lumbung pengetahuan, teladan, dan kekuatan moral bagi masyarakat, Universitas Indonesia (UI) memiliki nilai-nilai dasar yang harus dijunjung tinggi oleh sivitas akademika-nya.",
+		"values_image": "/uploads/ui_rectorate_hero.png",
+
+		"profil_hero_title": "Profil",
+		"profil_hero_desc":  "",
+		"profil_text_1": "Direktorat SDM dan Pengembangan Talenta adalah salah satu Direktorat yang dibawahi oleh Wakil Rektor bidang Perencanaan, Keuangan, dan SDM. Menjadikan UI sebagai Pusat Talenta terbaik merupakan sasaran strategis yang diamanahkan kepada Direktorat SDM dan Pengembangan Talenta sebagaimana tertuang dalam Rencana Strategis (Renstra) Universitas Indonesia tahun 2024-2029.",
+		"profil_text_2": "Direktorat SDM dan Pengembangan Talenta terus memodernisasi sistem TI untuk meningkatkan kecepatan dan akurasi layanan. Langkah ini dilakukan agar Direktorat dapat berfokus penuh pada perencanaan serta pengembangan yang bersifat strategis.",
+		"profil_image":  "/uploads/profile_group.jpg",
+
+		"profil_program_kerja_subtitle": "Program kerja utama yang diamanatkan dalam rencana strategis universitas guna mendukung sasaran strategis pusat talenta terbaik adalah sebagai berikut",
+		"profil_program_kerja_json": `[{"title":"Pengembangan Kapasitas","description":"Melakukan pelatihan berkala untuk membangun kapasitas dan komitmen dosen","iconName":"GraduationCap"},{"title":"Akuisisi Talenta","description":"Mengundang profesional dengan talenta terbaik dari berbagai bidang untuk","iconName":"UserPlus"},{"title":"Merit System","description":"Mengupayakan penerapan sistem merit yang objektif dalam proses rekrutmen dan","iconName":"Award"},{"title":"Optimasi Insentif","description":"Menyempurnakan kebijakan insentif untuk mendorong produktivitas dan","iconName":"Wallet"},{"title":"Jabatan Peneliti","description":"Menciptakan dan mengelola jabatan fungsional peneliti guna memperkuat ekosistem","iconName":"FlaskConical"},{"title":"Publikasi Bereputasi","description":"Meningkatkan kemampuan peneliti dalam menghasilkan publikasi berkualitas","iconName":"FileText"},{"title":"Dosen Berkualitas","description":"Meningkatkan jumlah dosen dengan kualifikasi unggul melalui program","iconName":"Star"},{"title":"Percepatan Karier","description":"Mendorong percepatan kenaikan jabatan fungsional akademik, mulai dari Lektor hingga","iconName":"TrendingUp"}]`,
+
+		"global_talent_text_1": "<strong>Global Talent</strong> merupakan program Universitas Indonesia yang bertujuan untuk memperkuat kapasitas dan jejaring talenta akademik di tingkat internasional melalui kolaborasi, mobilitas, dan pengembangan kegiatan akademik serta riset. Program ini merupakan bagian dari upaya UI dalam meningkatkan kualitas sumber daya manusia, memperluas jejaring global, meningkatkan kualitas publikasi dan riset, serta memperkuat posisi UI sebagai universitas berkelas dunia.<br/><br/>Program Global Talent dapat melibatkan dosen, peneliti, mahasiswa pascadoktoral, dan mitra akademik dari institusi luar negeri. Bentuk kegiatannya antara lain kolaborasi riset internasional, postdoctoral researcher dari luar negeri, joint supervision, visiting professor, serta kegiatan mobilitas akademik lainnya sesuai dengan program yang tersedia di SDM dan Pengembangan Talenta sebagaimana tertuang dalam Rencana Strategis (Renstra) Universitas Indonesia tahun 2024-2029.",
+		"global_talent_image":  "/uploads/global.jpg",
+		
+		"global_talent_aturan_json": `["Kegiatan dilaksanakan dalam rangka mendukung peningkatan kualitas akademik, riset, publikasi, dan jejaring internasional UI.", "Peserta atau mitra yang terlibat harus memenuhi persyaratan sesuai dengan jenis kegiatan dan ketentuan program yang berlaku.", "Kegiatan harus memiliki tujuan, luaran, dan manfaat yang jelas bagi pengembangan akademik dan/atau riset.", "Pelaksanaan kegiatan dilakukan melalui mekanisme seleksi, penetapan, serta pemantauan dan evaluasi sesuai ketentuan yang berlaku.", "Setiap peserta atau penerima program wajib melaksanakan kegiatan sesuai dengan rencana yang telah disetujui and menyampaikan laporan sesuai dengan ketentuan yang ditetapkan."]`,
+		"global_talent_alur_json": `["Informasi mengenai program, jenis kegiatan, persyaratan, dan mekanisme pelaksanaan disampaikan kepada calon peserta atau pihak yang berkepentingan.", "Calon peserta, dosen, peneliti, atau unit pengusul mengajukan kegiatan atau mengidentifikasi calon mitra sesuai dengan skema program yang tersedia.", "Pengajuan dan calon peserta diverifikasi berdasarkan persyaratan, relevansi kegiatan, kompetensi, serta kesesuaian dengan tujuan program.", "Peserta, penerima program, atau mitra yang memenuhi persyaratan dan lolos seleksi ditetapkan sesuai dengan ketentuan yang berlaku.", "Kegiatan dilaksanakan sesuai dengan rencana, durasi, peran, dan tanggung jawab yang telah ditetapkan.", "Pelaksanaan kegiatan dipantau dan dievaluasi untuk memastikan kesesuaian kegiatan dengan tujuan dan target yang telah ditetapkan.", "Peserta atau pelaksana menyampaikan laporan pelaksanaan dan luaran kegiatan sesuai dengan ketentuan yang berlaku."]`,
 	}
 
-	if settingsCount == 0 {
-		defaultSettings := map[string]string{
-			"hero_title":    "DSDMPT",
-			"hero_subtitle": "Akses semua layanan Sumber Daya Manusia dan Pengembangan Talenta melalui sistem terintegrasi kami.",
-			"hero_image":    "/uploads/ui_rectorate_hero.png",
-			
-			"about_title": "Tentang Direktorat SDM dan Pengembangan Talenta",
-			"about_text":  "Direktorat SDM dan Pengembangan Talenta adalah salah satu Direktorat yang di bawah Wakil Rektor bidang Perencanaan, Keuangan, dan SDM. Menjadikan UI sebagai Pusat Talenta terbaik merupakan sasaran strategis yang diamanahkan kepada Direktorat SDM dan Pengembangan Talenta sebagaimana tertuang dalam Rencana Strategis (Renstra) Universitas Indonesia tahun 2024-2029.",
-			"about_image": "/uploads/ui_staff_group.png",
-			
-			"values_title": "9 Nilai Dasar Universitas Indonesia",
-			"values_text":  "Demi Mewujudkan Visi Universitas Indonesia, Miliki 9 Nilai Dasar Sesuai dengan fungsi universitas sebagai rumah dan lumbung pengetahuan, teladan, dan kekuatan moral bagi masyarakat, Universitas Indonesia (UI) memiliki nilai-nilai dasar yang harus dijunjung tinggi oleh sivitas akademika-nya.",
-			"values_image": "/uploads/ui_rectorate_hero.png",
+	for k, v := range defaultSettings {
+		_, err := DB.Exec(ctx, `
+			INSERT INTO settings (key, value) VALUES ($1, $2)
+			ON CONFLICT (key) DO NOTHING
+		`, k, v)
+		if err != nil {
+			log.Printf("Failed to seed setting key %s: %v", k, err)
 		}
-
-		for k, v := range defaultSettings {
-			_, err := DB.Exec(ctx, "INSERT INTO settings (key, value) VALUES ($1, $2)", k, v)
-			if err != nil {
-				log.Printf("Failed to seed setting key %s: %v", k, err)
-			}
-		}
-		fmt.Println("Seeded page settings.")
 	}
+	fmt.Println("Seeded page settings dynamically.")
 
 	// 2. Seed Subdirectorates if empty
 	var subsCount int
@@ -187,6 +210,37 @@ func seedData() {
 			}
 		}
 		fmt.Println("Seeded news articles.")
+	}
+
+	// 4. Seed Program Kerja matching screenshot descriptions exactly
+	var pkCount int
+	err = DB.QueryRow(ctx, "SELECT COUNT(*) FROM program_kerja").Scan(&pkCount)
+	if err != nil {
+		log.Fatalf("Failed to check program_kerja count: %v", err)
+	}
+
+	if pkCount != 8 {
+		// Truncate table and re-seed to ensure clean match with the mockup screenshot
+		_, _ = DB.Exec(ctx, "TRUNCATE TABLE program_kerja RESTART IDENTITY")
+		
+		pks := []ProgramKerja{
+			{Title: "Pengembangan Kapasitas", Description: "Melakukan pelatihan berkala untuk membangun kapasitas dan komitmen dosen", IconName: "GraduationCap"},
+			{Title: "Akuisisi Talenta", Description: "Mengundang profesional dengan talenta terbaik dari berbagai bidang untuk", IconName: "UserPlus"},
+			{Title: "Merit System", Description: "Mengupayakan penerapan sistem merit yang objektif dalam proses rekrutmen dan", IconName: "Award"},
+			{Title: "Optimasi Insentif", Description: "Menyempurnakan kebijakan insentif untuk mendorong produktivitas dan", IconName: "Wallet"},
+			{Title: "Jabatan Peneliti", Description: "Menciptakan dan mengelola jabatan fungsional peneliti guna memperkuat ekosistem", IconName: "FlaskConical"},
+			{Title: "Publikasi Bereputasi", Description: "Meningkatkan kemampuan peneliti dalam menghasilkan publikasi berkualitas", IconName: "FileText"},
+			{Title: "Dosen Berkualitas", Description: "Meningkatkan jumlah dosen dengan kualifikasi unggul melalui program", IconName: "Star"},
+			{Title: "Percepatan Karier", Description: "Mendorong percepatan kenaikan jabatan fungsional akademik, mulai dari Lektor hingga", IconName: "TrendingUp"},
+		}
+
+		for _, pk := range pks {
+			_, err := DB.Exec(ctx, "INSERT INTO program_kerja (title, description, icon_name) VALUES ($1, $2, $3)", pk.Title, pk.Description, pk.IconName)
+			if err != nil {
+				log.Printf("Failed to seed program_kerja %s: %v", pk.Title, err)
+			}
+		}
+		fmt.Println("Seeded program_kerja table matching mockup screenshot.")
 	}
 }
 

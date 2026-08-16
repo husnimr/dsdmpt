@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import { 
   Users, 
@@ -78,6 +78,23 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Scroll-reveal animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('aos-visible');
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -60px 0px' }
+    );
+    const targets = document.querySelectorAll('.aos-init');
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [loading]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -169,14 +186,14 @@ export default function Home() {
       <section id="about">
         <div className="container">
           <div className="about-grid">
-            <div className="about-image-wrapper">
+            <div className="about-image-wrapper aos-init aos-fade-right">
               <img 
                 src={getImageUrl(settings.about_image)} 
                 alt="Direktorat SDM UI Staff" 
                 className="about-image"
               />
             </div>
-            <div className="about-content">
+            <div className="about-content aos-init aos-fade-left" style={{ transitionDelay: '0.15s' }}>
               <h2>{settings.about_title || 'Tentang Direktorat SDM dan Pengembangan Talenta'}</h2>
               <p>{settings.about_text || 'Direktorat SDM dan Pengembangan Talenta...'}</p>
               <a href="/profil" className="btn-secondary" id="about-read-more-btn">
@@ -190,16 +207,16 @@ export default function Home() {
       {/* Subdirectorates Section */}
       <section className="section-alt" id="subdirectorate">
         <div className="container">
-          <div className="section-header">
+          <div className="section-header aos-init aos-fade-up">
             <h2>Subdirektorat</h2>
           </div>
           <div className="subs-grid">
-            {subdirectorates.map((sub) => (
+            {subdirectorates.map((sub, idx) => (
               <div 
                 key={sub.id} 
-                className="sub-card"
+                className="sub-card aos-init aos-fade-up"
                 onClick={() => setSelectedSub(sub)}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', transitionDelay: `${idx * 0.1}s` }}
                 id={`sub-card-${sub.id}`}
               >
                 <div className="sub-icon-wrapper">
@@ -215,14 +232,14 @@ export default function Home() {
       {/* Core Values Section */}
       <section id="core-values">
         <div className="container values-grid">
-          <div className="values-content">
+          <div className="values-content aos-init aos-fade-right">
             <h2>{settings.values_title || '9 Nilai Dasar Universitas Indonesia'}</h2>
             <p>{settings.values_text || 'Demi mewujudkan visi UI...'}</p>
             <a href="/informasi" className="btn-secondary" id="values-details-btn">
               Selengkapnya
             </a>
           </div>
-          <div className="values-image-wrapper">
+          <div className="values-image-wrapper aos-init aos-fade-left" style={{ transitionDelay: '0.15s' }}>
             <img 
               src={getImageUrl('/uploads/nilaidasar.jpg')} 
               alt="9 Nilai Dasar UI" 
@@ -234,12 +251,12 @@ export default function Home() {
       {/* News Section */}
       <section className="section-alt" id="news">
         <div className="container">
-          <div className="section-header">
+          <div className="section-header aos-init aos-fade-up">
             <h2>Berita</h2>
           </div>
           <div className="news-grid">
-            {news.map((item) => (
-              <a href={`/berita/${slugify(item.title, item.id)}`} key={item.id} className="news-card" id={`news-card-${item.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+            {news.map((item, idx) => (
+              <a href={`/berita/${slugify(item.title, item.id)}`} key={item.id} className="news-card aos-init aos-fade-up" id={`news-card-${item.id}`} style={{ textDecoration: 'none', color: 'inherit', transitionDelay: `${idx * 0.08}s` }}>
                 <div className="news-img-wrapper">
                   <img src={getImageUrl(item.image_url)} alt={item.title} className="news-img" />
                 </div>

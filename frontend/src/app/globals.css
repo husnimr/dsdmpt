@@ -26,6 +26,22 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* ── SCROLL REVEAL ANIMATIONS ── */
+.aos-init {
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.aos-init.aos-fade-up    { transform: translateY(40px); }
+.aos-init.aos-fade-right { transform: translateX(-40px); }
+.aos-init.aos-fade-left  { transform: translateX(40px); }
+
+.aos-init.aos-visible {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+
 body {
   font-family: var(--font-body);
   color: var(--text-main);
@@ -126,8 +142,8 @@ section { padding: 4rem 0; }
 /* HERO */
 .hero {
   margin-top: 72px;
-  height: 520px;
-  min-height: 400px;
+  height: 600px;
+  min-height: 500px;
   position: relative;
   overflow: hidden;
   background-size: cover;
@@ -321,7 +337,7 @@ section { padding: 4rem 0; }
   }
 }
 .subpage-hero {
-  height: 300px;
+  height: 220px;
   position: relative;
   border-radius: 20px;
   overflow: hidden;

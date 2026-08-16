@@ -76,14 +76,16 @@ export default function DetailBeritaPage() {
     }
   };
 
-  // Mock gallery images associated with this article
-  const galleryImages = [
-    '/uploads/news_1.png',
-    '/uploads/news_2.png',
-    '/uploads/news_3.png',
-    '/uploads/news_4.png',
-    '/uploads/news_5.png'
-  ];
+  // Parse gallery images dinamis dari DB
+  let galleryImages = [];
+  if (article && article.images) {
+    try {
+      galleryImages = JSON.parse(article.images);
+    } catch(e) {}
+  }
+  if (!galleryImages.length && article) {
+    galleryImages = [article.image_url];
+  }
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -192,9 +194,8 @@ export default function DetailBeritaPage() {
           {/* Metadata Row */}
           <div className="detail-meta">
             <span className="meta-item"><Calendar size={14} /> {formatDate(article.published_at)}</span>
-            <span className="meta-item"><User size={14} /> Husni Mubarok</span>
-            <span className="meta-item"><Eye size={14} /> 267 Views</span>
-            <span className="meta-item"><Share2 size={14} /> 68 Shares</span>
+            <span className="meta-item"><User size={14} /> {article.author || 'Administrator'}</span>
+            <span className="meta-item"><Eye size={14} /> Berita DSDMPT</span>
           </div>
 
           {/* Large Hero Image */}
@@ -236,15 +237,10 @@ export default function DetailBeritaPage() {
 
             {/* Right Side: Rich Text Content */}
             <div className="detail-rich-text">
-              <p>{article.content || 'Detail konten artikel sedang dimuat.'}</p>
-              
-              <blockquote className="detail-quote">
-                "Integritas adalah fondasi utama dalam setiap proses pengadaan. Melalui pelatihan ini, kita tidak hanya membangun kapasitas teknis, tetapi juga memperkuat benteng moral para pengelola keuangan negara di UI," ujar Direktur SDMPT UI dalam sambutannya.
-              </blockquote>
-
-              <p>
-                Selain pemaparan materi secara teoretis, peserta juga dilibatkan dalam studi kasus nyata dan simulasi proses pengadaan elektronik (e-procurement). Hal ini diharapkan dapat meminimalisir kesalahan administratif dan potensi penyalahgunaan wewenang di masa mendatang. UI berkomitmen untuk terus menerapkan tata kelola universitas yang baik (Good University Governance) dalam seluruh aspek operasionalnya.
-              </p>
+              <div 
+                style={{ fontSize: '1rem', lineHeight: '1.8', color: '#2C3A47', whiteSpace: 'pre-wrap' }}
+                dangerouslySetInnerHTML={{ __html: article.content }}
+              />
             </div>
 
           </div>
