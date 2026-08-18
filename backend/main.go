@@ -32,6 +32,8 @@ func main() {
 
 	// Program Kerja routes
 	mux.HandleFunc("/api/program-kerja", getProgramKerjaHandler)
+	mux.HandleFunc("/api/akses-pegawai", getAksesPegawaiHandler)
+	mux.HandleFunc("/api/rekrutmen", getRekrutmenHandler)
 
 	// Admin routes (protected)
 	mux.HandleFunc("/api/admin/settings", authMiddleware(updateSettingsHandler))
@@ -42,6 +44,14 @@ func main() {
 	mux.HandleFunc("/api/admin/news/", authMiddleware(adminNewsDetailHandler))
 	mux.HandleFunc("/api/admin/program-kerja", authMiddleware(adminProgramKerjaHandler))
 	mux.HandleFunc("/api/admin/program-kerja/", authMiddleware(adminProgramKerjaDetailHandler))
+	mux.HandleFunc("/api/admin/akses-pegawai/reorder", authMiddleware(adminAksesPegawaiReorderHandler))
+	mux.HandleFunc("/api/admin/akses-pegawai", authMiddleware(adminAksesPegawaiHandler))
+	mux.HandleFunc("/api/admin/akses-pegawai/", authMiddleware(adminAksesPegawaiDetailHandler))
+	mux.HandleFunc("/api/admin/rekrutmen/reorder", authMiddleware(adminRekrutmenReorderHandler))
+	mux.HandleFunc("/api/admin/rekrutmen", authMiddleware(adminRekrutmenHandler))
+	mux.HandleFunc("/api/admin/rekrutmen/", authMiddleware(adminRekrutmenDetailHandler))
+
+
 
 	// Serve uploads folder statically
 	fs := http.FileServer(http.Dir("./uploads"))

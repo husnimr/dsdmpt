@@ -19,6 +19,7 @@ const getImageUrl = (path) => {
 
 export default function Rekrutmen() {
   const [settings, setSettings] = useState({});
+  const [recs, setRecs] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -38,6 +39,15 @@ export default function Rekrutmen() {
     fetch(`${BACKEND_URL}/api/settings`)
       .then(res => res.json())
       .then(data => setSettings(data))
+      .catch(err => console.error(err));
+
+    fetch(`${BACKEND_URL}/api/rekrutmen`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setRecs(data);
+        }
+      })
       .catch(err => console.error(err));
   }, []);
 
@@ -61,32 +71,56 @@ export default function Rekrutmen() {
       </div>
 
       {/* ── MAIN CONTENT ── */}
-      <main style={{ padding: '6rem 0', display: 'flex', alignItems: 'center', backgroundColor: '#FFFFFF', minHeight: 'calc(100vh - 430px)' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
-          <p style={{ fontSize: '1rem', lineHeight: '1.8', color: '#576574', marginBottom: '2.5rem' }}>
+      <main style={{ padding: '5rem 0', backgroundColor: '#FFFFFF', minHeight: 'calc(100vh - 430px)' }}>
+        <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 1rem' }}>
+          <p style={{ fontSize: '1.05rem', lineHeight: '1.8', color: '#475569', marginBottom: '3rem', textAlign: 'center' }}>
             Direktorat Sumber Daya Manusia dan Pengembangan Talenta (DSDMPT) berkomitmen untuk merekrut individu yang berdedikasi tinggi demi memajukan visi pendidikan nasional. Kami mencari talenta yang siap berkontribusi pada ekosistem akademik yang prestisius, inovatif, dan berintegritas.
           </p>
-          <a 
-            href="https://recruitment.ui.ac.id" 
-            target="_blank" 
-            rel="noreferrer"
-            className="btn-secondary" 
-            style={{ 
-              fontSize: '1rem', 
-              padding: '0.8rem 2.25rem', 
-              borderRadius: '50px', 
-              fontWeight: '700', 
-              gap: '0.6rem', 
-              display: 'inline-flex',
-              backgroundColor: '#F2C94C',
-              color: '#0A1E38',
-              boxShadow: '0 4px 12px rgba(242, 201, 76, 0.3)'
-            }}
-          >
-            Portal Rekrutmen <ArrowRight size={18} />
-          </a>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}>
+            {recs.map((item) => (
+              <a 
+                key={item.id}
+                href={item.link} 
+                target="_blank" 
+                rel="noreferrer"
+                className="recruitment-link-btn" 
+                style={{ 
+                  fontSize: '1rem', 
+                  padding: '1.1rem 2.5rem', 
+                  borderRadius: '12px', 
+                  fontWeight: '700', 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: '#FFFFFF',
+                  color: '#0A1E38',
+                  border: '2px solid #E2E8F0',
+                  width: '100%',
+                  maxWidth: '640px',
+                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+                  transition: 'all 0.2s ease',
+                  textDecoration: 'none',
+                }}
+              >
+                <span style={{ textAlign: 'left', marginRight: '1rem' }}>{item.title}</span>
+                <span className="arrow-icon" style={{ display: 'flex', alignItems: 'center', color: '#F2C94C' }}>
+                  <ArrowRight size={20} />
+                </span>
+              </a>
+            ))}
+          </div>
         </div>
       </main>
+
+      <style>{`
+        .recruitment-link-btn:hover {
+          border-color: #0A1E38 !important;
+          transform: translateY(-2px);
+          box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05) !important;
+        }
+      `}</style>
+
 
       {/* ── FOOTER ── */}
       <footer className="footer">

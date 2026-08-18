@@ -221,13 +221,13 @@ export default function AdminGlobalTalentPage() {
               <p>Kelola semua konten deskripsi, gambar, aturan umum, dan alur pelaksanaan program Global Talent</p>
             </div>
 
-            {/* Intro Section */}
+            {/* Intro & Gambar Section */}
             <div className="admin-card">
               <div className="admin-card-header">
                 <FileText size={20} />
-                <h2>1. Deskripsi Intro Global Talent</h2>
+                <h2>1. Deskripsi & Gambar Intro Global Talent</h2>
               </div>
-              <div className="admin-form">
+              <div className="admin-form intro-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem' }}>
                 <div className="admin-field">
                   <label htmlFor="text_1">
                     Paragraf Intro (Mendukung tag HTML &lt;strong&gt;, &lt;br/&gt;)
@@ -237,17 +237,57 @@ export default function AdminGlobalTalentPage() {
                     id="text_1"
                     value={text1}
                     onChange={(e) => setText1(e.target.value)}
-                    rows={8}
+                    rows={12}
                     placeholder="Masukkan konten paragraf..."
+                    style={{ height: '240px' }}
                   />
+                </div>
+
+                <div className="admin-field">
+                  <label>Gambar Banner/Ilustrasi</label>
+                  <div className="admin-image-upload-area" style={{ marginTop: '0.4rem' }}>
+                    {image ? (
+                      <div className="admin-image-preview">
+                        <img src={getImageUrl(image)} alt="Global Talent preview" style={{ height: '240px', width: '100%', objectFit: 'cover' }} />
+                        <div className="admin-image-overlay">
+                          <button
+                            type="button"
+                            className="admin-change-img-btn"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                          >
+                            <Upload size={16} />
+                            {uploading ? 'Mengupload...' : 'Ganti Gambar'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="admin-image-dropzone"
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{ padding: '2.5rem 1.5rem' }}
+                      >
+                        <Upload size={32} />
+                        <p>Klik untuk upload gambar</p>
+                        <span>JPG, PNG, WebP (max 10MB)</span>
+                      </div>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Aturan Umum Section */}
             <div className="admin-card">
-              <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="admin-card-header" style={{ display: 'flex', justifycontent: 'space-between', alignitems: 'center' }}>
+                <div style={{ display: 'flex', alignitems: 'center', gap: '0.5rem' }}>
                   <FileText size={20} />
                   <h2>2. Aturan Umum (Bisa Tambah/Hapus)</h2>
                 </div>
@@ -279,8 +319,8 @@ export default function AdminGlobalTalentPage() {
 
             {/* Alur Pelaksanaan Section */}
             <div className="admin-card">
-              <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="admin-card-header" style={{ display: 'flex', justifycontent: 'space-between', alignitems: 'center' }}>
+                <div style={{ display: 'flex', alignitems: 'center', gap: '0.5rem' }}>
                   <FileText size={20} />
                   <h2>3. Alur Pelaksanaan Secara Umum (Bisa Tambah/Hapus)</h2>
                 </div>
@@ -307,50 +347,6 @@ export default function AdminGlobalTalentPage() {
                     />
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* Gambar Section */}
-            <div className="admin-card">
-              <div className="admin-card-header">
-                <Image size={20} />
-                <h2>4. Gambar Global Talent</h2>
-              </div>
-
-              <div className="admin-form">
-                <div className="admin-image-upload-area">
-                  {image ? (
-                    <div className="admin-image-preview">
-                      <img src={getImageUrl(image)} alt="Global Talent preview" />
-                      <div className="admin-image-overlay">
-                        <button
-                          className="admin-change-img-btn"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={uploading}
-                        >
-                          <Upload size={16} />
-                          {uploading ? 'Mengupload...' : 'Ganti Gambar'}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      className="admin-image-dropzone"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Upload size={32} />
-                      <p>Klik untuk upload gambar</p>
-                      <span>JPG, PNG, WebP (max 10MB)</span>
-                    </div>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    style={{ display: 'none' }}
-                  />
-                </div>
               </div>
             </div>
 
@@ -496,7 +492,7 @@ export default function AdminGlobalTalentPage() {
           padding: 3rem 0 4rem;
         }
         .admin-container {
-          max-width: 800px;
+          max-width: 1280px;
           margin: 0 auto;
           padding: 0 2rem;
         }
@@ -696,6 +692,13 @@ export default function AdminGlobalTalentPage() {
         }
         @keyframes spin {
           to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 992px) {
+          .intro-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1.5rem !important;
+          }
         }
 
         @media (max-width: 768px) {

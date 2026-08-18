@@ -89,11 +89,40 @@ func createTables() {
 		log.Fatalf("Failed to create program_kerja table: %v", err)
 	}
 
+	// Akses Pegawai Table
+	_, err = DB.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS akses_pegawai (
+			id SERIAL PRIMARY KEY,
+			title VARCHAR(255) NOT NULL,
+			description TEXT NOT NULL,
+			link VARCHAR(255) NOT NULL,
+			position INT NOT NULL DEFAULT 0
+		);
+	`)
+	if err != nil {
+		log.Fatalf("Failed to create akses_pegawai table: %v", err)
+	}
+
+	// Rekrutmen Table
+	_, err = DB.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS rekrutmen (
+			id SERIAL PRIMARY KEY,
+			title VARCHAR(255) NOT NULL,
+			link VARCHAR(255) NOT NULL,
+			position INT NOT NULL DEFAULT 0
+		);
+	`)
+	if err != nil {
+		log.Fatalf("Failed to create rekrutmen table: %v", err)
+	}
+
 	fmt.Println("Database schemas verified/created.")
 }
 
+
 func seedData() {
 	ctx := context.Background()
+	var err error
 
 	// 1. Seed Settings (insert missing keys using ON CONFLICT DO NOTHING)
 	defaultSettings := map[string]string{
@@ -241,6 +270,104 @@ func seedData() {
 			}
 		}
 		fmt.Println("Seeded program_kerja table matching mockup screenshot.")
+	}
+
+	// 5. Seed Akses Pegawai if empty
+	var apCount int
+	err = DB.QueryRow(ctx, "SELECT COUNT(*) FROM akses_pegawai").Scan(&apCount)
+	if err != nil {
+		log.Fatalf("Failed to check akses_pegawai count: %v", err)
+	}
+
+	if apCount == 0 {
+		aps := []struct {
+			Title       string
+			Description string
+			Link        string
+			Position    int
+		}{
+			{
+				Title:       "Izin PDLN",
+				Description: "Layanan permohonan izin perjalanan dinas luar negeri bagi pegawai.",
+				Link:        "https://script.google.com/macros/s/AKfycbw7CdgMgY293NveC9b4B96d8yeqZDwCIU-ywVLBr14iNJYbLQRsRufUeYfFTV5qvS_I/exec",
+				Position:    1,
+			},
+			{
+				Title:       "HRIS",
+				Description: "Sistem informasi terintegrasi untuk manajemen data sumber daya manusia.",
+				Link:        "https://hris.ui.ac.id/",
+				Position:    2,
+			},
+			{
+				Title:       "SIPEG",
+				Description: "Portal pelayanan administrasi kepegawaian internal.",
+				Link:        "https://sipeg.ui.ac.id/ng/otorisasi",
+				Position:    3,
+			},
+			{
+				Title:       "SISTER",
+				Description: "Layanan administrasi dan pemutakhiran data pendidik maupun tenaga kependidikan.",
+				Link:        "https://sister.kemdiktisaintek.go.id/beranda",
+				Position:    4,
+			},
+			{
+				Title:       "STELLAR-BKD",
+				Description: "Platform pengembangan talenta dan manajemen kinerja pegawai.",
+				Link:        "https://stellar-dsdm.ui.ac.id/",
+				Position:    5,
+			},
+			{
+				Title:       "STELLAR-Executive",
+				Description: "Sistem Terpadu Laporan & Layanan Aktivitas Rekapitulasi Data Pegawai Tendik dan Dosen.",
+				Link:        "https://stellar-dsdm.ui.ac.id/",
+				Position:    6,
+			},
+		}
+
+		for _, ap := range aps {
+			_, err := DB.Exec(ctx, "INSERT INTO akses_pegawai (title, description, link, position) VALUES ($1, $2, $3, $4)", ap.Title, ap.Description, ap.Link, ap.Position)
+			if err != nil {
+				log.Printf("Failed to seed akses_pegawai %s: %v", ap.Title, err)
+			}
+		}
+		fmt.Println("Seeded akses_pegawai table.")
+	}
+
+	// 6. Seed Rekrutmen if empty
+	var recCount int
+	err = DB.QueryRow(ctx, "SELECT COUNT(*) FROM rekrutmen").Scan(&recCount)
+	if err != nil {
+		recCount = 0
+	}
+	if recCount == 0 {
+		recs := []struct {
+			Title    string
+			Link     string
+			Position int
+		}{
+			{
+				Title:    "Portal Rekrutmen Utama Universitas Indonesia",
+				Link:     "https://recruitment.ui.ac.id",
+				Position: 1,
+			},
+			{
+				Title:    "Rekrutmen Calon Dosen Tetap UI",
+				Link:     "https://recruitment.ui.ac.id",
+				Position: 2,
+			},
+			{
+				Title:    "Rekrutmen Tenaga Kependidikan (Tendik) UI",
+				Link:     "https://recruitment.ui.ac.id",
+				Position: 3,
+			},
+		}
+		for _, rec := range recs {
+			_, err := DB.Exec(ctx, "INSERT INTO rekrutmen (title, link, position) VALUES ($1, $2, $3)", rec.Title, rec.Link, rec.Position)
+			if err != nil {
+				log.Printf("Failed to seed rekrutmen %s: %v", rec.Title, err)
+			}
+		}
+		fmt.Println("Seeded rekrutmen table.")
 	}
 }
 
