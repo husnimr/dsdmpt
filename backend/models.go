@@ -59,5 +59,39 @@ type Rekrutmen struct {
 	Position int    `json:"position"`
 }
 
+type PengembanganTalenta struct {
+	ID               int    `json:"id"`
+	Title            string `json:"title"`
+	Organizer        string `json:"organizer"`
+	Date             string `json:"date"`
+	Time             string `json:"time"`
+	Location         string `json:"location"`
+	Image            string `json:"image"`
+	Type             string `json:"type"`
+	Agenda           string `json:"agenda"`
+	Position         int    `json:"position"`
+	Description      string `json:"description"`
+	SyllabusURL      string `json:"syllabus_url"`
+	RegistrationLink string `json:"registration_link"`
+	ContactPhone     string `json:"contact_phone"`
+}
+
+type Informasi struct {
+	ID          int    `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	ImageURL    string `json:"image_url"`
+	FileURL     string `json:"file_url"`
+	Position    int    `json:"position"`
+}
+
+type DokumenTerkini struct {
+	ID       int    `json:"id"`
+	Title    string `json:"title"`
+	FileURL  string `json:"file_url"`
+	Link     string `json:"link"`
+	Position int    `json:"position"`
+}
+
 
 

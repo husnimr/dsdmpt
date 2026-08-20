@@ -7,6 +7,7 @@ import {
   ChevronRight,
   X,
   Calendar,
+  User,
   Menu,
   Search
 } from 'lucide-react';
@@ -27,14 +28,18 @@ const formatDate = (dateStr) => {
   });
 };
 
-const slugify = (text, id) => {
-  if (!text) return String(id);
-  const clean = text
+const slugify = (text) => {
+  if (!text) return '';
+  return text
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
-  return `${clean}-${id}`;
+};
+
+const stripHtml = (html) => {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 };
 
 export default function BeritaPage() {
@@ -142,19 +147,25 @@ export default function BeritaPage() {
             <>
               {/* ── FEATURED ARTICLE ── */}
               {featured && (
-                <a href={`/berita/${slugify(featured.title, featured.id)}`} className="berita-featured" id="featured-article" style={{ display: 'grid', cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}>
+                <a href={`/berita/${featured.slug || slugify(featured.title)}`} className="berita-featured" id="featured-article" style={{ display: 'grid', cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}>
                   <div className="berita-featured-img-wrap">
                     <img src={getImageUrl(featured.image_url)} alt={featured.title} className="berita-featured-img" />
                   </div>
                   <div className="berita-featured-body">
                     <h2 className="berita-featured-title">{featured.title}</h2>
                     <p className="berita-featured-excerpt">
-                      {featured.content?.slice(0, 160)}{featured.content?.length > 160 ? '...' : ''}
+                      {stripHtml(featured.content).slice(0, 160)}{stripHtml(featured.content).length > 160 ? '...' : ''}
                     </p>
-                    <span className="berita-featured-date">
-                      <Calendar size={13} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} />
-                      {formatDate(featured.published_at)}
-                    </span>
+                    <div className="berita-featured-meta" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                      <span className="berita-featured-date" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <Calendar size={13} />
+                        {formatDate(featured.published_at)}
+                      </span>
+                      <span className="berita-featured-author" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', color: '#8e9aad', fontWeight: '500' }}>
+                        <User size={13} />
+                        {featured.author || 'Administrator'}
+                      </span>
+                    </div>
                     <div style={{ marginTop: '1.25rem' }}>
                       <span className="btn-secondary">
                         Baca selengkapnya
@@ -170,7 +181,7 @@ export default function BeritaPage() {
                   {filteredRest.map(item => (
                     <a
                       key={item.id}
-                      href={`/berita/${slugify(item.title, item.id)}`}
+                      href={`/berita/${item.slug || slugify(item.title)}`}
                       className="berita-card"
                       id={`berita-card-${item.id}`}
                       style={{ textDecoration: 'none', color: 'inherit' }}
@@ -181,9 +192,18 @@ export default function BeritaPage() {
                       <div className="berita-card-body">
                         <h3 className="berita-card-title">{item.title}</h3>
                         <p className="berita-card-excerpt">
-                          {item.content?.slice(0, 100)}{item.content?.length > 100 ? '...' : ''}
+                          {stripHtml(item.content).slice(0, 100)}{stripHtml(item.content).length > 100 ? '...' : ''}
                         </p>
-                        <span className="berita-card-date">{formatDate(item.published_at)}</span>
+                        <div className="berita-card-meta" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                          <span className="berita-card-date" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <Calendar size={12} />
+                            {formatDate(item.published_at)}
+                          </span>
+                          <span className="berita-card-author" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.74rem', color: '#8e9aad', fontWeight: '500' }}>
+                            <User size={12} />
+                            {item.author || 'Administrator'}
+                          </span>
+                        </div>
                       </div>
                     </a>
                   ))}

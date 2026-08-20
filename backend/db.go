@@ -116,6 +116,64 @@ func createTables() {
 		log.Fatalf("Failed to create rekrutmen table: %v", err)
 	}
 
+	// Pengembangan Talenta Table
+	_, err = DB.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS pengembangan_talenta (
+			id SERIAL PRIMARY KEY,
+			title VARCHAR(255) NOT NULL,
+			organizer VARCHAR(255) NOT NULL,
+			date VARCHAR(255) NOT NULL,
+			time VARCHAR(255) NOT NULL,
+			location VARCHAR(255) NOT NULL,
+			image VARCHAR(255) NOT NULL,
+			type VARCHAR(50) NOT NULL,
+			agenda JSONB NOT NULL DEFAULT '[]'::jsonb,
+			position INT NOT NULL DEFAULT 0
+		);
+	`)
+	if err != nil {
+		log.Fatalf("Failed to create pengembangan_talenta table: %v", err)
+	}
+
+	_, err = DB.Exec(ctx, `
+		ALTER TABLE pengembangan_talenta ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT '';
+		ALTER TABLE pengembangan_talenta ADD COLUMN IF NOT EXISTS syllabus_url VARCHAR(255) NOT NULL DEFAULT '';
+		ALTER TABLE pengembangan_talenta ADD COLUMN IF NOT EXISTS registration_link VARCHAR(255) NOT NULL DEFAULT '';
+		ALTER TABLE pengembangan_talenta ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(100) NOT NULL DEFAULT '';
+	`)
+	if err != nil {
+		log.Fatalf("Failed to alter pengembangan_talenta table: %v", err)
+	}
+
+	// Informasi Table
+	_, err = DB.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS informasi (
+			id SERIAL PRIMARY KEY,
+			title VARCHAR(255) NOT NULL,
+			description TEXT NOT NULL DEFAULT '',
+			image_url VARCHAR(255) NOT NULL DEFAULT '',
+			file_url VARCHAR(255) NOT NULL DEFAULT '',
+			position INT NOT NULL DEFAULT 0
+		);
+	`)
+	if err != nil {
+		log.Fatalf("Failed to create informasi table: %v", err)
+	}
+
+	// Dokumen Terkini Table
+	_, err = DB.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS dokumen_terkini (
+			id SERIAL PRIMARY KEY,
+			title VARCHAR(255) NOT NULL,
+			file_url VARCHAR(255) NOT NULL DEFAULT '',
+			link VARCHAR(255) NOT NULL DEFAULT '',
+			position INT NOT NULL DEFAULT 0
+		);
+	`)
+	if err != nil {
+		log.Fatalf("Failed to create dokumen_terkini table: %v", err)
+	}
+
 	fmt.Println("Database schemas verified/created.")
 }
 
@@ -368,6 +426,168 @@ func seedData() {
 			}
 		}
 		fmt.Println("Seeded rekrutmen table.")
+	}
+
+	// 7. Seed Pengembangan Talenta if empty
+	var ptCount int
+	err = DB.QueryRow(ctx, "SELECT COUNT(*) FROM pengembangan_talenta").Scan(&ptCount)
+	if err != nil {
+		ptCount = 0
+	}
+	if ptCount == 0 {
+		pts := []struct {
+			Title     string
+			Organizer string
+			Date      string
+			Time      string
+			Location  string
+			Image     string
+			Type      string
+			Agenda    string
+			Position  int
+		}{
+			{
+				Title:     "Pelatihan Kepemimpinan Universitas",
+				Organizer: "DSDMPT Universitas Indonesia",
+				Date:      "15 Maret 2026",
+				Time:      "08:00 - 16:00 WIB",
+				Location:  "Gedung Rektorat Lt. 5",
+				Image:     "/uploads/talent_1.jpg",
+				Type:      "internal",
+				Agenda:    `[{"time":"08:00 - 10:00","activity":"Sesi 1: Dasar Kepemimpinan Strategis di Lingkungan UI"},{"time":"10:30 - 12:30","activity":"Sesi 2: Workshop Tata Kelola Talenta DSDMPT"},{"time":"13:30 - 15:30","activity":"Sesi 3: Panel Diskusi Strategi Pengembangan Karier"},{"time":"15:30 - 16:00","activity":"Penutup & Networking"}]`,
+				Position:  1,
+			},
+			{
+				Title:     "Pengembangan Kompetensi Pedagogik",
+				Organizer: "Direktorat Pendidikan",
+				Date:      "22 April 2026",
+				Time:      "08:30 - 15:30 WIB",
+				Location:  "Auditorium",
+				Image:     "/uploads/talent_2.jpg",
+				Type:      "internal",
+				Agenda:    `[{"time":"08:30 - 10:30","activity":"Sesi 1: Pengantar Metode Pembelajaran Interaktif"},{"time":"11:00 - 13:00","activity":"Sesi 2: Penyusunan Kurikulum Berbasis OBE"},{"time":"14:00 - 15:30","activity":"Sesi 3: Praktik & Evaluasi Pedagogik"}]`,
+				Position:  2,
+			},
+			{
+				Title:     "Manajemen Karir Tendik",
+				Organizer: "Pusat Sistem Informasi",
+				Date:      "22 Juni 2026",
+				Time:      "09:00 - 15:00 WIB",
+				Location:  "Lab Komputer Terpadu",
+				Image:     "/uploads/talent_3.jpg",
+				Type:      "internal",
+				Agenda:    `[{"time":"09:00 - 11:00","activity":"Sesi 1: Perencanaan Karir Staf Kependidikan"},{"time":"11:30 - 13:30","activity":"Sesi 2: Sertifikasi & Portofolio Profesional"},{"time":"14:00 - 15:00","activity":"Sesi 3: Tanya Jawab Jalur Fungsional"}]`,
+				Position:  3,
+			},
+			{
+				Title:     "Sertifikasi Kompetensi Global",
+				Organizer: "DSDMPT Universitas Indonesia",
+				Date:      "12 Juli 2026",
+				Time:      "08:00 - 17:00 WIB",
+				Location:  "Ruang Rapat Utama",
+				Image:     "/uploads/talent_4.jpg",
+				Type:      "public",
+				Agenda:    `[{"time":"08:00 - 10:00","activity":"Sesi 1: Standarisasi Sertifikasi Global"},{"time":"10:30 - 12:30","activity":"Sesi 2: Pembahasan Ujian & Persiapan"},{"time":"13:30 - 16:30","activity":"Sesi 3: Simulasi Ujian Sertifikasi"},{"time":"16:30 - 17:00","activity":"Penutup & Pengumuman Hasil"}]`,
+				Position:  4,
+			},
+			{
+				Title:     "Literasi Digital Administrasi",
+				Organizer: "Biro Komunikasi",
+				Date:      "18 Agustus 2026",
+				Time:      "08:00 - 15:00 WIB",
+				Location:  "Gedung IASTH Lt.3",
+				Image:     "/uploads/talent_2.jpg",
+				Type:      "public",
+				Agenda:    `[{"time":"08:00 - 10:00","activity":"Sesi 1: Keamanan Informasi Administrasi"},{"time":"10:30 - 12:30","activity":"Sesi 2: Otomasi Dokumen & Surat Digital"},{"time":"13:30 - 15:00","activity":"Sesi 3: Kolaborasi Cloud dalam Tim Kerja"}]`,
+				Position:  5,
+			},
+			{
+				Title:     "Pelatihan Komunikasi Efektif",
+				Organizer: "DSDMPT Universitas Indonesia",
+				Date:      "18 Agustus 2026",
+				Time:      "09:00 - 16:00 WIB",
+				Location:  "Balai Sidang UI",
+				Image:     "/uploads/talent_1.jpg",
+				Type:      "public",
+				Agenda:    `[{"time":"09:00 - 11:00","activity":"Sesi 1: Teknik Komunikasi Asertif"},{"time":"11:30 - 13:30","activity":"Sesi 2: Public Speaking & Presentasi Efektif"},{"time":"14:30 - 16:00","activity":"Sesi 3: Manajemen Konflik & Komunikasi Tim"}]`,
+				Position:  6,
+			},
+		}
+		for _, pt := range pts {
+			_, err := DB.Exec(ctx, "INSERT INTO pengembangan_talenta (title, organizer, date, time, location, image, type, agenda, position) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9)", pt.Title, pt.Organizer, pt.Date, pt.Time, pt.Location, pt.Image, pt.Type, pt.Agenda, pt.Position)
+			if err != nil {
+				log.Printf("Failed to seed pengembangan_talenta %s: %v", pt.Title, err)
+			}
+		}
+		fmt.Println("Seeded pengembangan_talenta table.")
+	}
+
+	// 8. Seed Informasi if empty
+	var infoCount int
+	err = DB.QueryRow(ctx, "SELECT COUNT(*) FROM informasi").Scan(&infoCount)
+	if err != nil {
+		infoCount = 0
+	}
+	if infoCount == 0 {
+		infos := []Informasi{
+			{
+				Title:       "Jadwal Pengisian BKD",
+				Description: "",
+				ImageURL:    "/uploads/jadwal_bkd.png",
+				FileURL:     "",
+				Position:    1,
+			},
+			{
+				Title:       "9 Nilai Dasar Universitas Indonesia",
+				Description: "Demi Mewujudkan Visi, Universitas Indonesia Miliki 9 Nilai Dasar. Sesuai dengan fungsi universalnya sebagai rumah dan lumbung pengetahuan, teladan, dan kekuatan moral bagi masyarakat, Universitas Indonesia (UI) memiliki nilai-nilai dasar yang harus dijunjung tinggi oleh para sivitas-nya.",
+				ImageURL:    "",
+				FileURL:     "/uploads/buku_saku_9_nilai_ui.pdf",
+				Position:    2,
+			},
+		}
+		for _, info := range infos {
+			_, err := DB.Exec(ctx, "INSERT INTO informasi (title, description, image_url, file_url, position) VALUES ($1, $2, $3, $4, $5)", info.Title, info.Description, info.ImageURL, info.FileURL, info.Position)
+			if err != nil {
+				log.Printf("Failed to seed informasi %s: %v", info.Title, err)
+			}
+		}
+		fmt.Println("Seeded informasi table.")
+	}
+
+	// 9. Seed Dokumen Terkini if empty
+	var docCount int
+	err = DB.QueryRow(ctx, "SELECT COUNT(*) FROM dokumen_terkini").Scan(&docCount)
+	if err != nil {
+		docCount = 0
+	}
+	if docCount == 0 {
+		docs := []DokumenTerkini{
+			{
+				Title:    "Surat Edaran Libur Nasional 2026",
+				FileURL:  "/uploads/buku_saku_9_nilai_ui.pdf",
+				Link:     "",
+				Position: 1,
+			},
+			{
+				Title:    "Pedoman Evaluasi Kinerja Pegawai",
+				FileURL:  "/uploads/buku_saku_9_nilai_ui.pdf",
+				Link:     "",
+				Position: 2,
+			},
+			{
+				Title:    "Kalender Akademik & Kepegawaian",
+				FileURL:  "/uploads/buku_saku_9_nilai_ui.pdf",
+				Link:     "",
+				Position: 3,
+			},
+		}
+		for _, doc := range docs {
+			_, err := DB.Exec(ctx, "INSERT INTO dokumen_terkini (title, file_url, link, position) VALUES ($1, $2, $3, $4)", doc.Title, doc.FileURL, doc.Link, doc.Position)
+			if err != nil {
+				log.Printf("Failed to seed dokumen_terkini %s: %v", doc.Title, err)
+			}
+		}
+		fmt.Println("Seeded dokumen_terkini table.")
 	}
 }
 

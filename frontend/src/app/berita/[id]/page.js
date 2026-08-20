@@ -31,20 +31,13 @@ const formatDate = (dateStr) => {
   });
 };
 
-const slugify = (text, id) => {
-  if (!text) return String(id);
-  const clean = text
+const slugify = (text) => {
+  if (!text) return '';
+  return text
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
-  return `${clean}-${id}`;
-};
-
-const extractIdFromSlug = (slug) => {
-  if (!slug) return '';
-  const parts = slug.split('-');
-  return parts[parts.length - 1];
 };
 
 export default function DetailBeritaPage() {
@@ -95,12 +88,10 @@ export default function DetailBeritaPage() {
 
   useEffect(() => {
     if (!id) return;
-    const realId = extractIdFromSlug(id);
-    if (!realId) return;
     
     // Fetch article detail
     setLoading(true);
-    fetch(`${BACKEND_URL}/api/news/${realId}`)
+    fetch(`${BACKEND_URL}/api/news/${id}`)
       .then(res => {
         if (!res.ok) throw new Error('Gagal mengambil detail berita');
         return res.json();
@@ -108,21 +99,21 @@ export default function DetailBeritaPage() {
       .then(data => {
         setArticle(data);
         setLoading(false);
+        
+        // Fetch other news for "Berita Lainnya"
+        fetch(`${BACKEND_URL}/api/news?limit=6`)
+          .then(res => res.json())
+          .then(otherData => {
+            // filter out current article
+            const list = (otherData.data || []).filter(item => String(item.id) !== String(data.id)).slice(0, 5);
+            setOtherNews(list);
+          })
+          .catch(err => console.error(err));
       })
       .catch(err => {
         console.error(err);
         setLoading(false);
       });
-
-    // Fetch other news for "Berita Lainnya"
-    fetch(`${BACKEND_URL}/api/news?limit=5`)
-      .then(res => res.json())
-      .then(data => {
-        // filter out current article
-        const list = (data.data || []).filter(item => String(item.id) !== String(realId)).slice(0, 5);
-        setOtherNews(list);
-      })
-      .catch(err => console.error(err));
   }, [id]);
 
   const openLightbox = (index) => {
@@ -180,7 +171,7 @@ export default function DetailBeritaPage() {
             <span className="separator">&gt;</span>
             <a href="/berita">Berita</a>
             <span className="separator">&gt;</span>
-            <span className="current">Detail Artikel</span>
+            <span className="current">{article.title}</span>
           </div>
         </div>
       </div>
@@ -194,8 +185,7 @@ export default function DetailBeritaPage() {
           {/* Metadata Row */}
           <div className="detail-meta">
             <span className="meta-item"><Calendar size={14} /> {formatDate(article.published_at)}</span>
-            <span className="meta-item"><User size={14} /> {article.author || 'Administrator'}</span>
-            <span className="meta-item"><Eye size={14} /> Berita DSDMPT</span>
+            <span className="meta-item"><User size={14} /> {article.author}</span>
           </div>
 
           {/* Large Hero Image */}
@@ -319,7 +309,7 @@ export default function DetailBeritaPage() {
             <h2 className="related-heading">Berita Lainnya</h2>
             <div className="related-grid">
               {otherNews.map((item) => (
-                <a key={item.id} href={`/berita/${slugify(item.title, item.id)}`} className="related-card">
+                <a key={item.id} href={`/berita/${item.slug || slugify(item.title)}`} className="related-card">
                   <div className="related-card-img-wrap">
                     <img src={getImageUrl(item.image_url)} alt={item.title} />
                   </div>

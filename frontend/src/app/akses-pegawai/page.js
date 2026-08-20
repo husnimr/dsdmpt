@@ -84,11 +84,12 @@ export default function AksesPegawai() {
       <div className="subpage-hero-wrapper">
         <section
           className="subpage-hero"
-          style={{ backgroundImage: `url(${getImageUrl(settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
+          style={{ backgroundImage: `url(${getImageUrl(settings.akses_pegawai_hero_image || settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
         >
           <div className="subpage-hero-overlay" />
           <div className="subpage-hero-content">
-            <h1 className="subpage-hero-title">Akses Pegawai</h1>
+            <h1 className="subpage-hero-title">{settings.akses_pegawai_hero_title || 'Akses Pegawai'}</h1>
+            {settings.akses_pegawai_hero_desc && <p className="subpage-hero-sub">{settings.akses_pegawai_hero_desc}</p>}
           </div>
         </section>
       </div>

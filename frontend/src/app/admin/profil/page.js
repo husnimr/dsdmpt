@@ -86,6 +86,8 @@ const DEFAULT_PROGRAMS = [
 ];
 
 export default function AdminProfilPage() {
+  const [activeTab, setActiveTab] = useState('info');
+
   // Hero section states
   const [heroTitle, setHeroTitle] = useState('Profil');
   const [heroDesc, setHeroDesc] = useState('');
@@ -98,6 +100,48 @@ export default function AdminProfilPage() {
   // Program Kerja states
   const [pkSubtitle, setPkSubtitle] = useState('Program kerja utama yang diamanatkan dalam rencana strategis universitas guna mendukung sasaran strategis pusat talenta terbaik adalah sebagai berikut');
   const [programs, setPrograms] = useState(DEFAULT_PROGRAMS);
+
+  // Struktur Organisasi states
+  const [directorTitle, setDirectorTitle] = useState('Direktur SDM dan Pengembangan Talenta');
+  const [directorSubTitle, setDirectorSubTitle] = useState('');
+  const [columns, setColumns] = useState([
+    {
+      name: "Layanan, Pembinaan, dan Karier SDM",
+      color: "#0A1E38",
+      sections: [
+        "Seksi Karir Jabatan Fungsional Dosen",
+        "Seksi Karir Tenaga Kependidikan",
+        "Seksi Layanan dan Pembinaan SDM"
+      ]
+    },
+    {
+      name: "Pengembangan Organisasi Tata Laksana dan Sistem SDM",
+      color: "#27AE60",
+      sections: [
+        "Seksi Organisasi dan Tata Laksana",
+        "Seksi Pengembangan Sistem SDM",
+        "Seksi Perencanaan dan Evaluasi Organisasi"
+      ]
+    },
+    {
+      name: "Perencanaan, Penempatan, Pengembangan SDM",
+      color: "#C0392B",
+      sections: [
+        "Seksi Pengembangan Dosen",
+        "Seksi Pengembangan Tenaga Kependidikan",
+        "Seksi Perencanaan dan Penempatan SDM"
+      ]
+    },
+    {
+      name: "Remunerasi dan Kesejahteraan",
+      color: "#F2C94C",
+      sections: [
+        "Seksi Remunerasi dan Kesejahteraan 3 (Payroll)",
+        "Seksi Remunerasi dan Kesejahteraan 1 (Dana Dipa)",
+        "Seksi Remunerasi dan Kesejahteraan 2 (Dana BPPTN dan Damas)"
+      ]
+    }
+  ]);
 
   // Modal editing state for Program Kerja
   const [editingIndex, setEditingIndex] = useState(null);
@@ -171,12 +215,153 @@ export default function AdminProfilPage() {
 
       // Load program kerja fields
       setPkSubtitle(data.profil_program_kerja_subtitle || 'Program kerja utama yang diamanatkan dalam rencana strategis universitas guna mendukung sasaran strategis pusat talenta terbaik adalah sebagai berikut');
+
+      // Load organizational structure if saved
+      if (data.profil_struktur_organisasi_json) {
+        try {
+          const parsed = JSON.parse(data.profil_struktur_organisasi_json);
+          if (parsed.director) {
+            // Support both old and unified structure
+            if (parsed.director.title && parsed.director.subTitle) {
+              setDirectorTitle(`${parsed.director.title} ${parsed.director.subTitle}`);
+            } else {
+              setDirectorTitle(parsed.director.title || 'Direktur SDM dan Pengembangan Talenta');
+            }
+            setDirectorSubTitle('');
+          }
+          if (parsed.columns && Array.isArray(parsed.columns)) {
+            setColumns(parsed.columns);
+          }
+        } catch (e) {
+          console.error("Gagal parse json struktur organisasi", e);
+        }
+      }
     } catch (err) {
       showToast('error', 'Gagal memuat data settings');
     }
   };
 
-  const handleSave = async () => {
+  const handleUpdateColumnName = (colIdx, value) => {
+    const updated = [...columns];
+    updated[colIdx].name = value;
+    setColumns(updated);
+  };
+
+  const handleUpdateColumnColor = (colIdx, value) => {
+    const updated = [...columns];
+    updated[colIdx].color = value;
+    setColumns(updated);
+  };
+
+  const handleUpdateSeksi = (colIdx, seksiIdx, value) => {
+    const updated = [...columns];
+    updated[colIdx].sections[seksiIdx] = value;
+    setColumns(updated);
+  };
+
+  const handleAddSeksi = (colIdx) => {
+    const updated = [...columns];
+    updated[colIdx].sections.push('Seksi Baru');
+    setColumns(updated);
+  };
+
+  const handleRemoveSeksi = (colIdx, seksiIdx) => {
+    const updated = [...columns];
+    updated[colIdx].sections.splice(seksiIdx, 1);
+    setColumns(updated);
+  };
+
+  const handleAddNewColumn = () => {
+    setColumns([...columns, {
+      name: 'Sub Direktorat Baru',
+      color: '#0A1E38',
+      sections: ['Seksi Baru']
+    }]);
+  };
+
+  const handleRemoveColumn = (colIdx) => {
+    if (confirm('Apakah Anda yakin ingin menghapus Sub Direktorat beserta seluruh seksinya?')) {
+      const updated = [...columns];
+      updated.splice(colIdx, 1);
+      setColumns(updated);
+    }
+  };
+
+  const handleSaveStruktur = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        profil_struktur_organisasi_json: JSON.stringify({
+          director: {
+            title: directorTitle,
+            subTitle: directorSubTitle
+          },
+          columns: columns
+        })
+      };
+
+      const res = await fetch(`${BACKEND_URL}/api/admin/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      if (!res.ok) throw new Error('Gagal menyimpan struktur organisasi');
+
+      showToast('success', 'Struktur Organisasi berhasil disimpan!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal menyimpan perubahan');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveHero = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        profil_hero_title: heroTitle,
+        profil_hero_desc: heroDesc,
+        hero_image: heroImage,
+      };
+
+      const res = await fetch(`${BACKEND_URL}/api/admin/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      if (!res.ok) throw new Error('Gagal menyimpan');
+
+      showToast('success', 'Hero Section berhasil disimpan!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal menyimpan perubahan');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveContent = async () => {
     setSaving(true);
     try {
       // Split description back into paragraph 1 and 2
@@ -185,9 +370,6 @@ export default function AdminProfilPage() {
       const profil_text_2 = paragraphs.slice(1).join('\n\n') || '';
 
       const payload = {
-        profil_hero_title: heroTitle,
-        profil_hero_desc: heroDesc,
-        hero_image: heroImage,
         profil_image: profilImage,
         profil_text_1: profil_text_1,
         profil_text_2: profil_text_2,
@@ -212,7 +394,7 @@ export default function AdminProfilPage() {
 
       if (!res.ok) throw new Error('Gagal menyimpan');
 
-      showToast('success', 'Perubahan berhasil disimpan!');
+      showToast('success', 'Perubahan konten berhasil disimpan!');
     } catch (err) {
       showToast('error', err.message || 'Gagal menyimpan perubahan');
     } finally {
@@ -376,173 +558,543 @@ export default function AdminProfilPage() {
         <main className="admin-main">
           <div className="admin-container">
             
-            {/* Header Area with control buttons */}
-            <div className="admin-page-header">
-              <div className="header-text">
-                <h1>Profil DSDMPT</h1>
-                <p>Manage the content and layout of the main profile page.</p>
-              </div>
-              <div className="header-actions">
-                <button 
-                  className="btn-cancel" 
-                  onClick={handleCancel}
-                  disabled={saving}
-                >
-                  Batal
-                </button>
-                <button 
-                  className="btn-save" 
-                  onClick={handleSave}
-                  disabled={saving}
-                >
-                  {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                </button>
-              </div>
+            {/* Tab Navigation Header */}
+            <div className="admin-tabs-nav" style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #E2E8F0', marginBottom: '2rem', paddingBottom: '0px' }}>
+              <button
+                type="button"
+                onClick={() => setActiveTab('info')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1rem',
+                  fontWeight: '700',
+                  color: activeTab === 'info' ? '#0B2F61' : '#64748B',
+                  borderBottom: activeTab === 'info' ? '3px solid #FFC72C' : '3px solid transparent',
+                  padding: '0.75rem 1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  outline: 'none',
+                  marginBottom: '-2px'
+                }}
+              >
+                Informasi Profil & Program Kerja
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('struktur')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1rem',
+                  fontWeight: '700',
+                  color: activeTab === 'struktur' ? '#0B2F61' : '#64748B',
+                  borderBottom: activeTab === 'struktur' ? '3px solid #FFC72C' : '3px solid transparent',
+                  padding: '0.75rem 1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  outline: 'none',
+                  marginBottom: '-2px'
+                }}
+              >
+                Struktur Organisasi
+              </button>
             </div>
 
-            {/* CARD 1: Hero Section */}
-            <div className="admin-card">
-              <div className="admin-card-header">
-                <h2>Hero Section</h2>
-              </div>
-              
-              <div className="admin-card-body flex-row-layout">
-                <div className="inputs-column">
-                  <div className="admin-field">
-                    <label>Judul halaman</label>
-                    <input 
-                      type="text" 
-                      value={heroTitle}
-                      onChange={(e) => setHeroTitle(e.target.value)}
-                    />
+            {activeTab === 'info' && (
+              <>
+                {/* CARD 1: Hero Section */}
+                <div className="admin-card" style={{ marginBottom: '2rem' }}>
+                  <div className="admin-card-header">
+                    <h2>Hero Section</h2>
                   </div>
-                  <div className="admin-field">
-                    <label>Deskripsi judul</label>
-                    <textarea 
-                      rows={3} 
-                      value={heroDesc}
-                      onChange={(e) => setHeroDesc(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="image-column">
-                  <label>Background Image</label>
-                  <div className="image-uploader-wrapper">
-                    <img src={getImageUrl(heroImage)} alt="Hero Background" />
-                    <button 
-                      className="upload-overlay-btn"
-                      onClick={() => heroFileRef.current?.click()}
-                      disabled={uploadingHero}
-                    >
-                      <Upload size={16} />
-                      {uploadingHero ? 'Mengunggah...' : 'Upload Image'}
-                    </button>
-                    <input 
-                      type="file" 
-                      ref={heroFileRef} 
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(e, 'hero')} 
-                      style={{ display: 'none' }}
-                    />
-                  </div>
-                  <span className="image-hint-text">Recommended size: 1920x600px. Max size: 2MB.</span>
-                </div>
-              </div>
-            </div>
-
-            {/* CARD 2: Konten */}
-            <div className="admin-card">
-              <div className="admin-card-header">
-                <h2>Konten</h2>
-              </div>
-
-              <div className="admin-card-body flex-row-layout">
-                <div className="image-column">
-                  <label>Gambar</label>
-                  <div className="image-uploader-wrapper content-img-uploader">
-                    <img src={getImageUrl(profilImage)} alt="Content Body" />
-                    <button 
-                      className="upload-overlay-btn"
-                      onClick={() => contentFileRef.current?.click()}
-                      disabled={uploadingContent}
-                    >
-                      <Upload size={16} />
-                      {uploadingContent ? 'Mengunggah...' : 'Upload Image'}
-                    </button>
-                    <input 
-                      type="file" 
-                      ref={contentFileRef} 
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(e, 'content')} 
-                      style={{ display: 'none' }}
-                    />
-                  </div>
-                </div>
-
-                <div className="inputs-column">
-                  <div className="admin-field full-height">
-                    <label>Deskripsi</label>
-                    <textarea 
-                      rows={12} 
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* CARD 3: Program Kerja */}
-            <div className="admin-card">
-              <div className="admin-card-header flex-header">
-                <h2>Program Kerja</h2>
-                <button className="btn-add-pk" onClick={handleOpenAdd}>
-                  <Plus size={16} />
-                  <span>Tambah</span>
-                </button>
-              </div>
-
-              <div className="admin-card-body">
-                <div className="admin-field">
-                  <label>Section Subtitle</label>
-                  <textarea 
-                    rows={2} 
-                    value={pkSubtitle}
-                    onChange={(e) => setPkSubtitle(e.target.value)}
-                    className="subtitle-textarea"
-                  />
-                </div>
-
-                {/* Grid list of program kerja */}
-                <div className="programs-editor-grid">
-                  {programs.map((pk, idx) => (
-                    <div 
-                      key={idx} 
-                      className="program-editor-card"
-                      onClick={() => handleOpenEdit(idx)}
-                    >
-                      <div className="card-actions-row">
-                        <button 
-                          className="delete-pk-btn" 
-                          onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDeleteProgram(idx, e); }}
-                          title="Hapus"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                  
+                  <div className="admin-card-body flex-row-layout">
+                    <div className="inputs-column">
+                      <div className="admin-field">
+                        <label>Judul halaman</label>
+                        <input 
+                          type="text" 
+                          value={heroTitle}
+                          onChange={(e) => setHeroTitle(e.target.value)}
+                        />
                       </div>
-                      <div className="program-card-icon">
-                        {renderIcon(pk.iconName)}
-                      </div>
-                      <div className="program-card-info">
-                        <h3>{pk.title}</h3>
-                        <p>{pk.description}</p>
+                      <div className="admin-field" style={{ marginTop: '1rem' }}>
+                        <label>Deskripsi judul</label>
+                        <textarea 
+                          rows={3} 
+                          value={heroDesc}
+                          onChange={(e) => setHeroDesc(e.target.value)}
+                        />
                       </div>
                     </div>
-                  ))}
+
+                    <div className="image-column">
+                      <label>Background Image</label>
+                      <div className="image-uploader-wrapper">
+                        <img src={getImageUrl(heroImage)} alt="Hero Background" />
+                        <button 
+                          className="upload-overlay-btn"
+                          onClick={() => heroFileRef.current?.click()}
+                          disabled={uploadingHero}
+                        >
+                          <Upload size={16} />
+                          {uploadingHero ? 'Mengunggah...' : 'Upload Image'}
+                        </button>
+                        <input 
+                          type="file" 
+                          ref={heroFileRef} 
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, 'hero')} 
+                          style={{ display: 'none' }}
+                        />
+                      </div>
+                      <span className="image-hint-text">Recommended size: 1920x600px. Max size: 2MB.</span>
+                    </div>
+                  </div>
+
+                  <div className="admin-card-footer" style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem 1.5rem', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+                    <button 
+                      className="btn-save" 
+                      onClick={handleSaveHero}
+                      disabled={saving}
+                    >
+                      {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                    </button>
+                  </div>
                 </div>
+
+                {/* CARD 2: Konten */}
+                <div className="admin-card">
+                  <div className="admin-card-header">
+                    <h2>Konten</h2>
+                  </div>
+
+                  <div className="admin-card-body flex-row-layout">
+                    <div className="image-column">
+                      <label>Gambar</label>
+                      <div className="image-uploader-wrapper content-img-uploader">
+                        <img src={getImageUrl(profilImage)} alt="Content Body" />
+                        <button 
+                          className="upload-overlay-btn"
+                          onClick={() => contentFileRef.current?.click()}
+                          disabled={uploadingContent}
+                        >
+                          <Upload size={16} />
+                          {uploadingContent ? 'Mengunggah...' : 'Upload Image'}
+                        </button>
+                        <input 
+                          type="file" 
+                          ref={contentFileRef} 
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, 'content')} 
+                          style={{ display: 'none' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="inputs-column">
+                      <div className="admin-field full-height">
+                        <label>Deskripsi</label>
+                        <textarea 
+                          rows={12} 
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CARD 3: Program Kerja */}
+                <div className="admin-card">
+                  <div className="admin-card-header flex-header">
+                    <h2>Program Kerja</h2>
+                    <button className="btn-add-pk" onClick={handleOpenAdd}>
+                      <Plus size={16} />
+                      <span>Tambah</span>
+                    </button>
+                  </div>
+
+                  <div className="admin-card-body">
+                    <div className="admin-field">
+                      <label>Section Subtitle</label>
+                      <textarea 
+                        rows={2} 
+                        value={pkSubtitle}
+                        onChange={(e) => setPkSubtitle(e.target.value)}
+                        className="subtitle-textarea"
+                      />
+                    </div>
+
+                    {/* Grid list of program kerja */}
+                    <div className="programs-editor-grid">
+                      {programs.map((pk, idx) => (
+                        <div 
+                          key={idx} 
+                          className="program-editor-card"
+                          onClick={() => handleOpenEdit(idx)}
+                        >
+                          <div className="card-actions-row">
+                            <button 
+                              className="delete-pk-btn" 
+                              onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDeleteProgram(idx, e); }}
+                              title="Hapus"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <div className="program-card-icon">
+                            {renderIcon(pk.iconName)}
+                          </div>
+                          <div className="program-card-info">
+                            <h3>{pk.title}</h3>
+                            <p>{pk.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* SAVE ACTIONS BAR */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
+                  <button 
+                    type="button"
+                    className="btn-cancel" 
+                    onClick={handleCancel}
+                    disabled={saving}
+                    style={{ padding: '0.65rem 1.75rem', fontSize: '0.9rem', fontWeight: '700' }}
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    onClick={handleSaveContent}
+                    className="btn-save"
+                    disabled={saving}
+                    style={{ padding: '0.65rem 1.75rem', fontSize: '0.9rem', fontWeight: '700' }}
+                  >
+                    {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {activeTab === 'struktur' && (
+              <div className="struktur-editor-container">
+                
+                {/* CARD: Direktur */}
+                <div className="admin-card" style={{ marginBottom: '2rem' }}>
+                  <div className="admin-card-header">
+                    <h2>Pimpinan Utama (Direktur)</h2>
+                  </div>
+                  <div className="admin-card-body flex-row-layout">
+                    <div className="inputs-column">
+                      <div className="admin-field">
+                        <label>Jabatan Direktur</label>
+                        <input 
+                          type="text" 
+                          value={directorTitle}
+                          onChange={(e) => setDirectorTitle(e.target.value)}
+                          placeholder="Contoh: Direktur SDM dan Pengembangan Talenta"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CARD: Sub-Directorate Columns Editor */}
+                <div className="admin-card" style={{ marginBottom: '2rem' }}>
+                  <div className="admin-card-header">
+                    <h2>Sub Direktorat & Seksi</h2>
+                  </div>
+                  <div className="admin-card-body">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+                      {columns.map((col, colIdx) => (
+                        <div 
+                          key={colIdx} 
+                          style={{ 
+                            background: '#F8FAFC', 
+                            border: '1px solid #E2E8F0', 
+                            borderTop: `6px solid ${col.color || '#0A1E38'}`, 
+                            borderRadius: '8px', 
+                            padding: '1.25rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1rem'
+                          }}
+                        >
+                          {/* Sub-Directorate Name & Color Select */}
+                          <div className="admin-field">
+                            <label style={{ fontSize: '0.75rem', fontWeight: '800' }}>Nama Sub-Direktorat</label>
+                            <textarea
+                              rows={3}
+                              value={col.name}
+                              onChange={(e) => handleUpdateColumnName(colIdx, e.target.value)}
+                              style={{ padding: '0.5rem', fontSize: '0.85rem', fontWeight: '600' }}
+                            />
+                          </div>
+
+                          <div className="admin-field">
+                            <label style={{ fontSize: '0.75rem', fontWeight: '800' }}>Warna</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <input
+                                type="color"
+                                value={col.color || '#0A1E38'}
+                                onChange={(e) => handleUpdateColumnColor(colIdx, e.target.value)}
+                                style={{ width: '40px', height: '36px', border: '1px solid #CBD5E1', borderRadius: '4px', padding: '0px', cursor: 'pointer' }}
+                              />
+                              <input
+                                type="text"
+                                value={col.color || '#0A1E38'}
+                                onChange={(e) => handleUpdateColumnColor(colIdx, e.target.value)}
+                                style={{ flex: 1, padding: '0.45rem', fontSize: '0.85rem', borderRadius: '6px', border: '1px solid #CBD5E1', fontFamily: 'inherit' }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* List of sections (Seksi) */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#475569' }}>Daftar Seksi</label>
+                            {col.sections.map((seksi, seksiIdx) => (
+                              <div key={seksiIdx} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                <input
+                                  type="text"
+                                  value={seksi}
+                                  onChange={(e) => handleUpdateSeksi(colIdx, seksiIdx, e.target.value)}
+                                  style={{ flex: 1, padding: '0.45rem', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #CBD5E1' }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveSeksi(colIdx, seksiIdx)}
+                                  style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}
+                                  title="Hapus Seksi"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            ))}
+
+                            <button
+                              type="button"
+                              onClick={() => handleAddSeksi(colIdx)}
+                              style={{ 
+                                marginTop: '0.5rem', 
+                                background: '#FFFFFF', 
+                                border: '1px dashed #CBD5E1', 
+                                padding: '0.5rem', 
+                                borderRadius: '6px', 
+                                cursor: 'pointer', 
+                                fontSize: '0.75rem', 
+                                fontWeight: '700', 
+                                color: '#0B2F61',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.25rem'
+                              }}
+                            >
+                              <Plus size={14} /> Tambah Seksi
+                            </button>
+                          </div>
+
+                          {/* Delete column button */}
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #E2E8F0', paddingTop: '0.75rem', marginTop: '0.5rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveColumn(colIdx)}
+                              style={{ 
+                                background: 'none', 
+                                border: 'none', 
+                                color: '#EF4444', 
+                                cursor: 'pointer', 
+                                fontSize: '0.75rem', 
+                                fontWeight: '700',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.25rem'
+                              }}
+                            >
+                              <Trash2 size={14} /> Hapus Sub-Direktorat
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Button add new column */}
+                      <button
+                        type="button"
+                        onClick={handleAddNewColumn}
+                        style={{ 
+                          border: '2px dashed #CBD5E1', 
+                          borderRadius: '8px', 
+                          padding: '2rem 1.25rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          background: 'none',
+                          cursor: 'pointer',
+                          color: '#64748B',
+                          minHeight: '260px',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0B2F61'; e.currentTarget.style.color = '#0B2F61'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#64748B'; }}
+                      >
+                        <Plus size={24} />
+                        <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>Tambah Sub-Direktorat</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CARD: Live Preview (Pratinjau) */}
+                <div className="admin-card" style={{ marginBottom: '2rem' }}>
+                  <div className="admin-card-header">
+                    <h2>Pratinjau</h2>
+                  </div>
+                  <div className="admin-card-body" style={{ background: '#F8FAFC', padding: '2rem 1rem', overflowX: 'auto' }}>
+                    <div className="struktur-organisasi-container" style={{ minWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      
+                      {/* Director Card */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                        <div style={{ 
+                          backgroundColor: '#ffffff', 
+                          borderRadius: '12px', 
+                          border: '1px solid #E2E8F0', 
+                          borderLeft: '5px solid #F2C94C', 
+                          padding: '1.25rem 2rem', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '1rem',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                          maxWidth: '450px',
+                          width: '100%',
+                          zIndex: 2
+                        }}>
+                          <div style={{ width: '42px', height: '50px', borderRadius: '50%', backgroundColor: '#FEF9E7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F2C94C', flexShrink: 0 }}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                          </div>
+                          <div>
+                            <h4 style={{ margin: 0, fontSize: '1.05rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.3', textAlign: 'center' }}>
+                              {directorTitle || 'Direktur SDM dan Pengembangan Talenta'}
+                            </h4>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Vertical line directly between Direktur and Columns */}
+                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                        <div style={{ width: '2px', height: '40px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                      </div>
+
+                      {/* Sub-Directorate Columns Connected by tree structure */}
+                      {columns.length > 0 && (
+                        <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          
+                          {/* Horizontal line */}
+                          {columns.length > 1 && (
+                            <div style={{ 
+                              position: 'absolute', 
+                              top: 0, 
+                              left: `${(0.5 / columns.length) * 100}%`, 
+                              right: `${(0.5 / columns.length) * 100}%`, 
+                              height: '2px', 
+                              backgroundColor: '#CBD5E1',
+                              zIndex: 1
+                            }} />
+                          )}
+
+                          {/* Columns Container */}
+                          <div style={{ display: 'flex', width: '100%', boxSizing: 'border-box' }}>
+                            {columns.map((col, colIdx) => (
+                              <div 
+                                key={colIdx} 
+                                style={{ 
+                                  width: `${100 / columns.length}%`, 
+                                  padding: '0 0.75rem', 
+                                  boxSizing: 'border-box', 
+                                  display: 'flex', 
+                                  flexDirection: 'column', 
+                                  alignItems: 'center', 
+                                  position: 'relative' 
+                                }}
+                              >
+                                {/* Vertical line to card */}
+                                <div style={{ width: '2px', height: '20px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                                
+                                <div style={{ 
+                                  backgroundColor: '#ffffff', 
+                                  borderRadius: '8px', 
+                                  border: '1px solid #E2E8F0', 
+                                  borderLeft: `4px solid ${col.color || '#0A1E38'}`, 
+                                  padding: '1.25rem 1rem', 
+                                  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                                  width: '100%',
+                                  minHeight: '85px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  justifyContent: 'center',
+                                  zIndex: 2
+                                }}>
+                                  <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', color: '#576574', fontWeight: '800' }}>Sub Direktorat</h5>
+                                  <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.4' }}>{col.name}</p>
+                                </div>
+
+                                {col.sections.map((seksi, seksiIdx) => (
+                                  <React.Fragment key={seksiIdx}>
+                                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                                    <div style={{ 
+                                      backgroundColor: '#ffffff', 
+                                      borderRadius: '6px', 
+                                      border: '1px solid #E2E8F0', 
+                                      borderLeft: `3px solid ${col.color || '#0A1E38'}`, 
+                                      padding: '0.85rem 1rem', 
+                                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                                      width: '100%',
+                                      minHeight: '52px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      zIndex: 2
+                                    }}>
+                                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>{seksi}</p>
+                                    </div>
+                                  </React.Fragment>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* SAVE ACTIONS BAR STRUKTUR */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
+                  <button 
+                    type="button"
+                    className="btn-cancel" 
+                    onClick={handleCancel}
+                    disabled={saving}
+                    style={{ padding: '0.65rem 1.75rem', fontSize: '0.9rem', fontWeight: '700' }}
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    onClick={handleSaveStruktur}
+                    className="btn-save"
+                    disabled={saving}
+                    style={{ padding: '0.65rem 1.75rem', fontSize: '0.9rem', fontWeight: '700' }}
+                  >
+                    {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  </button>
+                </div>
+
               </div>
-            </div>
+            )}
 
           </div>
         </main>
@@ -635,7 +1187,7 @@ export default function AdminProfilPage() {
       )}
 
       {/* STYLING BLOCK */}
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .admin-layout {
           display: flex;
           min-height: 100vh;
@@ -1099,7 +1651,7 @@ export default function AdminProfilPage() {
             padding: 0 1rem;
           }
         }
-      `}</style>
+       `}} />
     </div>
   );
 }

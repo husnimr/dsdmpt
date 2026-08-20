@@ -159,9 +159,21 @@ export default function DetailTalentaPage() {
   useEffect(() => {
     if (id) {
       setLoading(true);
-      const found = PROGRAMS.find(p => slugify(p.title) === id);
-      setProgram(found || null);
-      setLoading(false);
+      fetch(`${BACKEND_URL}/api/pengembangan-talenta/${id}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Program tidak ditemukan');
+          return res.json();
+        })
+        .then(data => {
+          setProgram(data || null);
+        })
+        .catch(err => {
+          console.error(err);
+          setProgram(null);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
   }, [id]);
 
@@ -197,11 +209,12 @@ export default function DetailTalentaPage() {
       <div className="subpage-hero-wrapper">
         <section
           className="subpage-hero"
-          style={{ backgroundImage: `url(${getImageUrl(settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
+          style={{ backgroundImage: `url(${getImageUrl(settings.pengembangan_talenta_hero_image || settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
         >
           <div className="subpage-hero-overlay" />
           <div className="subpage-hero-content">
-            <h1 className="subpage-hero-title">Pengembangan Talenta</h1>
+            <h1 className="subpage-hero-title">{settings.pengembangan_talenta_hero_title || 'Pengembangan Talenta'}</h1>
+            {settings.pengembangan_talenta_hero_desc && <p className="subpage-hero-sub">{settings.pengembangan_talenta_hero_desc}</p>}
           </div>
         </section>
       </div>
@@ -216,28 +229,20 @@ export default function DetailTalentaPage() {
             <div className="detail-main-col">
               <h2 className="program-detail-title">{program.title}</h2>
               
-              <p className="program-desc">
-                Program pengembangan talenta ini dikelola secara profesional oleh Direktorat Sumber Daya Manusia dan Pengembangan Talenta (DSDMPT) UI. Dirancang khusus untuk civitas akademika dan tenaga kependidikan guna meningkatkan kapasitas kepemimpinan strategis dalam ekosistem universitas yang dinamis.
-              </p>
-              <p className="program-desc">
-                Materi difokuskan pada manajemen perubahan, tata kelola modern perguruan tinggi, serta pengembangan budaya kerja kolaboratif. Peserta akan mendapatkan wawasan mendalam dari praktisi dan pakar terbaik di lingkungan Universitas Indonesia.
-              </p>
-
-              {/* Checklist */}
-              <div className="checklist-container">
-                <div className="checklist-item">
-                  <CheckCircle2 className="check-icon" size={20} />
-                  <span>Penyelarasan kompetensi dengan arah strategis Universitas Indonesia.</span>
+              {program.description ? (
+                <div className="program-desc-wrapper" style={{ whiteSpace: 'pre-wrap', color: '#475569', fontSize: '1.02rem', lineHeight: '1.7', marginBottom: '2rem' }}>
+                  {program.description}
                 </div>
-                <div className="checklist-item">
-                  <CheckCircle2 className="check-icon" size={20} />
-                  <span>Pengembangan <em>soft skills</em> manajerial dan kepemimpinan adaptif.</span>
-                </div>
-                <div className="checklist-item">
-                  <CheckCircle2 className="check-icon" size={20} />
-                  <span>Perluasan jejaring profesional internal dan eksternal UI.</span>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <p className="program-desc">
+                    Program pengembangan talenta ini dikelola secara profesional oleh Direktorat Sumber Daya Manusia dan Pengembangan Talenta (DSDMPT) UI. Dirancang khusus untuk civitas akademika dan tenaga kependidikan guna meningkatkan kapasitas kepemimpinan strategis dalam ekosistem universitas yang dinamis.
+                  </p>
+                  <p className="program-desc">
+                    Materi difokuskan pada manajemen perubahan, tata kelola modern perguruan tinggi, serta pengembangan budaya kerja kolaboratif. Peserta akan mendapatkan wawasan mendalam dari praktisi dan pakar terbaik di lingkungan Universitas Indonesia.
+                  </p>
+                </>
+              )}
 
               {/* Jadwal Pelaksanaan */}
               <div className="schedule-section">
@@ -249,7 +254,20 @@ export default function DetailTalentaPage() {
                     </div>
                     <div>
                       <span className="schedule-label">Tanggal</span>
-                      <strong className="schedule-value">{program.date}</strong>
+                      <strong className="schedule-value">
+                        {(() => {
+                          const dateStr = program.date;
+                          if (!dateStr) return '';
+                          if (isNaN(Date.parse(dateStr))) return dateStr;
+                          const months = [
+                            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                          ];
+                          const d = new Date(dateStr);
+                          if (isNaN(d.getTime())) return dateStr;
+                          return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+                        })()}
+                      </strong>
                     </div>
                   </div>
                   <div className="schedule-card">
@@ -269,12 +287,27 @@ export default function DetailTalentaPage() {
                 <div className="agenda-box">
                   <h4 className="agenda-title">Agenda :</h4>
                   <div className="agenda-list">
-                    {program.agenda.map((item, idx) => (
-                      <div key={idx} className="agenda-row">
-                        <span className="agenda-activity">{item.activity}</span>
-                        <span className="agenda-time">{item.time}</span>
-                      </div>
-                    ))}
+                    {(() => {
+                      let agendaList = [];
+                      if (program.agenda) {
+                        if (Array.isArray(program.agenda)) {
+                          agendaList = program.agenda;
+                        } else {
+                          try {
+                            agendaList = JSON.parse(program.agenda);
+                          } catch (e) {}
+                        }
+                      }
+                      if (!agendaList || agendaList.length === 0) {
+                        return <p style={{ fontSize: '0.88rem', color: '#94A3B8', fontStyle: 'italic', padding: '0.5rem 1rem' }}>Tidak ada agenda khusus untuk program ini.</p>;
+                      }
+                      return agendaList.map((item, idx) => (
+                        <div key={idx} className="agenda-row">
+                          <span className="agenda-activity">{item.activity}</span>
+                          <span className="agenda-time">{item.time}</span>
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
               </div>
@@ -286,29 +319,51 @@ export default function DetailTalentaPage() {
               <div className="registration-card">
                 <h3 className="reg-title">Pendaftaran Training</h3>
                 
-                <button className="reg-btn-primary" onClick={() => alert('Pendaftaran berhasil! Konfirmasi akan dikirim via email.')}>
-                  Daftar Sekarang
-                </button>
+                {(() => {
+                  const link = program.registration_link;
+                  if (!link) {
+                    return (
+                      <button className="reg-btn-primary" onClick={() => alert('Pendaftaran belum dibuka atau silakan hubungi admin.')}>
+                        Daftar Sekarang
+                      </button>
+                    );
+                  }
+                  const clean = link.trim();
+                  let target = clean;
+                  if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+                    const digitsOnly = clean.replace(/[^0-9+]/g, '');
+                    if (digitsOnly.length > 5) {
+                      let phone = digitsOnly;
+                      if (phone.startsWith('0')) {
+                        phone = '62' + phone.substring(1);
+                      }
+                      target = `https://wa.me/${phone}`;
+                    }
+                  }
+                  return (
+                    <a 
+                      className="reg-btn-primary" 
+                      href={target} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: 'none', display: 'block', textAlign: 'center', boxSizing: 'border-box' }}
+                    >
+                      Daftar Sekarang
+                    </a>
+                  );
+                })()}
                 
-                <button className="reg-btn-secondary" onClick={() => alert('Mengunduh silabus program...')}>
-                  <Download size={16} /> Unduh Silabus Program
-                </button>
-
-                <hr className="reg-divider" />
-
-                <div className="contact-section">
-                  <h4 className="contact-title">Kontak</h4>
-                  <div className="contact-info">
-                    <div className="contact-item">
-                      <MapPin size={16} className="contact-icon" />
-                      <span className="contact-text">Gedung Rektorat DSDMPT, Lantai 8 Kampus UI Depok, Jawa Barat</span>
-                    </div>
-                    <div className="contact-item">
-                      <Phone size={16} className="contact-icon" />
-                      <span className="contact-text">+62 21 786 7222</span>
-                    </div>
-                  </div>
-                </div>
+                {program.syllabus_url && (
+                  <a 
+                    className="reg-btn-secondary" 
+                    href={getImageUrl(program.syllabus_url)} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxSizing: 'border-box', marginTop: '0.75rem' }}
+                  >
+                    <Download size={16} /> Unduh Silabus Program
+                  </a>
+                )}
               </div>
             </div>
 

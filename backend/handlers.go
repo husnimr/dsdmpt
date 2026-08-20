@@ -118,25 +118,36 @@ func getNewsHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GET /api/news/{id}
+// GET /api/news/{id_or_slug}
 func getNewsDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	idStr := r.URL.Path[len("/api/news/"):]
-	id, err := strconv.Atoi(idStr)
-	if err != nil || id <= 0 {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+	idOrSlug := r.URL.Path[len("/api/news/"):]
+	if idOrSlug == "" {
+		http.Error(w, "Invalid parameter", http.StatusBadRequest)
 		return
 	}
 
 	ctx := context.Background()
 	var n News
-	err = DB.QueryRow(ctx,
-		"SELECT id, title, content, image_url, published_at, COALESCE(author, ''), COALESCE(slug, ''), COALESCE(status, 'published'), COALESCE(images, '[]'), COALESCE(thumbnail_idx, 0) FROM news WHERE id = $1", id,
-	).Scan(&n.ID, &n.Title, &n.Content, &n.ImageURL, &n.PublishedAt, &n.Author, &n.Slug, &n.Status, &n.Images, &n.ThumbnailIdx)
+	var err error
+
+	id, errConv := strconv.Atoi(idOrSlug)
+	if errConv == nil && id > 0 {
+		// If it's a valid integer, fetch by ID
+		err = DB.QueryRow(ctx,
+			"SELECT id, title, content, image_url, published_at, COALESCE(author, ''), COALESCE(slug, ''), COALESCE(status, 'published'), COALESCE(images, '[]'), COALESCE(thumbnail_idx, 0) FROM news WHERE id = $1", id,
+		).Scan(&n.ID, &n.Title, &n.Content, &n.ImageURL, &n.PublishedAt, &n.Author, &n.Slug, &n.Status, &n.Images, &n.ThumbnailIdx)
+	} else {
+		// Otherwise, fetch by Slug
+		err = DB.QueryRow(ctx,
+			"SELECT id, title, content, image_url, published_at, COALESCE(author, ''), COALESCE(slug, ''), COALESCE(status, 'published'), COALESCE(images, '[]'), COALESCE(thumbnail_idx, 0) FROM news WHERE slug = $1", idOrSlug,
+		).Scan(&n.ID, &n.Title, &n.Content, &n.ImageURL, &n.PublishedAt, &n.Author, &n.Slug, &n.Status, &n.Images, &n.ThumbnailIdx)
+	}
+
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
@@ -1071,5 +1082,632 @@ func adminRekrutmenReorderHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "reordered"})
 }
+
+// GET /api/pengembangan-talenta
+func getPengembanganTalentaHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := context.Background()
+	rows, err := DB.Query(ctx, "SELECT id, title, organizer, date, time, location, image, type, agenda::text, position, description, syllabus_url, registration_link, contact_phone FROM pengembangan_talenta ORDER BY position ASC, id ASC")
+	if err != nil {
+		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	list := []PengembanganTalenta{}
+	for rows.Next() {
+		var p PengembanganTalenta
+		if err := rows.Scan(&p.ID, &p.Title, &p.Organizer, &p.Date, &p.Time, &p.Location, &p.Image, &p.Type, &p.Agenda, &p.Position, &p.Description, &p.SyllabusURL, &p.RegistrationLink, &p.ContactPhone); err != nil {
+			http.Error(w, "Scan error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		list = append(list, p)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(list)
+}
+
+// GET /api/pengembangan-talenta/{id-or-slug}
+func getPengembanganTalentaDetailHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := context.Background()
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) < 3 {
+		http.Error(w, "Missing ID or Slug", http.StatusBadRequest)
+		return
+	}
+	param := parts[2]
+
+	var p PengembanganTalenta
+	var err error
+
+	// Try finding by ID first
+	if id, cerr := strconv.Atoi(param); cerr == nil {
+		err = DB.QueryRow(ctx, "SELECT id, title, organizer, date, time, location, image, type, agenda::text, position, description, syllabus_url, registration_link, contact_phone FROM pengembangan_talenta WHERE id=$1", id).
+			Scan(&p.ID, &p.Title, &p.Organizer, &p.Date, &p.Time, &p.Location, &p.Image, &p.Type, &p.Agenda, &p.Position, &p.Description, &p.SyllabusURL, &p.RegistrationLink, &p.ContactPhone)
+	} else {
+		// Find by slug
+		rows, qerr := DB.Query(ctx, "SELECT id, title, organizer, date, time, location, image, type, agenda::text, position, description, syllabus_url, registration_link, contact_phone FROM pengembangan_talenta")
+		if qerr != nil {
+			http.Error(w, "Query error: "+qerr.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		found := false
+		slugifyGo := func(t string) string {
+			t = strings.ToLower(t)
+			var sb strings.Builder
+			for _, r := range t {
+				if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == ' ' || r == '-' {
+					sb.WriteRune(r)
+				}
+			}
+			res := sb.String()
+			res = strings.ReplaceAll(res, " ", "-")
+			for strings.Contains(res, "--") {
+				res = strings.ReplaceAll(res, "--", "-")
+			}
+			return strings.Trim(res, "-")
+		}
+
+		for rows.Next() {
+			var temp PengembanganTalenta
+			if err := rows.Scan(&temp.ID, &temp.Title, &temp.Organizer, &temp.Date, &temp.Time, &temp.Location, &temp.Image, &temp.Type, &temp.Agenda, &temp.Position, &temp.Description, &temp.SyllabusURL, &temp.RegistrationLink, &temp.ContactPhone); err == nil {
+				if slugifyGo(temp.Title) == param {
+					p = temp
+					found = true
+					break
+				}
+			}
+		}
+
+		if !found {
+			http.Error(w, "Program not found", http.StatusNotFound)
+			return
+		}
+	}
+
+	if err != nil {
+		http.Error(w, "DB error or Not Found: "+err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(p)
+}
+
+// GET /api/admin/pengembangan-talenta
+// POST /api/admin/pengembangan-talenta
+func adminPengembanganTalentaHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	switch r.Method {
+	case http.MethodGet:
+		rows, err := DB.Query(ctx, "SELECT id, title, organizer, date, time, location, image, type, agenda::text, position, description, syllabus_url, registration_link, contact_phone FROM pengembangan_talenta ORDER BY position ASC, id ASC")
+		if err != nil {
+			http.Error(w, "Database query error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		list := []PengembanganTalenta{}
+		for rows.Next() {
+			var p PengembanganTalenta
+			if err := rows.Scan(&p.ID, &p.Title, &p.Organizer, &p.Date, &p.Time, &p.Location, &p.Image, &p.Type, &p.Agenda, &p.Position, &p.Description, &p.SyllabusURL, &p.RegistrationLink, &p.ContactPhone); err != nil {
+				http.Error(w, "Scan error: "+err.Error(), http.StatusInternalServerError)
+				return
+			}
+			list = append(list, p)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(list)
+
+	case http.MethodPost:
+		var p struct {
+			Title            string `json:"title"`
+			Organizer        string `json:"organizer"`
+			Date             string `json:"date"`
+			Time             string `json:"time"`
+			Location         string `json:"location"`
+			Image            string `json:"image"`
+			Type             string `json:"type"`
+			Agenda           string `json:"agenda"`
+			Description      string `json:"description"`
+			SyllabusURL      string `json:"syllabus_url"`
+			RegistrationLink string `json:"registration_link"`
+			ContactPhone     string `json:"contact_phone"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+			http.Error(w, "Invalid body: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if p.Title == "" {
+			http.Error(w, "Title tidak boleh kosong", http.StatusBadRequest)
+			return
+		}
+
+		// Shift all existing program positions to make room for the new program at position 1
+		_, err := DB.Exec(ctx, "UPDATE pengembangan_talenta SET position = position + 1")
+		if err != nil {
+			http.Error(w, "Database update positions error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		agendaJSON := p.Agenda
+		if agendaJSON == "" {
+			agendaJSON = "[]"
+		}
+
+		_, err = DB.Exec(ctx,
+			"INSERT INTO pengembangan_talenta (title, organizer, date, time, location, image, type, agenda, position, description, syllabus_url, registration_link, contact_phone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12, $13)",
+			p.Title, p.Organizer, p.Date, p.Time, p.Location, p.Image, p.Type, agendaJSON, 1, p.Description, p.SyllabusURL, p.RegistrationLink, p.ContactPhone,
+		)
+		if err != nil {
+			http.Error(w, "Database insert error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "created"})
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// PUT /api/admin/pengembangan-talenta/{id}
+// DELETE /api/admin/pengembangan-talenta/{id}
+func adminPengembanganTalentaDetailHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) < 4 {
+		http.Error(w, "Missing ID", http.StatusBadRequest)
+		return
+	}
+	idStr := parts[3]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodPut:
+		var p struct {
+			Title            string `json:"title"`
+			Organizer        string `json:"organizer"`
+			Date             string `json:"date"`
+			Time             string `json:"time"`
+			Location         string `json:"location"`
+			Image            string `json:"image"`
+			Type             string `json:"type"`
+			Agenda           string `json:"agenda"`
+			Position         int    `json:"position"`
+			Description      string `json:"description"`
+			SyllabusURL      string `json:"syllabus_url"`
+			RegistrationLink string `json:"registration_link"`
+			ContactPhone     string `json:"contact_phone"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+			http.Error(w, "Invalid body: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if p.Title == "" {
+			http.Error(w, "Title tidak boleh kosong", http.StatusBadRequest)
+			return
+		}
+
+		agendaJSON := p.Agenda
+		if agendaJSON == "" {
+			agendaJSON = "[]"
+		}
+
+		_, err = DB.Exec(ctx,
+			"UPDATE pengembangan_talenta SET title=$1, organizer=$2, date=$3, time=$4, location=$5, image=$6, type=$7, agenda=$8::jsonb, position=$9, description=$10, syllabus_url=$11, registration_link=$12, contact_phone=$13 WHERE id=$14",
+			p.Title, p.Organizer, p.Date, p.Time, p.Location, p.Image, p.Type, agendaJSON, p.Position, p.Description, p.SyllabusURL, p.RegistrationLink, p.ContactPhone, id,
+		)
+		if err != nil {
+			http.Error(w, "Database update error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
+
+	case http.MethodDelete:
+		_, err := DB.Exec(ctx, "DELETE FROM pengembangan_talenta WHERE id=$1", id)
+		if err != nil {
+			http.Error(w, "Database delete error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// POST /api/admin/pengembangan-talenta/reorder
+func adminPengembanganTalentaReorderHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := context.Background()
+	var payload struct {
+		IDs []int `json:"ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	for idx, id := range payload.IDs {
+		_, err := DB.Exec(ctx, "UPDATE pengembangan_talenta SET position=$1 WHERE id=$2", idx+1, id)
+		if err != nil {
+			http.Error(w, "Database reorder error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "reordered"})
+}
+
+// GET /api/informasi
+func getInformasiHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := context.Background()
+	rows, err := DB.Query(ctx, "SELECT id, title, description, image_url, file_url, position FROM informasi ORDER BY position ASC, id ASC")
+	if err != nil {
+		http.Error(w, "Database query error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	list := []Informasi{}
+	for rows.Next() {
+		var i Informasi
+		if err := rows.Scan(&i.ID, &i.Title, &i.Description, &i.ImageURL, &i.FileURL, &i.Position); err != nil {
+			http.Error(w, "Scan error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		list = append(list, i)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(list)
+}
+
+// GET /api/dokumen-terkini
+func getDokumenTerkiniHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := context.Background()
+	rows, err := DB.Query(ctx, "SELECT id, title, file_url, link, position FROM dokumen_terkini ORDER BY position ASC, id ASC")
+	if err != nil {
+		http.Error(w, "Database query error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	list := []DokumenTerkini{}
+	for rows.Next() {
+		var d DokumenTerkini
+		if err := rows.Scan(&d.ID, &d.Title, &d.FileURL, &d.Link, &d.Position); err != nil {
+			http.Error(w, "Scan error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		list = append(list, d)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(list)
+}
+
+// GET /api/admin/informasi
+// POST /api/admin/informasi
+func adminInformasiHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	switch r.Method {
+	case http.MethodGet:
+		rows, err := DB.Query(ctx, "SELECT id, title, description, image_url, file_url, position FROM informasi ORDER BY position ASC, id ASC")
+		if err != nil {
+			http.Error(w, "Database query error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		list := []Informasi{}
+		for rows.Next() {
+			var i Informasi
+			if err := rows.Scan(&i.ID, &i.Title, &i.Description, &i.ImageURL, &i.FileURL, &i.Position); err != nil {
+				http.Error(w, "Scan error: "+err.Error(), http.StatusInternalServerError)
+				return
+			}
+			list = append(list, i)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(list)
+
+	case http.MethodPost:
+		var i Informasi
+		if err := json.NewDecoder(r.Body).Decode(&i); err != nil {
+			http.Error(w, "Invalid body: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if i.Title == "" {
+			http.Error(w, "Title tidak boleh kosong", http.StatusBadRequest)
+			return
+		}
+
+		// Shift existing positions
+		_, err := DB.Exec(ctx, "UPDATE informasi SET position = position + 1")
+		if err != nil {
+			http.Error(w, "Database update positions error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		_, err = DB.Exec(ctx,
+			"INSERT INTO informasi (title, description, image_url, file_url, position) VALUES ($1, $2, $3, $4, 1)",
+			i.Title, i.Description, i.ImageURL, i.FileURL,
+		)
+		if err != nil {
+			http.Error(w, "Database insert error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "created"})
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// PUT /api/admin/informasi/{id}
+// DELETE /api/admin/informasi/{id}
+func adminInformasiDetailHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) < 4 {
+		http.Error(w, "Missing ID", http.StatusBadRequest)
+		return
+	}
+	idStr := parts[3]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodPut:
+		var i Informasi
+		if err := json.NewDecoder(r.Body).Decode(&i); err != nil {
+			http.Error(w, "Invalid body: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if i.Title == "" {
+			http.Error(w, "Title tidak boleh kosong", http.StatusBadRequest)
+			return
+		}
+
+		_, err = DB.Exec(ctx,
+			"UPDATE informasi SET title=$1, description=$2, image_url=$3, file_url=$4, position=$5 WHERE id=$6",
+			i.Title, i.Description, i.ImageURL, i.FileURL, i.Position, id,
+		)
+		if err != nil {
+			http.Error(w, "Database update error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
+
+	case http.MethodDelete:
+		_, err := DB.Exec(ctx, "DELETE FROM informasi WHERE id=$1", id)
+		if err != nil {
+			http.Error(w, "Database delete error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// POST /api/admin/informasi/reorder
+func adminInformasiReorderHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := context.Background()
+	var payload struct {
+		IDs []int `json:"ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	for idx, id := range payload.IDs {
+		_, err := DB.Exec(ctx, "UPDATE informasi SET position=$1 WHERE id=$2", idx+1, id)
+		if err != nil {
+			http.Error(w, "Database reorder error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "reordered"})
+}
+
+// GET /api/admin/dokumen-terkini
+// POST /api/admin/dokumen-terkini
+func adminDokumenTerkiniHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	switch r.Method {
+	case http.MethodGet:
+		rows, err := DB.Query(ctx, "SELECT id, title, file_url, link, position FROM dokumen_terkini ORDER BY position ASC, id ASC")
+		if err != nil {
+			http.Error(w, "Database query error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		list := []DokumenTerkini{}
+		for rows.Next() {
+			var d DokumenTerkini
+			if err := rows.Scan(&d.ID, &d.Title, &d.FileURL, &d.Link, &d.Position); err != nil {
+				http.Error(w, "Scan error: "+err.Error(), http.StatusInternalServerError)
+				return
+			}
+			list = append(list, d)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(list)
+
+	case http.MethodPost:
+		var d DokumenTerkini
+		if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
+			http.Error(w, "Invalid body: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if d.Title == "" {
+			http.Error(w, "Title tidak boleh kosong", http.StatusBadRequest)
+			return
+		}
+
+		// Shift existing positions
+		_, err := DB.Exec(ctx, "UPDATE dokumen_terkini SET position = position + 1")
+		if err != nil {
+			http.Error(w, "Database update positions error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		_, err = DB.Exec(ctx,
+			"INSERT INTO dokumen_terkini (title, file_url, link, position) VALUES ($1, $2, $3, 1)",
+			d.Title, d.FileURL, d.Link,
+		)
+		if err != nil {
+			http.Error(w, "Database insert error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "created"})
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// PUT /api/admin/dokumen-terkini/{id}
+// DELETE /api/admin/dokumen-terkini/{id}
+func adminDokumenTerkiniDetailHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) < 4 {
+		http.Error(w, "Missing ID", http.StatusBadRequest)
+		return
+	}
+	idStr := parts[3]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodPut:
+		var d DokumenTerkini
+		if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
+			http.Error(w, "Invalid body: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if d.Title == "" {
+			http.Error(w, "Title tidak boleh kosong", http.StatusBadRequest)
+			return
+		}
+
+		_, err = DB.Exec(ctx,
+			"UPDATE dokumen_terkini SET title=$1, file_url=$2, link=$3, position=$4 WHERE id=$5",
+			d.Title, d.FileURL, d.Link, d.Position, id,
+		)
+		if err != nil {
+			http.Error(w, "Database update error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
+
+	case http.MethodDelete:
+		_, err := DB.Exec(ctx, "DELETE FROM dokumen_terkini WHERE id=$1", id)
+		if err != nil {
+			http.Error(w, "Database delete error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// POST /api/admin/dokumen-terkini/reorder
+func adminDokumenTerkiniReorderHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := context.Background()
+	var payload struct {
+		IDs []int `json:"ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	for idx, id := range payload.IDs {
+		_, err := DB.Exec(ctx, "UPDATE dokumen_terkini SET position=$1 WHERE id=$2", idx+1, id)
+		if err != nil {
+			http.Error(w, "Database reorder error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "reordered"})
+}
+
 
 

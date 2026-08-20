@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^41.4.2",
+    "@ckeditor/ckeditor5-react": "^11.2.0",
+    "@tinymce/tinymce-react": "^6.3.0",
+    "lucide-react": "^0.379.0",
     "next": "14.2.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "lucide-react": "^0.379.0"
+    "tinymce": "^8.8.2"
   }
 }

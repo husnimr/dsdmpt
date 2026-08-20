@@ -90,8 +90,17 @@ const PROGRAMS = [
 export default function PengembanganTalenta() {
   const [activeTab, setActiveTab] = useState('semua'); // 'semua', 'public', 'internal'
   const [settings, setSettings] = useState({});
+  const [programs, setPrograms] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -110,12 +119,29 @@ export default function PengembanganTalenta() {
       .then(res => res.json())
       .then(data => setSettings(data))
       .catch(err => console.error(err));
+
+    fetch(`${BACKEND_URL}/api/pengembangan-talenta`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setPrograms(data);
+        }
+      })
+      .catch(err => console.error(err));
   }, []);
 
   const getFilteredPrograms = () => {
-    if (activeTab === 'semua') return PROGRAMS;
-    return PROGRAMS.filter(p => p.type === activeTab);
+    if (activeTab === 'semua') return programs;
+    return programs.filter(p => p.type === activeTab);
   };
+
+  const getPaginatedPrograms = () => {
+    const filtered = getFilteredPrograms();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(startIndex, startIndex + itemsPerPage);
+  };
+
+  const totalPages = Math.ceil(getFilteredPrograms().length / itemsPerPage);
 
   const getTabText = () => {
     switch (activeTab) {
@@ -137,11 +163,12 @@ export default function PengembanganTalenta() {
       <div className="subpage-hero-wrapper">
         <section
           className="subpage-hero"
-          style={{ backgroundImage: `url(${getImageUrl(settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
+          style={{ backgroundImage: `url(${getImageUrl(settings.pengembangan_talenta_hero_image || settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
         >
           <div className="subpage-hero-overlay" />
           <div className="subpage-hero-content">
-            <h1 className="subpage-hero-title">Pengembangan Talenta</h1>
+            <h1 className="subpage-hero-title">{settings.pengembangan_talenta_hero_title || 'Pengembangan Talenta'}</h1>
+            {settings.pengembangan_talenta_hero_desc && <p className="subpage-hero-sub">{settings.pengembangan_talenta_hero_desc}</p>}
           </div>
         </section>
       </div>
@@ -179,7 +206,7 @@ export default function PengembanganTalenta() {
 
           {/* Grid Container */}
           <div className="talent-grid">
-            {getFilteredPrograms().map((item) => (
+            {getPaginatedPrograms().map((item) => (
               <div key={item.id} className="talent-card">
                 <div className="talent-card-img-wrap">
                   <img src={getImageUrl(item.image)} alt={item.title} className="talent-card-img" />
@@ -188,7 +215,21 @@ export default function PengembanganTalenta() {
                   <h3 className="talent-card-title">{item.title}</h3>
                   <div className="talent-card-meta">
                     <span className="talent-meta-item"><Building size={14} /> {item.organizer}</span>
-                    <span className="talent-meta-item"><Calendar size={14} /> {item.date}</span>
+                    <span className="talent-meta-item">
+                      <Calendar size={14} />{' '}
+                      {(() => {
+                        const dateStr = item.date;
+                        if (!dateStr) return '';
+                        if (isNaN(Date.parse(dateStr))) return dateStr;
+                        const months = [
+                          'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                        ];
+                        const d = new Date(dateStr);
+                        if (isNaN(d.getTime())) return dateStr;
+                        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+                      })()}
+                    </span>
                     <span className="talent-meta-item"><MapPin size={14} /> {item.location}</span>
                   </div>
                   <a 
@@ -202,6 +243,80 @@ export default function PengembanganTalenta() {
               </div>
             ))}
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '0.5rem',
+              marginTop: '3.5rem'
+            }}>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                style={{
+                  padding: '0.55rem 1.1rem',
+                  border: '1.5px solid #CBD5E1',
+                  borderRadius: '8px',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontWeight: '600',
+                  fontSize: '0.85rem',
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                  transition: 'all 0.2s'
+                }}
+              >
+                Sebelumnya
+              </button>
+              
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1.5px solid',
+                    borderColor: i + 1 === currentPage ? '#0A1E38' : '#CBD5E1',
+                    borderRadius: '8px',
+                    background: i + 1 === currentPage ? '#0A1E38' : '#FFFFFF',
+                    color: i + 1 === currentPage ? '#FFFFFF' : '#475569',
+                    fontWeight: '700',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                style={{
+                  padding: '0.55rem 1.1rem',
+                  border: '1.5px solid #CBD5E1',
+                  borderRadius: '8px',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontWeight: '600',
+                  fontSize: '0.85rem',
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                  opacity: currentPage === totalPages ? 0.5 : 1,
+                  transition: 'all 0.2s'
+                }}
+              >
+                Selanjutnya
+              </button>
+            </div>
+          )}
 
         </div>
       </main>

@@ -10,7 +10,9 @@ import {
   CheckCircle, 
   AlertCircle, 
   Search,
-  Calendar
+  Calendar,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 
@@ -28,6 +30,10 @@ export default function AdminBeritaPage() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Options: 10, 20, 50, 'all'
+
   // Hero settings states
   const [heroTitle, setHeroTitle] = useState('Berita');
   const [heroDesc, setHeroDesc] = useState('');
@@ -36,6 +42,21 @@ export default function AdminBeritaPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
   const heroFileRef = useRef(null);
+
+  const btnPageStyle = {
+    padding: '0.4rem 0.75rem',
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
+    borderRadius: '6px',
+    color: '#475569',
+    fontSize: '0.85rem',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '32px',
+    height: '32px',
+    transition: 'all 0.2s',
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -189,29 +210,7 @@ export default function AdminBeritaPage() {
 
         <main className="admin-main">
           <div className="admin-container">
-            
-            {/* Header Area */}
-            <div className="admin-page-header">
-              <div className="header-text">
-                <h1>Berita</h1>
-              </div>
-              <div className="header-actions">
-                <button 
-                  className="btn-cancel" 
-                  onClick={handleCancel}
-                  disabled={saving}
-                >
-                  Batal
-                </button>
-                <button 
-                  className="btn-save" 
-                  onClick={handleSaveSettings}
-                  disabled={saving}
-                >
-                  {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                </button>
-              </div>
-            </div>
+          
 
             {/* HERO SECTION CARD */}
             <div className="admin-card">
@@ -229,7 +228,7 @@ export default function AdminBeritaPage() {
                       onChange={(e) => setHeroTitle(e.target.value)}
                     />
                   </div>
-                  <div className="admin-field">
+                  <div className="admin-field" style={{ marginTop: '1rem' }}>
                     <label>Deskripsi judul</label>
                     <textarea 
                       rows={3} 
@@ -262,6 +261,17 @@ export default function AdminBeritaPage() {
                   <span className="image-hint-text">Recommended size: 1920x600px. Max size: 2MB.</span>
                 </div>
               </div>
+
+              {/* Save action button specifically inside Hero Section */}
+              <div className="admin-card-footer" style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem 1.5rem', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+                <button 
+                  className="btn-save" 
+                  onClick={handleSaveSettings}
+                  disabled={saving}
+                >
+                  {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+              </div>
             </div>
 
             {/* POSTINGAN CARD */}
@@ -276,11 +286,15 @@ export default function AdminBeritaPage() {
                       type="text" 
                       placeholder="Cari berita" 
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setCurrentPage(1); // reset to first page on search
+                      }}
                     />
                   </div>
-                  <a href="/admin/berita/tambah" className="btn-add-post">
-                    <Plus size={18} />
+                  <a href="/admin/berita/tambah" className="btn-add-post" style={{ width: 'auto', padding: '0 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '6px', height: '36px', textDecoration: 'none', fontWeight: '600', fontSize: '0.85rem' }}>
+                    <Plus size={16} />
+                    <span>Tambah Berita</span>
                   </a>
                 </div>
               </div>
@@ -292,46 +306,125 @@ export default function AdminBeritaPage() {
                   ) : filteredNews.length === 0 ? (
                     <div className="empty-state">Tidak ada postingan berita ditemukan</div>
                   ) : (
-                    filteredNews.map((item) => (
-                      <div key={item.id} className="news-row-item">
-                        <div className="news-thumbnail">
-                          <img 
-                            src={getImageUrl(item.image_url || '/uploads/news_1.png')} 
-                            alt={item.title} 
-                          />
-                        </div>
-                        
-                        <div className="news-info-block">
-                          <h3>{item.title}</h3>
-                          <div className="news-meta-row">
-                            <span className={`status-badge ${item.status || 'published'}`}>
-                              {item.status === 'draft' ? 'Draft' : 'Published'}
-                            </span>
-                            <span className="date-meta">
-                              <Calendar size={13} style={{ marginRight: '4px' }} />
-                              {formatDate(item.published_at)}
-                            </span>
-                          </div>
-                        </div>
+                    (() => {
+                      // Pagination math logic
+                      const totalItems = filteredNews.length;
+                      const limit = itemsPerPage === 'all' ? totalItems : parseInt(itemsPerPage);
+                      const totalPages = Math.ceil(totalItems / limit) || 1;
+                      
+                      // Slice items for current page
+                      const startIndex = (currentPage - 1) * limit;
+                      const paginatedNews = filteredNews.slice(startIndex, startIndex + limit);
 
-                        <div className="news-actions-block">
-                          <a 
-                            href={`/admin/berita/edit/${item.id}`} 
-                            className="btn-action-edit"
-                            title="Edit"
-                          >
-                            <Edit2 size={16} />
-                          </a>
-                          <button 
-                            className="btn-action-delete"
-                            onClick={() => handleDeleteNews(item.id)}
-                            title="Hapus"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    ))
+                      return (
+                        <>
+                          {paginatedNews.map((item) => (
+                            <div key={item.id} className="news-row-item">
+                              <div className="news-thumbnail">
+                                <img 
+                                  src={getImageUrl(item.image_url || '/uploads/news_1.png')} 
+                                  alt={item.title} 
+                                />
+                              </div>
+                              
+                              <div className="news-info-block">
+                                <h3>{item.title}</h3>
+                                <div className="news-meta-row">
+                                  <span className={`status-badge ${item.status || 'published'}`}>
+                                    {item.status === 'draft' ? 'Draft' : 'Published'}
+                                  </span>
+                                  <span className="date-meta">
+                                    <Calendar size={13} style={{ marginRight: '4px' }} />
+                                    {formatDate(item.published_at)}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="news-actions-block">
+                                <a 
+                                  href={`/admin/berita/edit/${item.id}`} 
+                                  className="btn-action-edit"
+                                  title="Edit"
+                                >
+                                  <Edit2 size={16} />
+                                </a>
+                                <button 
+                                  className="btn-action-delete"
+                                  onClick={() => handleDeleteNews(item.id)}
+                                  title="Hapus"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Pagination Footer Controls */}
+                          <div className="pagination-footer-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', borderTop: '1px solid #E2E8F0', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div className="items-per-page-selector" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#64748B' }}>
+                              <span>Tampilkan</span>
+                              <select 
+                                value={itemsPerPage} 
+                                onChange={(e) => {
+                                  setItemsPerPage(e.target.value);
+                                  setCurrentPage(1);
+                                }}
+                                style={{ padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid #CBD5E1', outline: 'none', background: '#FFFFFF', cursor: 'pointer', fontSize: '0.85rem' }}
+                              >
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="all">Semua</option>
+                              </select>
+                              <span>berita</span>
+                            </div>
+
+                            {itemsPerPage !== 'all' && totalPages > 1 && (
+                              <div className="pagination-buttons" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <button 
+                                  type="button"
+                                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                  disabled={currentPage === 1}
+                                  style={{ ...btnPageStyle, opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+                                >
+                                  <ChevronLeft size={16} />
+                                </button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                                  <button
+                                    key={pageNum}
+                                    type="button"
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    style={{ 
+                                      ...btnPageStyle, 
+                                      background: currentPage === pageNum ? '#001f3f' : '#FFFFFF',
+                                      color: currentPage === pageNum ? '#FFFFFF' : '#475569',
+                                      borderColor: currentPage === pageNum ? '#001f3f' : '#E2E8F0',
+                                      fontWeight: currentPage === pageNum ? '700' : '500'
+                                    }}
+                                  >
+                                    {pageNum}
+                                  </button>
+                                ))}
+
+                                <button 
+                                  type="button"
+                                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                  disabled={currentPage === totalPages}
+                                  style={{ ...btnPageStyle, opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
+                                >
+                                  <ChevronRight size={16} />
+                                </button>
+                              </div>
+                            )}
+
+                            <div className="pagination-info" style={{ fontSize: '0.85rem', color: '#64748B' }}>
+                              Menampilkan {Math.min(startIndex + 1, totalItems)} - {Math.min(startIndex + limit, totalItems)} dari {totalItems} berita
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()
                   )}
                 </div>
               </div>
@@ -341,7 +434,7 @@ export default function AdminBeritaPage() {
         </main>
       </div>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .admin-layout {
           display: flex;
           min-height: 100vh;
@@ -477,12 +570,13 @@ export default function AdminBeritaPage() {
         .flex-row-layout {
           display: flex;
           gap: 2rem;
+          align-items: flex-start;
         }
         .inputs-column {
           flex: 1.2;
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
+          gap: 1rem;
         }
         .image-column {
           flex: 1;
@@ -517,6 +611,8 @@ export default function AdminBeritaPage() {
           outline: none;
           background: #FFFFFF;
           font-family: inherit;
+          width: 100%;
+          box-sizing: border-box;
         }
         .admin-field input[type="text"]:focus,
         .admin-field textarea:focus {
@@ -526,7 +622,7 @@ export default function AdminBeritaPage() {
         /* Image uploader */
         .image-uploader-wrapper {
           width: 100%;
-          aspect-ratio: 16/7;
+          aspect-ratio: 21/9;
           background: #F8FAFC;
           border: 1px solid #E2E8F0;
           border-radius: 8px;
@@ -729,7 +825,7 @@ export default function AdminBeritaPage() {
           font-size: 0.88rem;
           color: #64748B;
         }
-      `}</style>
+      `}} />
     </div>
   );
 }

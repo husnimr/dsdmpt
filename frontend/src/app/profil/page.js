@@ -305,367 +305,283 @@ export default function ProfilPage() {
 
           {activeTab === 'struktur' && (
             <div className="struktur-organisasi-container" style={{ padding: '1rem 0 4rem 0' }}>
-              
-              {/* Top Leader Card (Direktur) */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                <div style={{ 
-                  backgroundColor: '#ffffff', 
-                  borderRadius: '12px', 
-                  border: '1px solid #E2E8F0', 
-                  borderLeft: '5px solid #F2C94C', 
-                  padding: '1.25rem 2rem', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '1rem',
-                  boxShadow: 'var(--shadow-md)',
-                  maxWidth: '450px',
-                  width: '100%',
-                  zIndex: 2
-                }}>
-                  <div style={{ width: '42px', height: '50px', borderRadius: '50%', backgroundColor: '#FEF9E7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F2C94C', flexShrink: 0 }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  </div>
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: '1.05rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.3' }}>Direktur SDM</h4>
-                    <p style={{ margin: 0, fontSize: '1.05rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.3' }}>dan Pengembangan Talenta</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Vertical connector line directly between Direktur and Columns */}
-              <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <div style={{ width: '2px', height: '40px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-              </div>
+              {(() => {
+                let structureData = null;
+                if (settings.profil_struktur_organisasi_json) {
+                  try {
+                    structureData = JSON.parse(settings.profil_struktur_organisasi_json);
+                  } catch (e) {
+                    console.error("Gagal parse json struktur organisasi", e);
+                  }
+                }
 
-              {/* Sub-Directorate Columns Connected by tree structure */}
-              <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                // Fallback to default hardcoded structure if settings key is missing or invalid
+                if (!structureData || !structureData.columns || !Array.isArray(structureData.columns)) {
+                  return (
+                    <>
+                      {/* Top Leader Card (Direktur) */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                        <div style={{ 
+                          backgroundColor: '#ffffff', 
+                          borderRadius: '12px', 
+                          border: '1px solid #E2E8F0', 
+                          borderLeft: '5px solid #F2C94C', 
+                          padding: '1.25rem 2rem', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '1rem',
+                          boxShadow: 'var(--shadow-md)',
+                          maxWidth: '450px',
+                          width: '100%',
+                          zIndex: 2
+                        }}>
+                          <div style={{ width: '42px', height: '50px', borderRadius: '50%', backgroundColor: '#FEF9E7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F2C94C', flexShrink: 0 }}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                          </div>
+                          <div>
+                            <h4 style={{ margin: 0, fontSize: '1.05rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.3' }}>Direktur SDM</h4>
+                            <p style={{ margin: 0, fontSize: '1.05rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.3' }}>dan Pengembangan Talenta</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Vertical connector line directly between Direktur and Columns */}
+                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                        <div style={{ width: '2px', height: '40px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                      </div>
+
+                      {/* Sub-Directorate Columns Connected by tree structure */}
+                      <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        {/* Horizontal line: Spans exactly from center of column 1 (12.5%) to center of column 4 (87.5%) */}
+                        <div style={{ 
+                          position: 'absolute', 
+                          top: 0, 
+                          left: '12.5%', 
+                          right: '12.5%', 
+                          height: '2px', 
+                          backgroundColor: '#CBD5E1',
+                          zIndex: 1
+                        }} />
+
+                        {/* 4 Columns Container */}
+                        <div style={{ display: 'flex', width: '100%', boxSizing: 'border-box' }}>
+                          {/* Column 1 */}
+                          <div style={{ width: '25%', padding: '0 0.75rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                            <div style={{ width: '2px', height: '20px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #E2E8F0', borderLeft: '4px solid #0A1E38', padding: '1.25rem 1rem', boxShadow: 'var(--shadow-sm)', width: '100%', minHeight: '85px', display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 2 }}>
+                              <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', color: '#576574', fontWeight: '800' }}>Sub Direktorat</h5>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.4' }}>Layanan, Pembinaan, dan Karier SDM</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #0A1E38', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Karir Jabatan Fungsional Dosen</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #0A1E38', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Karir Tenaga Kependidikan</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #0A1E38', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Layanan dan Pembinaan SDM</p>
+                            </div>
+                          </div>
+
+                          {/* Column 2 */}
+                          <div style={{ width: '25%', padding: '0 0.75rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                            <div style={{ width: '2px', height: '20px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #E2E8F0', borderLeft: '4px solid #27AE60', padding: '1.25rem 1rem', boxShadow: 'var(--shadow-sm)', width: '100%', minHeight: '85px', display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 2 }}>
+                              <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', color: '#576574', fontWeight: '800' }}>Sub Direktorat</h5>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.4' }}>Pengembangan Organisasi Tata Laksana dan Sistem SDM</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #27AE60', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Organisasi dan Tata Laksana</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #27AE60', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Pengembangan Sistem SDM</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #27AE60', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Perencanaan dan Evaluasi Organisasi</p>
+                            </div>
+                          </div>
+
+                          {/* Column 3 */}
+                          <div style={{ width: '25%', padding: '0 0.75rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                            <div style={{ width: '2px', height: '20px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #E2E8F0', borderLeft: '4px solid #C0392B', padding: '1.25rem 1rem', boxShadow: 'var(--shadow-sm)', width: '100%', minHeight: '85px', display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 2 }}>
+                              <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', color: '#576574', fontWeight: '800' }}>Sub Direktorat</h5>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.4' }}>Perencanaan, Penempatan, Pengembangan SDM</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #C0392B', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Pengembangan Dosen</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #C0392B', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Pengembangan Tenaga Kependidikan</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #C0392B', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Perencanaan dan Penempatan SDM</p>
+                            </div>
+                          </div>
+
+                          {/* Column 4 */}
+                          <div style={{ width: '25%', padding: '0 0.75rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                            <div style={{ width: '2px', height: '20px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #E2E8F0', borderLeft: '4px solid #F2C94C', padding: '1.25rem 1rem', boxShadow: 'var(--shadow-sm)', width: '100%', minHeight: '85px', display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 2 }}>
+                              <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', color: '#576574', fontWeight: '800' }}>Sub Direktorat</h5>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.4' }}>Remunerasi dan Kesejahteraan</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #F2C94C', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Remunerasi dan Kesejahteraan 3 (Payroll)</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #F2C94C', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Remunerasi dan Kesejahteraan 1 (Dana Dipa)</p>
+                            </div>
+                            <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #F2C94C', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Remunerasi dan Kesejahteraan 2 (Dana BPPTN dan Damas)</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                }
+
+                // Render dynamic parsed data cleanly!
+                const totalCols = structureData.columns.length;
+                const colWidthPercent = `${100 / Math.max(1, totalCols)}%`;
                 
-                {/* Horizontal line: Spans exactly from center of column 1 (12.5%) to center of column 4 (87.5%) */}
-                <div style={{ 
-                  position: 'absolute', 
-                  top: 0, 
-                  left: '12.5%', 
-                  right: '12.5%', 
-                  height: '2px', 
-                  backgroundColor: '#CBD5E1',
-                  zIndex: 1
-                }} />
+                // Horizontal connector lines should span from center of first column to center of last column
+                // Center of Col i in N columns: ( (i - 0.5) / N ) * 100%
+                const leftPercent = `${(0.5 / totalCols) * 100}%`;
+                const rightPercent = `${(0.5 / totalCols) * 100}%`;
 
-                {/* 4 Columns Container (using flexbox with 25% width and padding for perfect percentage alignment) */}
-                <div style={{ display: 'flex', width: '100%', boxSizing: 'border-box' }}>
-                  
-                  {/* Column 1 */}
-                  <div style={{ width: '25%', padding: '0 0.75rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                    {/* Vertical line from horizontal line to card */}
-                    <div style={{ width: '2px', height: '20px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                return (
+                  <>
+                    {/* Dynamic Director Node */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                      <div style={{ 
+                        backgroundColor: '#ffffff', 
+                        borderRadius: '12px', 
+                        border: '1px solid #E2E8F0', 
+                        borderLeft: '5px solid #F2C94C', 
+                        padding: '1.25rem 2rem', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '1rem',
+                        boxShadow: 'var(--shadow-md)',
+                        maxWidth: '450px',
+                        width: '100%',
+                        zIndex: 2
+                      }}>
+                        <div style={{ width: '42px', height: '50px', borderRadius: '50%', backgroundColor: '#FEF9E7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F2C94C', flexShrink: 0 }}>
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '1.05rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.3' }}>
+                            {structureData.director?.title || 'Direktur SDM dan Pengembangan Talenta'}
+                          </h4>
+                          {structureData.director?.subTitle && (
+                            <p style={{ margin: 0, fontSize: '1.05rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.3' }}>
+                              {structureData.director.subTitle}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                     
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '8px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '4px solid #0A1E38', 
-                      padding: '1.25rem 1rem', 
-                      boxShadow: 'var(--shadow-sm)',
-                      width: '100%',
-                      minHeight: '85px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      zIndex: 2
-                    }}>
-                      <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', color: '#576574', fontWeight: '800' }}>Sub Direktorat</h5>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.4' }}>Layanan, Pembinaan, dan Karier SDM</p>
+                    {/* Vertical connector line directly between Direktur and Columns */}
+                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                      <div style={{ width: '2px', height: '40px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
                     </div>
 
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                    {/* Sub-Directorate Columns Connected by tree structure */}
+                    <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      {/* Horizontal line spans center of col 1 to center of col N */}
+                      {totalCols > 1 && (
+                        <div style={{ 
+                          position: 'absolute', 
+                          top: 0, 
+                          left: leftPercent, 
+                          right: rightPercent, 
+                          height: '2px', 
+                          backgroundColor: '#CBD5E1',
+                          zIndex: 1
+                        }} />
+                      )}
 
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #0A1E38', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Karir Jabatan Fungsional Dosen</p>
+                      {/* Columns Container */}
+                      <div style={{ display: 'flex', width: '100%', boxSizing: 'border-box' }}>
+                        {structureData.columns.map((col, colIdx) => (
+                          <div 
+                            key={colIdx} 
+                            style={{ 
+                              width: colWidthPercent, 
+                              padding: '0 0.75rem', 
+                              boxSizing: 'border-box', 
+                              display: 'flex', 
+                              flexDirection: 'column', 
+                              alignItems: 'center', 
+                              position: 'relative' 
+                            }}
+                          >
+                            {/* Vertical line from horizontal line to card */}
+                            <div style={{ width: '2px', height: '20px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                            
+                            {/* Subdirectorate Node */}
+                            <div style={{ 
+                              backgroundColor: '#ffffff', 
+                              borderRadius: '8px', 
+                              border: '1px solid #E2E8F0', 
+                              borderLeft: `4px solid ${col.color || '#0A1E38'}`, 
+                              padding: '1.25rem 1rem', 
+                              boxShadow: 'var(--shadow-sm)',
+                              width: '100%',
+                              minHeight: '85px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                              zIndex: 2
+                            }}>
+                              <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', color: '#576574', fontWeight: '800' }}>Sub Direktorat</h5>
+                              <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.4' }}>{col.name}</p>
+                            </div>
+
+                            {/* Render Sections (Seksi) list vertically */}
+                            {col.sections && col.sections.map((seksi, seksiIdx) => (
+                              <React.Fragment key={seksiIdx}>
+                                <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                                <div style={{ 
+                                  backgroundColor: '#ffffff', 
+                                  borderRadius: '6px', 
+                                  border: '1px solid #E2E8F0', 
+                                  borderLeft: `3px solid ${col.color || '#0A1E38'}`, 
+                                  padding: '0.85rem 1rem', 
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                                  width: '100%',
+                                  minHeight: '52px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  zIndex: 2
+                                }}>
+                                  <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>{seksi}</p>
+                                </div>
+                              </React.Fragment>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #0A1E38', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Karir Tenaga Kependidikan</p>
-                    </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #0A1E38', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Layanan dan Pembinaan SDM</p>
-                    </div>
-                  </div>
-
-                  {/* Column 2 */}
-                  <div style={{ width: '25%', padding: '0 0.75rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                    <div style={{ width: '2px', height: '20px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                    
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '8px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '4px solid #27AE60', 
-                      padding: '1.25rem 1rem', 
-                      boxShadow: 'var(--shadow-sm)',
-                      width: '100%',
-                      minHeight: '85px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      zIndex: 2
-                    }}>
-                      <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', color: '#576574', fontWeight: '800' }}>Sub Direktorat</h5>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.4' }}>Pengembangan Organisasi Tata Laksana dan Sistem SDM</p>
-                    </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #27AE60', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Organisasi dan Tata Laksana</p>
-                    </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #27AE60', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Pengembangan Sistem SDM</p>
-                    </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #27AE60', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Perencanaan dan Evaluasi Organisasi</p>
-                    </div>
-                  </div>
-
-                  {/* Column 3 */}
-                  <div style={{ width: '25%', padding: '0 0.75rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                    <div style={{ width: '2px', height: '20px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                    
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '8px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '4px solid #C0392B', 
-                      padding: '1.25rem 1rem', 
-                      boxShadow: 'var(--shadow-sm)',
-                      width: '100%',
-                      minHeight: '85px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      zIndex: 2
-                    }}>
-                      <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', color: '#576574', fontWeight: '800' }}>Sub Direktorat</h5>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.4' }}>Perencanaan, Penempatan, Pengembangan SDM</p>
-                    </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #C0392B', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Pengembangan Dosen</p>
-                    </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #C0392B', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Pengembangan Tenaga Kependidikan</p>
-                    </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #C0392B', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Perencanaan dan Penempatan SDM</p>
-                    </div>
-                  </div>
-
-                  {/* Column 4 */}
-                  <div style={{ width: '25%', padding: '0 0.75rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                    <div style={{ width: '2px', height: '20px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                    
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '8px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '4px solid #F2C94C', 
-                      padding: '1.25rem 1rem', 
-                      boxShadow: 'var(--shadow-sm)',
-                      width: '100%',
-                      minHeight: '85px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      zIndex: 2
-                    }}>
-                      <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', color: '#576574', fontWeight: '800' }}>Sub Direktorat</h5>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.4' }}>Remunerasi dan Kesejahteraan</p>
-                    </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #F2C94C', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Remunerasi dan Kesejahteraan 3 (Payroll)</p>
-                    </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #F2C94C', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Remunerasi dan Kesejahteraan 1 (Dana Dipa)</p>
-                    </div>
-
-                    <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-
-                    <div style={{ 
-                      backgroundColor: '#ffffff', 
-                      borderRadius: '6px', 
-                      border: '1px solid #E2E8F0', 
-                      borderLeft: '3px solid #F2C94C', 
-                      padding: '0.85rem 1rem', 
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                      width: '100%',
-                      minHeight: '52px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      zIndex: 2
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Remunerasi dan Kesejahteraan 2 (Dana BPPTN dan Damas)</p>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
+                  </>
+                );
+              })()}
             </div>
           )}
 

@@ -40,15 +40,6 @@ export default function Rekrutmen() {
       .then(res => res.json())
       .then(data => setSettings(data))
       .catch(err => console.error(err));
-
-    fetch(`${BACKEND_URL}/api/rekrutmen`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setRecs(data);
-        }
-      })
-      .catch(err => console.error(err));
   }, []);
 
   return (
@@ -60,12 +51,12 @@ export default function Rekrutmen() {
       <div className="subpage-hero-wrapper">
         <section
           className="subpage-hero"
-          style={{ backgroundImage: `url(${getImageUrl(settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
+          style={{ backgroundImage: `url(${getImageUrl(settings.rekrutmen_hero_image || settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
         >
           <div className="subpage-hero-overlay" />
           <div className="subpage-hero-content">
-            <h1 className="subpage-hero-title">Rekrutmen</h1>
-            <p className="subpage-hero-sub">Membangun Masa Depan Melalui Talenta Unggul & Impactful</p>
+            <h1 className="subpage-hero-title">{settings.rekrutmen_hero_title || 'Rekrutmen'}</h1>
+            <p className="subpage-hero-sub">{settings.rekrutmen_hero_desc || 'Membangun Masa Depan Melalui Talenta Unggul & Impactful'}</p>
           </div>
         </section>
       </div>
@@ -74,50 +65,49 @@ export default function Rekrutmen() {
       <main style={{ padding: '5rem 0', backgroundColor: '#FFFFFF', minHeight: 'calc(100vh - 430px)' }}>
         <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 1rem' }}>
           <p style={{ fontSize: '1.05rem', lineHeight: '1.8', color: '#475569', marginBottom: '3rem', textAlign: 'center' }}>
-            Direktorat Sumber Daya Manusia dan Pengembangan Talenta (DSDMPT) berkomitmen untuk merekrut individu yang berdedikasi tinggi demi memajukan visi pendidikan nasional. Kami mencari talenta yang siap berkontribusi pada ekosistem akademik yang prestisius, inovatif, dan berintegritas.
+            {settings.rekrutmen_description || 'Direktorat Sumber Daya Manusia dan Pengembangan Talenta (DSDMPT) berkomitmen untuk merekrut individu yang berdedikasi tinggi demi memajukan visi pendidikan nasional. Kami mencari talenta yang siap berkontribusi pada ekosistem akademik yang prestisius, inovatif, dan berintegritas.'}
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}>
-            {recs.map((item) => (
+          {settings.rekrutmen_link && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}>
               <a 
-                key={item.id}
-                href={item.link} 
+                href={settings.rekrutmen_link} 
                 target="_blank" 
                 rel="noreferrer"
                 className="recruitment-link-btn" 
                 style={{ 
-                  fontSize: '1rem', 
-                  padding: '1.1rem 2.5rem', 
+                  fontSize: '1.05rem', 
+                  padding: '1.2rem 2.5rem', 
                   borderRadius: '12px', 
                   fontWeight: '700', 
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  backgroundColor: '#FFFFFF',
-                  color: '#0A1E38',
-                  border: '2px solid #E2E8F0',
+                  justifyContent: 'center',
+                  gap: '0.75rem',
+                  backgroundColor: '#001f3f',
+                  color: '#FFFFFF',
+                  border: 'none',
                   width: '100%',
-                  maxWidth: '640px',
-                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+                  maxWidth: '350px',
+                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
                   transition: 'all 0.2s ease',
                   textDecoration: 'none',
+                  textAlign: 'center'
                 }}
               >
-                <span style={{ textAlign: 'left', marginRight: '1rem' }}>{item.title}</span>
-                <span className="arrow-icon" style={{ display: 'flex', alignItems: 'center', color: '#F2C94C' }}>
-                  <ArrowRight size={20} />
-                </span>
+                <span>{settings.rekrutmen_link_title || 'Buka Portal Rekrutmen'}</span>
+                <ArrowRight size={20} style={{ color: '#F2C94C' }} />
               </a>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </main>
 
       <style>{`
         .recruitment-link-btn:hover {
-          border-color: #0A1E38 !important;
+          background-color: #001326 !important;
           transform: translateY(-2px);
-          box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05) !important;
+          box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15) !important;
         }
       `}</style>
 

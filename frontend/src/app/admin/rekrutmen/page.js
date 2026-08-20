@@ -1,35 +1,36 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
+  Save, 
+  Upload, 
+  FileText, 
   CheckCircle, 
   AlertCircle, 
-  Users, 
-  ExternalLink,
-  ArrowUp,
-  ArrowDown
+  ChevronRight, 
+  Link as LinkIcon
 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 
 const BACKEND_URL = 'http://localhost:8081';
 
 export default function AdminRekrutmenPage() {
-  const [recs, setRecs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
 
-  // Modal states
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('create'); // 'create' | 'edit'
-  const [selectedRec, setSelectedRec] = useState(null);
+  // Hero section states
+  const [heroTitle, setHeroTitle] = useState('');
+  const [heroDesc, setHeroDesc] = useState('');
+  const [heroImage, setHeroImage] = useState('');
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [savingHero, setSavingHero] = useState(false);
+  const heroFileRef = useRef(null);
 
-  // Form states
-  const [title, setTitle] = useState('');
-  const [link, setLink] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  // Rekrutmen content states
+  const [rekrutmenDesc, setRekrutmenDesc] = useState('');
+  const [rekrutmenLink, setRekrutmenLink] = useState('');
+  const [rekrutmenLinkTitle, setRekrutmenLinkTitle] = useState('');
+  const [savingContent, setSavingContent] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -37,7 +38,7 @@ export default function AdminRekrutmenPage() {
       window.location.href = '/admin/login';
       return;
     }
-    fetchRecs();
+    loadSettings();
   }, []);
 
   const getToken = () => localStorage.getItem('admin_token');
@@ -47,13 +48,47 @@ export default function AdminRekrutmenPage() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  const fetchRecs = async () => {
+  const getImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('/uploads')) return `${BACKEND_URL}${path}`;
+    return path;
+  };
+
+  const loadSettings = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/admin/rekrutmen`, {
-        headers: {
-          'Authorization': `Bearer ${getToken()}`,
-        },
+      const res = await fetch(`${BACKEND_URL}/api/settings`);
+      const data = await res.json();
+      
+      // Hero settings
+      setHeroTitle(data.rekrutmen_hero_title || 'Rekrutmen');
+      setHeroDesc(data.rekrutmen_hero_desc || 'Membangun Masa Depan Melalui Talenta Unggul & Impactful');
+      setHeroImage(data.rekrutmen_hero_image || data.hero_image || '/uploads/ui_rectorate_hero.png');
+      
+      // Content settings
+      setRekrutmenDesc(data.rekrutmen_description || 'Direktorat Sumber Daya Manusia dan Pengembangan Talenta (DSDMPT) berkomitmen untuk merekrut individu yang berdedikasi tinggi demi memajukan visi pendidikan nasional. Kami mencari talenta yang siap berkontribusi pada ekosistem akademik yang prestisius, inovatif, dan berintegritas.');
+      setRekrutmenLink(data.rekrutmen_link || '');
+      setRekrutmenLinkTitle(data.rekrutmen_link_title || 'Portal Rekrutmen UI');
+    } catch (err) {
+      showToast('error', 'Gagal memuat data settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleHeroImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingHero(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(`${BACKEND_URL}/api/admin/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getToken()}` },
+        body: formData,
       });
 
       if (res.status === 401) {
@@ -61,14 +96,76 @@ export default function AdminRekrutmenPage() {
         return;
       }
 
-      if (!res.ok) throw new Error('Gagal mengambil data rekrutmen');
-
+      if (!res.ok) throw new Error('Gagal mengupload gambar');
       const data = await res.json();
-      setRecs(data || []);
+      setHeroImage(data.url);
+      showToast('success', 'Gambar Hero berhasil diupload!');
     } catch (err) {
-      showToast('error', err.message);
+      showToast('error', err.message || 'Gagal mengupload gambar');
     } finally {
-      setLoading(false);
+      setUploadingHero(false);
+    }
+  };
+
+  const handleSaveHeroSettings = async () => {
+    setSavingHero(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          rekrutmen_hero_title: heroTitle,
+          rekrutmen_hero_desc: heroDesc,
+          rekrutmen_hero_image: heroImage,
+        }),
+      });
+
+      if (res.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!res.ok) throw new Error('Gagal menyimpan settings');
+
+      showToast('success', 'Hero Section berhasil disimpan!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal menyimpan perubahan');
+    } finally {
+      setSavingHero(false);
+    }
+  };
+
+  const handleSaveContentSettings = async () => {
+    setSavingContent(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          rekrutmen_description: rekrutmenDesc,
+          rekrutmen_link: rekrutmenLink,
+          rekrutmen_link_title: rekrutmenLinkTitle,
+        }),
+      });
+
+      if (res.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!res.ok) throw new Error('Gagal menyimpan settings');
+
+      showToast('success', 'Konten Rekrutmen berhasil disimpan!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal menyimpan perubahan');
+    } finally {
+      setSavingContent(false);
     }
   };
 
@@ -76,129 +173,6 @@ export default function AdminRekrutmenPage() {
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_user');
     window.location.href = '/admin/login';
-  };
-
-  const openCreateModal = () => {
-    setModalType('create');
-    setSelectedRec(null);
-    setTitle('');
-    setLink('');
-    setModalOpen(true);
-  };
-
-  const openEditModal = (item) => {
-    setModalType('edit');
-    setSelectedRec(item);
-    setTitle(item.title || '');
-    setLink(item.link || '');
-    setModalOpen(true);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      let url = `${BACKEND_URL}/api/admin/rekrutmen`;
-      let method = 'POST';
-      let body = { title, link };
-
-      if (modalType === 'edit' && selectedRec) {
-        url = `${BACKEND_URL}/api/admin/rekrutmen/${selectedRec.id}`;
-        method = 'PUT';
-        body.position = selectedRec.position;
-      }
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (res.status === 401) {
-        handleUnauthorized();
-        return;
-      }
-
-      if (!res.ok) {
-        const errMsg = await res.text();
-        throw new Error(errMsg || 'Gagal menyimpan data rekrutmen');
-      }
-
-      showToast('success', modalType === 'create' ? 'Tautan rekrutmen berhasil ditambahkan!' : 'Tautan rekrutmen berhasil diperbarui!');
-      setModalOpen(false);
-      fetchRecs();
-    } catch (err) {
-      showToast('error', err.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus tautan rekrutmen ini?')) return;
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/admin/rekrutmen/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${getToken()}`,
-        },
-      });
-
-      if (res.status === 401) {
-        handleUnauthorized();
-        return;
-      }
-
-      if (!res.ok) {
-        const errMsg = await res.text();
-        throw new Error(errMsg || 'Gagal menghapus tautan rekrutmen');
-      }
-
-      showToast('success', 'Tautan rekrutmen berhasil dihapus!');
-      fetchRecs();
-    } catch (err) {
-      showToast('error', err.message);
-    }
-  };
-
-  const handleMove = async (index, direction) => {
-    const newRecs = [...recs];
-    const swapTargetIndex = direction === 'up' ? index - 1 : index + 1;
-
-    if (swapTargetIndex < 0 || swapTargetIndex >= newRecs.length) return;
-
-    const temp = newRecs[index];
-    newRecs[index] = newRecs[swapTargetIndex];
-    newRecs[swapTargetIndex] = temp;
-
-    setRecs(newRecs);
-
-    try {
-      const ids = newRecs.map(rec => rec.id);
-      const res = await fetch(`${BACKEND_URL}/api/admin/rekrutmen/reorder`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ ids }),
-      });
-
-      if (res.status === 401) {
-        handleUnauthorized();
-        return;
-      }
-
-      if (!res.ok) throw new Error('Gagal memperbarui urutan posisi');
-      showToast('success', 'Urutan posisi rekrutmen berhasil disimpan!');
-    } catch (err) {
-      showToast('error', err.message);
-      fetchRecs();
-    }
   };
 
   return (
@@ -218,175 +192,144 @@ export default function AdminRekrutmenPage() {
         <main className="admin-main">
           <div className="admin-container">
             <div className="admin-page-header">
-              <div>
-                <h1>Kelola Rekrutmen</h1>
-                <p>Kelola tautan portal rekrutmen aktif Universitas Indonesia</p>
-              </div>
-              <button className="admin-add-btn" onClick={openCreateModal}>
-                <Plus size={18} />
-                <span>Tambah Rekrutmen</span>
-              </button>
+             
             </div>
 
-            <div className="admin-card">
-              <div className="admin-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Users size={18} />
-                  <h2>Daftar Tautan Rekrutmen</h2>
-                </div>
-                <span className="user-count-badge">{recs.length} Tautan</span>
+            {loading ? (
+              <div className="table-loading">
+                <div className="admin-spinner" />
+                <p>Memuat data rekrutmen...</p>
               </div>
+            ) : (
+              <>
+                {/* HERO SECTION CARD */}
+                <div className="admin-card" style={{ marginBottom: '2rem' }}>
+                  <div className="admin-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <FileText size={18} />
+                      <h2>Hero Section</h2>
+                    </div>
+                  </div>
+                  
+                  <div className="admin-card-body flex-row-layout">
+                    <div className="inputs-column">
+                      <div className="admin-field">
+                        <label>Judul halaman</label>
+                        <input 
+                          type="text" 
+                          value={heroTitle}
+                          onChange={(e) => setHeroTitle(e.target.value)}
+                        />
+                      </div>
+                      <div className="admin-field" style={{ marginTop: '1rem' }}>
+                        <label>Deskripsi judul</label>
+                        <textarea 
+                          rows={3} 
+                          value={heroDesc}
+                          onChange={(e) => setHeroDesc(e.target.value)}
+                        />
+                      </div>
+                    </div>
 
-              {loading ? (
-                <div className="table-loading">
-                  <div className="admin-spinner" />
-                  <p>Memuat data rekrutmen...</p>
+                    <div className="image-column">
+                      <label>Background Image</label>
+                      <div className="image-uploader-wrapper">
+                        <img src={getImageUrl(heroImage)} alt="Hero Background" />
+                        <button 
+                          type="button"
+                          className="upload-overlay-btn"
+                          onClick={() => heroFileRef.current?.click()}
+                          disabled={uploadingHero}
+                        >
+                          <Upload size={16} />
+                          {uploadingHero ? 'Mengunggah...' : 'Upload Image'}
+                        </button>
+                        <input 
+                          type="file" 
+                          ref={heroFileRef} 
+                          accept="image/*"
+                          onChange={handleHeroImageUpload} 
+                          style={{ display: 'none' }}
+                        />
+                      </div>
+                      <span className="image-hint-text">Recommended size: 1920x600px. Max size: 2MB.</span>
+                    </div>
+                  </div>
+
+                  <div className="admin-card-footer" style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem 1.5rem', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+                    <button 
+                      className="btn-save" 
+                      onClick={handleSaveHeroSettings}
+                      disabled={savingHero}
+                    >
+                      {savingHero ? 'Menyimpan...' : 'Simpan Perubahan'}
+                    </button>
+                  </div>
                 </div>
-              ) : recs.length === 0 ? (
-                <div className="table-empty">
-                  <Users size={40} />
-                  <p>Belum ada data rekrutmen terdaftar</p>
+
+                {/* CONTENT SECTION CARD */}
+                <div className="admin-card">
+                  <div className="admin-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <LinkIcon size={18} />
+                      <h2>Konten Portal Rekrutmen</h2>
+                    </div>
+                  </div>
+                  
+                  <div className="admin-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div className="admin-field">
+                      <label>Deskripsi Halaman Rekrutmen</label>
+                      <textarea 
+                        rows={5} 
+                        value={rekrutmenDesc}
+                        onChange={(e) => setRekrutmenDesc(e.target.value)}
+                        placeholder="Tulis deskripsi rekrutmen..."
+                      />
+                    </div>
+                    
+                    <div className="admin-field">
+                      <label>Teks Tombol Tautan</label>
+                      <input 
+                        type="text" 
+                        value={rekrutmenLinkTitle}
+                        onChange={(e) => setRekrutmenLinkTitle(e.target.value)}
+                        placeholder="Contoh: Portal Rekrutmen UI"
+                      />
+                    </div>
+
+                    <div className="admin-field">
+                      <label>URL / Link Rekrutmen</label>
+                      <input 
+                        type="text" 
+                        value={rekrutmenLink}
+                        onChange={(e) => setRekrutmenLink(e.target.value)}
+                        placeholder="https://rekrutmen.ui.ac.id"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="admin-card-footer" style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem 1.5rem', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+                    <button 
+                      className="btn-save" 
+                      onClick={handleSaveContentSettings}
+                      disabled={savingContent}
+                    >
+                      {savingContent ? 'Menyimpan...' : 'Simpan Perubahan'}
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                <div className="table-responsive">
-                  <table className="admin-table">
-                    <thead>
-                      <tr>
-                        <th style={{ width: '80px', textAlign: 'center' }}>Posisi</th>
-                        <th>Teks / Nama Rekrutmen</th>
-                        <th style={{ width: '380px' }}>URL / Tautan</th>
-                        <th style={{ textAlign: 'right', width: '120px' }}>Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recs.map((item, idx) => (
-                        <tr key={item.id}>
-                          <td style={{ textAlign: 'center' }}>
-                            <div className="position-actions">
-                              <button 
-                                className="arrow-btn" 
-                                disabled={idx === 0} 
-                                onClick={() => handleMove(idx, 'up')}
-                                title="Naikkan Posisi"
-                              >
-                                <ArrowUp size={14} />
-                              </button>
-                              <span className="position-number">{idx + 1}</span>
-                              <button 
-                                className="arrow-btn" 
-                                disabled={idx === recs.length - 1} 
-                                onClick={() => handleMove(idx, 'down')}
-                                title="Turunkan Posisi"
-                              >
-                                <ArrowDown size={14} />
-                              </button>
-                            </div>
-                          </td>
-                          <td>
-                            <strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>{item.title}</strong>
-                          </td>
-                          <td>
-                            <a 
-                              href={item.link} 
-                              target="_blank" 
-                              rel="noreferrer" 
-                              className="link-anchor"
-                            >
-                              <span>{item.link}</span>
-                              <ExternalLink size={12} />
-                            </a>
-                          </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <div className="table-actions">
-                              <button 
-                                className="action-btn edit" 
-                                title="Edit Rekrutmen"
-                                onClick={() => openEditModal(item)}
-                              >
-                                <Edit2 size={15} />
-                              </button>
-                              <button 
-                                className="action-btn delete" 
-                                title="Hapus Rekrutmen"
-                                onClick={() => handleDelete(item.id)}
-                              >
-                                <Trash2 size={15} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </main>
       </div>
 
-      {/* Modal CRUD Rekrutmen */}
-      {modalOpen && (
-        <div className="modal-overlay" onClick={() => setModalOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-card-header">
-              <h3>{modalType === 'create' ? 'Tambah Tautan Rekrutmen Baru' : 'Edit Tautan Rekrutmen'}</h3>
-              <p>Hanya masukkan informasi teks nama rekrutmen dan link aksesnya</p>
-            </div>
-            <form onSubmit={handleSubmit} className="modal-form">
-              <div className="form-grid">
-                <div className="form-field full-width">
-                  <label htmlFor="title">Teks / Nama Rekrutmen</label>
-                  <input
-                    id="title"
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Contoh: Rekrutmen Calon Dosen Tetap UI"
-                    required
-                  />
-                </div>
-
-                <div className="form-field full-width">
-                  <label htmlFor="link">URL / Tautan Rekrutmen</label>
-                  <input
-                    id="link"
-                    type="url"
-                    value={link}
-                    onChange={(e) => setLink(e.target.value)}
-                    placeholder="Contoh: https://recruitment.ui.ac.id"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="modal-actions">
-                <button 
-                  type="button" 
-                  className="modal-btn cancel" 
-                  onClick={() => setModalOpen(false)}
-                >
-                  Batal
-                </button>
-                <button 
-                  type="submit" 
-                  className="modal-btn submit"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Menyimpan...' : 'Simpan Rekrutmen'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .admin-layout {
           display: flex;
           min-height: 100vh;
-          background: #F8FAFC;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          background: #F4F6F9;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         .admin-content-wrapper {
@@ -407,328 +350,194 @@ export default function AdminRekrutmenPage() {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          z-index: 999;
+          z-index: 9999;
           animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
         }
         .admin-toast.success {
-          background: #F0FDF4;
-          color: #16A34A;
-          border: 1px solid #BBF7D0;
+          background: #ECFDF5;
+          color: #047857;
+          border: 1px solid #A7F3D0;
         }
         .admin-toast.error {
           background: #FEF2F2;
-          color: #DC2626;
-          border: 1px solid #FECACA;
+          color: #B91C1C;
+          border: 1px solid #FEE2E2;
+        }
+        @keyframes toastIn {
+          from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Main Layout */
+        /* Layout */
         .admin-main {
-          padding: 3rem 0 4rem;
+          padding: 0rem 0 4rem;
         }
         .admin-container {
-          max-width: 1280px;
+          max-width: 1360px;
           margin: 0 auto;
           padding: 0 2rem;
         }
+
+        /* Header */
         .admin-page-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 2.5rem;
+          margin-bottom: 2rem;
         }
         .admin-page-header h1 {
-          font-size: 1.8rem;
-          font-weight: 800;
-          color: #0F172A;
-          margin: 0 0 0.35rem 0;
-        }
-        .admin-page-header p {
-          font-size: 0.92rem;
-          color: #64748B;
-          margin: 0;
+          font-size: 1.6rem;
+          font-weight: 700;
+          color: #1E293B;
+          margin: 0 0 0.25rem 0;
         }
 
-        .admin-add-btn {
-          background: #001f3f;
-          color: #fff;
+        /* Buttons */
+        .btn-save {
+          background: #FFC72C;
+          color: #001f3f;
           border: none;
-          padding: 0.65rem 1.25rem;
-          border-radius: 8px;
-          font-weight: 600;
+          padding: 0.6rem 1.5rem;
+          border-radius: 6px;
           font-size: 0.88rem;
+          font-weight: 700;
           cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          transition: all 0.2s;
-          font-family: inherit;
+          transition: all 0.2s ease;
         }
-        .admin-add-btn:hover {
-          background: #001326;
-          transform: translateY(-1px);
+        .btn-save:hover:not(:disabled) {
+          background: #E0AE20;
         }
 
-        /* Card container */
+        /* Cards */
         .admin-card {
-          background: #fff;
-          border: 1px solid #E2E8F0;
+          background: #FFFFFF;
           border-radius: 12px;
+          box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
           overflow: hidden;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+          border: 1px solid #E2E8F0;
         }
         .admin-card-header {
           padding: 1.25rem 1.5rem;
           border-bottom: 1px solid #F1F5F9;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
         }
         .admin-card-header h2 {
-          font-size: 0.98rem;
+          font-size: 1.05rem;
           font-weight: 700;
-          color: #0F172A;
+          color: #1E293B;
           margin: 0;
         }
-        .user-count-badge {
-          background: #F1F5F9;
-          color: #475569;
-          font-size: 0.75rem;
-          font-weight: 700;
-          padding: 0.2rem 0.6rem;
-          border-radius: 20px;
-        }
 
-        /* Table Position Actions */
-        .position-actions {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.4rem;
-        }
-        .arrow-btn {
-          border: 1px solid #E2E8F0;
-          background: #fff;
-          color: #64748B;
-          width: 24px;
-          height: 24px;
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-        .arrow-btn:hover:not(:disabled) {
-          background: #F1F5F9;
-          color: #0F172A;
-        }
-        .arrow-btn:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-          background: #F8FAFC;
-        }
-        .position-number {
-          font-size: 0.88rem;
-          font-weight: 700;
-          color: #475569;
-          min-width: 14px;
-          text-align: center;
-        }
-
-        /* Table */
-        .table-responsive {
-          width: 100%;
-          overflow-x: auto;
-        }
-        .admin-table {
-          width: 100%;
-          border-collapse: collapse;
-          text-align: left;
-          font-size: 0.88rem;
-        }
-        .admin-table th {
-          background: #F8FAFC;
-          color: #475569;
-          font-weight: 700;
-          padding: 1rem 1.5rem;
-          border-bottom: 1px solid #E2E8F0;
-          text-transform: uppercase;
-          font-size: 0.75rem;
-          letter-spacing: 0.5px;
-        }
-        .admin-table td {
-          padding: 1rem 1.5rem;
-          border-bottom: 1px solid #F1F5F9;
-          color: #475569;
-          vertical-align: middle;
-        }
-        .admin-table tr:hover {
-          background: #FAFAFA;
-        }
-
-        .link-anchor {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.25rem;
-          color: #2563EB;
-          text-decoration: none;
-          font-weight: 500;
-          font-size: 0.82rem;
-          word-break: break-all;
-          max-width: 520px;
-        }
-        .link-anchor:hover {
-          text-decoration: underline;
-        }
-
-        .table-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 0.5rem;
-        }
-        .action-btn {
-          width: 32px;
-          height: 32px;
-          border-radius: 6px;
-          border: 1px solid #E2E8F0;
-          background: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .action-btn.edit {
-          color: #0F172A;
-        }
-        .action-btn.edit:hover {
-          background: #F1F5F9;
-          border-color: #CBD5E1;
-        }
-        .action-btn.delete {
-          color: #EF4444;
-        }
-        .action-btn.delete:hover {
-          background: #FEF2F2;
-          border-color: #FCA5A5;
-        }
-
-        /* Modal CRUD */
-        .modal-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(15, 23, 42, 0.4);
-          backdrop-filter: blur(4px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 999;
-          padding: 1rem;
-        }
-        .modal-card {
-          background: #fff;
-          width: 100%;
-          max-width: 520px;
-          border-radius: 12px;
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-          overflow: hidden;
-          animation: modalIn 0.25s ease;
-          border: 1px solid #E2E8F0;
-        }
-        @keyframes modalIn {
-          from { opacity: 0; transform: scale(0.95) translateY(10px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .modal-card-header {
-          padding: 1.5rem;
-          background: #FFFFFF;
-          color: #0F172A;
-          border-bottom: 1px solid #E2E8F0;
-        }
-        .modal-card-header h3 {
-          margin: 0 0 0.25rem;
-          font-size: 1.25rem;
-          font-weight: 800;
-          color: #0F172A;
-        }
-        .modal-card-header p {
-          margin: 0;
-          font-size: 0.8rem;
-          color: #64748B;
-        }
-
-        .modal-form {
+        .admin-card-body {
           padding: 1.5rem;
         }
-        .form-grid {
+
+        .flex-row-layout {
+          display: flex;
+          gap: 2rem;
+          align-items: flex-start;
+        }
+        .inputs-column {
+          flex: 1.2;
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
+          gap: 1rem;
+          width: 100%;
         }
-        .form-field {
+        .image-column {
+          flex: 1;
           display: flex;
           flex-direction: column;
+          width: 100%;
         }
-        .form-field label {
-          font-size: 0.82rem;
+        .image-column label {
+          font-size: 0.85rem;
           font-weight: 600;
           color: #475569;
-          margin-bottom: 0.4rem;
+          margin-bottom: 0.5rem;
         }
-        .form-field input {
-          padding: 0.65rem 0.8rem;
-          border: 1.5px solid #E2E8F0;
+
+        /* Fields */
+        .admin-field {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+          width: 100%;
+        }
+        .admin-field label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #475569;
+        }
+        .admin-field input[type="text"],
+        .admin-field textarea {
+          padding: 0.65rem 0.85rem;
+          border: 1px solid #CBD5E1;
           border-radius: 6px;
           font-size: 0.88rem;
-          font-family: inherit;
+          color: #334155;
           outline: none;
           background: #FFFFFF;
-          box-sizing: border-box;
-          width: 100%;
-        }
-        .form-field input:focus {
-          border-color: #2563EB;
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .modal-actions {
-          margin-top: 2rem;
-          display: flex;
-          justify-content: flex-end;
-          gap: 0.75rem;
-        }
-        .modal-btn {
-          padding: 0.6rem 1.25rem;
-          border-radius: 6px;
-          font-size: 0.88rem;
-          font-weight: 600;
-          cursor: pointer;
           font-family: inherit;
-          border: none;
-          transition: all 0.2s;
+          width: 100%;
+          box-sizing: border-box;
         }
-        .modal-btn.cancel {
-          background: #F1F5F9;
-          color: #475569;
-        }
-        .modal-btn.cancel:hover {
-          background: #E2E8F0;
-        }
-        .modal-btn.submit {
-          background: #001f3f;
-          color: #fff;
-        }
-        .modal-btn.submit:hover {
-          background: #001326;
-        }
-        .modal-btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
+        .admin-field input[type="text"]:focus,
+        .admin-field textarea:focus {
+          border-color: #0A1E38;
         }
 
-        /* Spinner */
+        /* Image uploader */
+        .image-uploader-wrapper {
+          width: 100%;
+          aspect-ratio: 21/9;
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          border-radius: 8px;
+          position: relative;
+          overflow: hidden;
+        }
+        .image-uploader-wrapper img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .upload-overlay-btn {
+          position: absolute;
+          bottom: 1rem;
+          right: 1rem;
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid #CBD5E1;
+          color: #1E293B;
+          padding: 0.4rem 0.75rem;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          cursor: pointer;
+        }
+        .image-hint-text {
+          font-size: 0.72rem;
+          color: #94A3B8;
+          margin-top: 0.5rem;
+        }
+        .breadcrumb {
+          display: flex;
+          align-items: center;
+          font-size: 0.78rem;
+          color: #94A3B8;
+        }
+        .breadcrumb .separator {
+          margin: 0 0.4rem;
+          color: #CBD5E1;
+        }
+        .breadcrumb .active-breadcrumb {
+          color: #475569;
+          font-weight: 600;
+        }
         .table-loading {
           padding: 4rem 2rem;
           text-align: center;
@@ -737,19 +546,6 @@ export default function AdminRekrutmenPage() {
           flex-direction: column;
           align-items: center;
           gap: 1rem;
-        }
-        .table-empty {
-          padding: 4rem 2rem;
-          text-align: center;
-          color: #94A3B8;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.75rem;
-        }
-        .table-empty p {
-          font-size: 0.9rem;
-          font-weight: 500;
         }
         .admin-spinner {
           width: 24px;
@@ -762,18 +558,12 @@ export default function AdminRekrutmenPage() {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
-
-        @keyframes toastIn {
-          from { opacity: 0; transform: translateY(-10px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
         @media (max-width: 768px) {
           .admin-layout { flex-direction: column; }
-          .admin-sidebar { width: 100%; height: auto; position: static; }
           .admin-container { padding: 0 1rem; }
+          .flex-row-layout { flex-direction: column; gap: 1.5rem; }
         }
-      `}</style>
+      `}} />
     </div>
   );
 }

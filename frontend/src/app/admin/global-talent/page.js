@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, Upload, Image, FileText, CheckCircle, AlertCircle, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Save, Upload, Image, FileText, CheckCircle, AlertCircle, Plus, Trash2, ArrowUp, ArrowDown, ChevronRight } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 
 const BACKEND_URL = 'http://localhost:8081';
@@ -23,6 +23,13 @@ export default function AdminGlobalTalentPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [heroTitle, setHeroTitle] = useState('');
+  const [heroDesc, setHeroDesc] = useState('');
+  const [heroImage, setHeroImage] = useState('');
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [savingHero, setSavingHero] = useState(false);
+  const heroFileRef = useRef(null);
+
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -45,6 +52,9 @@ export default function AdminGlobalTalentPage() {
     try {
       const res = await fetch(`${BACKEND_URL}/api/settings`);
       const data = await res.json();
+      setHeroTitle(data.global_talent_hero_title || 'Global Talent');
+      setHeroDesc(data.global_talent_hero_desc || '');
+      setHeroImage(data.global_talent_hero_image || data.hero_image || '/uploads/ui_rectorate_hero.png');
       setText1(data.global_talent_text_1 || '');
       setImage(data.global_talent_image || '');
 
@@ -149,6 +159,72 @@ export default function AdminGlobalTalentPage() {
     }
   };
 
+  const handleHeroImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingHero(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(`${BACKEND_URL}/api/admin/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getToken()}` },
+        body: formData,
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      if (!res.ok) throw new Error('Gagal mengupload gambar');
+      const data = await res.json();
+      setHeroImage(data.url);
+      showToast('success', 'Gambar Hero berhasil diupload!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal mengupload gambar');
+    } finally {
+      setUploadingHero(false);
+    }
+  };
+
+  const handleSaveHeroSettings = async () => {
+    setSavingHero(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          global_talent_hero_title: heroTitle,
+          global_talent_hero_desc: heroDesc,
+          global_talent_hero_image: heroImage,
+        }),
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      if (!res.ok) throw new Error('Gagal menyimpan settings');
+
+      showToast('success', 'Hero Section berhasil disimpan!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal menyimpan perubahan');
+    } finally {
+      setSavingHero(false);
+    }
+  };
+
   // Helper arrays update
   const updateAturanItem = (idx, value) => {
     const updated = [...aturanList];
@@ -216,22 +292,92 @@ export default function AdminGlobalTalentPage() {
 
         <main className="admin-main">
           <div className="admin-container">
-            <div className="admin-page-header">
-              <h1>Edit Global Talent</h1>
-              <p>Kelola semua konten deskripsi, gambar, aturan umum, dan alur pelaksanaan program Global Talent</p>
-            </div>
+             {/* Header Area */}
+             {/* <div className="admin-page-header">
+               <div className="header-text-block">
+                 <h1>Global Talent</h1>
+                 <div className="breadcrumb">
+                   <span>Global Talent</span>
+                   <ChevronRight size={12} className="separator" />
+                   <span className="active-breadcrumb">Edit Konten</span>
+                 </div>
+               </div>
+             </div> */}
 
-            {/* Intro & Gambar Section */}
-            <div className="admin-card">
+             {/* HERO SECTION CARD */}
+             <div className="admin-card" style={{ marginBottom: '2rem' }}>
+               <div className="admin-card-header">
+                 <FileText size={20} />
+                 <h2>Hero Section</h2>
+               </div>
+               
+               <div className="admin-card-body flex-row-layout">
+                 <div className="inputs-column">
+                   <div className="admin-field">
+                     <label>Judul halaman</label>
+                     <input 
+                       type="text" 
+                       value={heroTitle}
+                       onChange={(e) => setHeroTitle(e.target.value)}
+                     />
+                   </div>
+                   <div className="admin-field" style={{ marginTop: '1rem' }}>
+                     <label>Deskripsi judul</label>
+                     <textarea 
+                       rows={3} 
+                       value={heroDesc}
+                       onChange={(e) => setHeroDesc(e.target.value)}
+                     />
+                   </div>
+                 </div>
+
+                 <div className="image-column">
+                   <label>Background Image</label>
+                   <div className="image-uploader-wrapper">
+                     <img src={getImageUrl(heroImage)} alt="Hero Background" />
+                     <button 
+                       type="button"
+                       className="upload-overlay-btn"
+                       onClick={() => heroFileRef.current?.click()}
+                       disabled={uploadingHero}
+                     >
+                       <Upload size={16} />
+                       {uploadingHero ? 'Mengunggah...' : 'Upload Image'}
+                     </button>
+                     <input 
+                       type="file" 
+                       ref={heroFileRef} 
+                       accept="image/*"
+                       onChange={handleHeroImageUpload} 
+                       style={{ display: 'none' }}
+                     />
+                   </div>
+                   <span className="image-hint-text">Recommended size: 1920x600px. Max size: 2MB.</span>
+                 </div>
+               </div>
+
+               <div className="admin-card-footer" style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem 1.5rem', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+                 <button 
+                   className="btn-save" 
+                   onClick={handleSaveHeroSettings}
+                   disabled={savingHero}
+                 >
+                   {savingHero ? 'Menyimpan...' : 'Simpan Perubahan'}
+                 </button>
+               </div>
+             </div>
+
+             {/* Intro & Gambar Section */}
+             <div className="admin-card">
               <div className="admin-card-header">
                 <FileText size={20} />
-                <h2>1. Deskripsi & Gambar Intro Global Talent</h2>
+                <h2>Deskripsi & Gambar</h2>
               </div>
               <div className="admin-form intro-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem' }}>
                 <div className="admin-field">
                   <label htmlFor="text_1">
-                    Paragraf Intro (Mendukung tag HTML &lt;strong&gt;, &lt;br/&gt;)
-                    <span className="admin-field-hint">Gabungan deskripsi utama program Global Talent</span>
+                    Deskripsi
+                    
                   </label>
                   <textarea
                     id="text_1"
@@ -244,7 +390,7 @@ export default function AdminGlobalTalentPage() {
                 </div>
 
                 <div className="admin-field">
-                  <label>Gambar Banner/Ilustrasi</label>
+                  <label>Gambar</label>
                   <div className="admin-image-upload-area" style={{ marginTop: '0.4rem' }}>
                     {image ? (
                       <div className="admin-image-preview">
@@ -289,7 +435,7 @@ export default function AdminGlobalTalentPage() {
               <div className="admin-card-header" style={{ display: 'flex', justifycontent: 'space-between', alignitems: 'center' }}>
                 <div style={{ display: 'flex', alignitems: 'center', gap: '0.5rem' }}>
                   <FileText size={20} />
-                  <h2>2. Aturan Umum (Bisa Tambah/Hapus)</h2>
+                  <h2>Aturan Umum</h2>
                 </div>
                 <button type="button" className="list-add-btn" onClick={addAturanItem}>
                   <Plus size={16} /> Add Item
@@ -322,7 +468,7 @@ export default function AdminGlobalTalentPage() {
               <div className="admin-card-header" style={{ display: 'flex', justifycontent: 'space-between', alignitems: 'center' }}>
                 <div style={{ display: 'flex', alignitems: 'center', gap: '0.5rem' }}>
                   <FileText size={20} />
-                  <h2>3. Alur Pelaksanaan Secara Umum (Bisa Tambah/Hapus)</h2>
+                  <h2>Alur Pelaksanaan Secara Umum</h2>
                 </div>
                 <button type="button" className="list-add-btn" onClick={addAlurItem}>
                   <Plus size={16} /> Add Langkah
@@ -369,7 +515,7 @@ export default function AdminGlobalTalentPage() {
         </main>
       </div>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .admin-layout {
           display: flex;
           min-height: 100vh;
@@ -489,7 +635,7 @@ export default function AdminGlobalTalentPage() {
 
         /* Main */
         .admin-main {
-          padding: 3rem 0 4rem;
+          padding: 2rem 0 4rem;
         }
         .admin-container {
           max-width: 1280px;
@@ -555,7 +701,7 @@ export default function AdminGlobalTalentPage() {
           color: #94A3B8;
           margin-top: 0.15rem;
         }
-        .admin-field textarea, .list-item-field textarea {
+        .admin-field textarea, .admin-field input[type="text"], .list-item-field textarea {
           width: 100%;
           padding: 0.75rem 1rem;
           border: 1.5px solid #E2E8F0;
@@ -570,10 +716,13 @@ export default function AdminGlobalTalentPage() {
           outline: none;
           box-sizing: border-box;
         }
-        .admin-field textarea:focus, .list-item-field textarea:focus {
+        .admin-field textarea:focus, .admin-field input[type="text"]:focus, .list-item-field textarea:focus {
           border-color: #2563EB;
           background: #fff;
           box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        .admin-card-body {
+          padding: 1.5rem;
         }
 
         /* Image upload */
@@ -658,14 +807,29 @@ export default function AdminGlobalTalentPage() {
           justify-content: flex-end;
           padding-top: 0.5rem;
         }
+        /* Buttons */
+        .btn-save {
+          background: #FFC72C;
+          color: #001f3f;
+          border: none;
+          padding: 0.6rem 1.5rem;
+          border-radius: 6px;
+          font-size: 0.88rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .btn-save:hover:not(:disabled) {
+          background: #E0AE20;
+        }
         .admin-save-btn {
-          background: #2563EB;
-          color: #fff;
+          background: #FFC72C;
+          color: #001f3f;
           border: none;
           padding: 0.7rem 1.75rem;
           border-radius: 8px;
           font-size: 0.9rem;
-          font-weight: 600;
+          font-weight: 700;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -674,9 +838,9 @@ export default function AdminGlobalTalentPage() {
           transition: all 0.2s;
         }
         .admin-save-btn:hover:not(:disabled) {
-          background: #1D4ED8;
+          background: #E0AE20;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(37,99,235,0.2);
+          box-shadow: 0 4px 12px rgba(255, 199, 44, 0.25);
         }
         .admin-save-btn:disabled {
           opacity: 0.7;
@@ -685,8 +849,8 @@ export default function AdminGlobalTalentPage() {
         .admin-spinner {
           width: 18px;
           height: 18px;
-          border: 2.5px solid rgba(255,255,255,0.3);
-          border-top-color: #fff;
+          border: 2.5px solid rgba(0,31,63,0.15);
+          border-top-color: #001f3f;
           border-radius: 50%;
           animation: spin 0.6s linear infinite;
         }
@@ -701,12 +865,80 @@ export default function AdminGlobalTalentPage() {
           }
         }
 
-        @media (max-width: 768px) {
-          .admin-layout { flex-direction: column; }
-          .admin-sidebar { width: 100%; height: auto; position: static; }
-          .admin-container { padding: 0 1rem; }
+        .flex-row-layout {
+          display: flex;
+          gap: 2rem;
+          align-items: flex-start;
         }
-      `}</style>
+        .inputs-column {
+          flex: 1.2;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .image-column {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        .image-column label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #475569;
+          margin-bottom: 0.5rem;
+        }
+        .image-uploader-wrapper {
+          width: 100%;
+          aspect-ratio: 21/9;
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          border-radius: 8px;
+          position: relative;
+          overflow: hidden;
+        }
+        .image-uploader-wrapper img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .upload-overlay-btn {
+          position: absolute;
+          bottom: 1rem;
+          right: 1rem;
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid #CBD5E1;
+          color: #1E293B;
+          padding: 0.4rem 0.75rem;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          cursor: pointer;
+        }
+        .image-hint-text {
+          font-size: 0.72rem;
+          color: #94A3B8;
+          margin-top: 0.5rem;
+        }
+        .breadcrumb {
+          display: flex;
+          align-items: center;
+          font-size: 0.78rem;
+          color: #94A3B8;
+        }
+        .breadcrumb .separator {
+          margin: 0 0.4rem;
+          color: #CBD5E1;
+        }
+        .breadcrumb .active-breadcrumb {
+          color: #475569;
+          font-weight: 600;
+        }
+      `}} />
     </div>
   );
 }
+

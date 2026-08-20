@@ -10,7 +10,10 @@ import {
   Lock, 
   ExternalLink,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  ChevronRight,
+  Upload,
+  FileText
 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 
@@ -32,6 +35,14 @@ export default function AdminAksesPegawaiPage() {
   const [link, setLink] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Hero section states
+  const [heroTitle, setHeroTitle] = useState('');
+  const [heroDesc, setHeroDesc] = useState('');
+  const [heroImage, setHeroImage] = useState('');
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [savingHero, setSavingHero] = useState(false);
+  const heroFileRef = React.useRef(null);
+
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
     if (!token) {
@@ -39,6 +50,7 @@ export default function AdminAksesPegawaiPage() {
       return;
     }
     fetchLinks();
+    loadSettings();
   }, []);
 
   const getToken = () => localStorage.getItem('admin_token');
@@ -70,6 +82,86 @@ export default function AdminAksesPegawaiPage() {
       showToast('error', err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('/uploads')) return `${BACKEND_URL}${path}`;
+    return path;
+  };
+
+  const loadSettings = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/settings`);
+      const data = await res.json();
+      setHeroTitle(data.akses_pegawai_hero_title || 'Akses Pegawai');
+      setHeroDesc(data.akses_pegawai_hero_desc || '');
+      setHeroImage(data.akses_pegawai_hero_image || data.hero_image || '/uploads/ui_rectorate_hero.png');
+    } catch (err) {
+      showToast('error', 'Gagal memuat data settings');
+    }
+  };
+
+  const handleHeroImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingHero(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(`${BACKEND_URL}/api/admin/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getToken()}` },
+        body: formData,
+      });
+
+      if (res.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!res.ok) throw new Error('Gagal mengupload gambar');
+      const data = await res.json();
+      setHeroImage(data.url);
+      showToast('success', 'Gambar Hero berhasil diupload!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal mengupload gambar');
+    } finally {
+      setUploadingHero(false);
+    }
+  };
+
+  const handleSaveHeroSettings = async () => {
+    setSavingHero(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          akses_pegawai_hero_title: heroTitle,
+          akses_pegawai_hero_desc: heroDesc,
+          akses_pegawai_hero_image: heroImage,
+        }),
+      });
+
+      if (res.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!res.ok) throw new Error('Gagal menyimpan settings');
+
+      showToast('success', 'Hero Section berhasil disimpan!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal menyimpan perubahan');
+    } finally {
+      setSavingHero(false);
     }
   };
 
@@ -223,24 +315,86 @@ export default function AdminAksesPegawaiPage() {
 
         <main className="admin-main">
           <div className="admin-container">
-            <div className="admin-page-header">
-              <div>
-                <h1>Akses Pegawai</h1>
-                <p>Kelola link jalan pintas, sistem internal, dan administrasi bagi pegawai</p>
+       
+
+            {/* HERO SECTION CARD */}
+            <div className="admin-card" style={{ marginBottom: '2rem' }}>
+              <div className="admin-card-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FileText size={18} />
+                  <h2>Hero Section</h2>
+                </div>
               </div>
-              <button className="admin-add-btn" onClick={openCreateModal}>
-                <Plus size={18} />
-                <span>Tambah Link</span>
-              </button>
+              
+              <div className="admin-card-body flex-row-layout">
+                <div className="inputs-column" style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="admin-field">
+                    <label>Judul halaman</label>
+                    <input 
+                      type="text" 
+                      value={heroTitle}
+                      onChange={(e) => setHeroTitle(e.target.value)}
+                    />
+                  </div>
+                  <div className="admin-field" style={{ marginTop: '1rem' }}>
+                    <label>Deskripsi judul</label>
+                    <textarea 
+                      rows={3} 
+                      value={heroDesc}
+                      onChange={(e) => setHeroDesc(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="image-column" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: '600', color: '#475569', marginBottom: '0.4rem' }}>Background Image</label>
+                  <div className="image-uploader-wrapper">
+                    <img src={getImageUrl(heroImage)} alt="Hero Background" />
+                    <button 
+                      type="button"
+                      className="upload-overlay-btn"
+                      onClick={() => heroFileRef.current?.click()}
+                      disabled={uploadingHero}
+                    >
+                      <Upload size={16} />
+                      {uploadingHero ? 'Mengunggah...' : 'Upload Image'}
+                    </button>
+                    <input 
+                      type="file" 
+                      ref={heroFileRef} 
+                      accept="image/*"
+                      onChange={handleHeroImageUpload} 
+                      style={{ display: 'none' }}
+                    />
+                  </div>
+                  <span className="image-hint-text">Recommended size: 1920x600px. Max size: 2MB.</span>
+                </div>
+              </div>
+
+              <div className="admin-card-footer" style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem 1.5rem', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+                <button 
+                  className="btn-save" 
+                  onClick={handleSaveHeroSettings}
+                  disabled={savingHero}
+                >
+                  {savingHero ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+              </div>
             </div>
 
             <div className="admin-card">
-              <div className="admin-card-header">
+              <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Lock size={18} />
                   <h2>Daftar Akses Pegawai</h2>
                 </div>
-                <span className="user-count-badge">{links.length} Sistem</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span className="user-count-badge">{links.length} Sistem</span>
+                  <button className="admin-add-btn" onClick={openCreateModal} style={{ margin: 0 }}>
+                    <Plus size={16} />
+                    <span>Tambah Link</span>
+                  </button>
+                </div>
               </div>
 
               {loading ? (
@@ -410,7 +564,7 @@ export default function AdminAksesPegawaiPage() {
         </div>
       )}
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .admin-layout {
           display: flex;
           min-height: 100vh;
@@ -453,11 +607,10 @@ export default function AdminAksesPegawaiPage() {
 
         /* Main Layout */
         .admin-main {
-          padding: 3rem 0 4rem;
+          padding: 2rem 0 4rem;
         }
         .admin-container {
           max-width: 1080px;
-          margin: 0 auto;
           padding: 0 2rem;
         }
         .admin-page-header {
@@ -476,6 +629,22 @@ export default function AdminAksesPegawaiPage() {
           font-size: 0.92rem;
           color: #64748B;
           margin: 0;
+        }
+
+        /* Buttons */
+        .btn-save {
+          background: #FFC72C;
+          color: #001f3f;
+          border: none;
+          padding: 0.6rem 1.5rem;
+          border-radius: 6px;
+          font-size: 0.88rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .btn-save:hover:not(:disabled) {
+          background: #E0AE20;
         }
 
         .admin-add-btn {
@@ -805,12 +974,113 @@ export default function AdminAksesPegawaiPage() {
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        .image-uploader-wrapper {
+          width: 100%;
+          aspect-ratio: 21/9;
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          border-radius: 8px;
+          position: relative;
+          overflow: hidden;
+        }
+        .image-uploader-wrapper img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .upload-overlay-btn {
+          position: absolute;
+          bottom: 1rem;
+          right: 1rem;
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid #CBD5E1;
+          color: #1E293B;
+          padding: 0.4rem 0.75rem;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          cursor: pointer;
+        }
+        .image-hint-text {
+          font-size: 0.72rem;
+          color: #94A3B8;
+          margin-top: 0.5rem;
+        }
+        .breadcrumb {
+          display: flex;
+          align-items: center;
+          font-size: 0.78rem;
+          color: #94A3B8;
+        }
+        .breadcrumb .separator {
+          margin: 0 0.4rem;
+          color: #CBD5E1;
+        }
+        .breadcrumb .active-breadcrumb {
+          color: #475569;
+          font-weight: 600;
+        }
+
+        .flex-row-layout {
+          display: flex;
+          gap: 2rem;
+          align-items: flex-start;
+        }
+        .inputs-column {
+          flex: 1.2;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          width: 100%;
+        }
+        .image-column {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+        }
+        .admin-card-body {
+          padding: 1.5rem;
+        }
+        .admin-field {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+          width: 100%;
+        }
+        .admin-field label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #475569;
+        }
+        .admin-field input[type="text"],
+        .admin-field textarea {
+          padding: 0.65rem 0.85rem;
+          border: 1px solid #CBD5E1;
+          border-radius: 6px;
+          font-size: 0.88rem;
+          color: #334155;
+          outline: none;
+          background: #FFFFFF;
+          font-family: inherit;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .admin-field input[type="text"]:focus,
+        .admin-field textarea:focus {
+          border-color: #0A1E38;
+        }
+
         @media (max-width: 768px) {
           .admin-layout { flex-direction: column; }
           .admin-sidebar { width: 100%; height: auto; position: static; }
           .admin-container { padding: 0 1rem; }
         }
-      `}</style>
+      `}} />
     </div>
   );
 }

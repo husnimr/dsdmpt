@@ -55,11 +55,12 @@ export default function GlobalTalent() {
       <div className="subpage-hero-wrapper">
         <section
           className="subpage-hero"
-          style={{ backgroundImage: `url(${getImageUrl(settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
+          style={{ backgroundImage: `url(${getImageUrl(settings.global_talent_hero_image || settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
         >
           <div className="subpage-hero-overlay" />
           <div className="subpage-hero-content">
-            <h1 className="subpage-hero-title">Global Talent</h1>
+            <h1 className="subpage-hero-title">{settings.global_talent_hero_title || 'Global Talent'}</h1>
+            {settings.global_talent_hero_desc && <p className="subpage-hero-sub">{settings.global_talent_hero_desc}</p>}
           </div>
         </section>
       </div>
