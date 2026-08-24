@@ -206,7 +206,6 @@ export default function AdminRekrutmenPage() {
                 <div className="admin-card" style={{ marginBottom: '2rem' }}>
                   <div className="admin-card-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <FileText size={18} />
                       <h2>Hero Section</h2>
                     </div>
                   </div>
@@ -271,8 +270,7 @@ export default function AdminRekrutmenPage() {
                 <div className="admin-card">
                   <div className="admin-card-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <LinkIcon size={18} />
-                      <h2>Konten Portal Rekrutmen</h2>
+                      <h2>Link Portal Rekrutmen</h2>
                     </div>
                   </div>
                   

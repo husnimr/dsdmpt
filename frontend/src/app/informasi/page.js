@@ -7,7 +7,9 @@ import {
   X, 
   FileText,
   Download,
-  Eye
+  Eye,
+  FileSpreadsheet,
+  Link as LinkIcon
 } from 'lucide-react';
 
 const BACKEND_URL = 'http://localhost:8081';
@@ -56,6 +58,46 @@ export default function Informasi() {
       .then(data => setDocs(data))
       .catch(err => console.error(err));
   }, []);
+
+  const getDocIconAndColor = (doc) => {
+    if (doc.link) {
+      return <LinkIcon size={20} style={{ color: '#2563EB', flexShrink: 0 }} />;
+    }
+    const url = doc.file_url || '';
+    const ext = url.split('.').pop().toLowerCase();
+    if (ext === 'pdf') {
+      return <FileText size={20} style={{ color: '#EF4444', flexShrink: 0 }} />;
+    } else if (ext === 'doc' || ext === 'docx') {
+      return <FileText size={20} style={{ color: '#2563EB', flexShrink: 0 }} />;
+    } else if (ext === 'xls' || ext === 'xlsx') {
+      return <FileSpreadsheet size={20} style={{ color: '#16A34A', flexShrink: 0 }} />;
+    }
+    return <FileText size={20} style={{ color: '#64748B', flexShrink: 0 }} />;
+  };
+
+  const handleDownload = async (e, url, title) => {
+    e.preventDefault();
+    if (!url) return;
+    
+    const ext = url.split('.').pop().toLowerCase() || 'pdf';
+    const filename = `${title}.${ext}`;
+    
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      window.open(url, '_blank');
+    }
+  };
 
   return (
     <div style={{ fontFamily: 'var(--font-body)', color: 'var(--text-main)', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
@@ -165,8 +207,8 @@ export default function Informasi() {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <h3 style={{ fontSize: '1.1rem', color: '#0A1E38', fontWeight: '700' }}>Panduan Dokumen PDF</h3>
-                      <p style={{ fontSize: '0.85rem', color: '#576574', margin: 0 }}>Unduh atau baca langsung lampiran resmi dokumen.</p>
+                      <h3 style={{ fontSize: '1.1rem', color: '#0A1E38', fontWeight: '700' }}>Dokumen PDF</h3>
+                      <p style={{ fontSize: '0.85rem', color: '#576574', margin: 0 }}>Unduh atau baca langsung lampiran dokumen.</p>
                       <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
                         <button 
                           onClick={() => setActivePdfUrl(activePdfUrl === card.file_url ? null : card.file_url)} 
@@ -252,21 +294,30 @@ export default function Informasi() {
               </h2>
               
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1rem', padding: 0, margin: 0 }}>
-                {docs.map((doc) => (
-                  <li key={doc.id}>
-                    <a 
-                      href={doc.link || getImageUrl(doc.file_url)} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', textDecoration: 'none' }}
-                    >
-                      <FileText size={20} style={{ color: '#E28743', flexShrink: 0 }} />
-                      <span style={{ fontSize: '0.88rem', fontWeight: '600', color: '#0A1E38', lineHeight: '1.3' }}>
-                        {doc.title}
-                      </span>
-                    </a>
-                  </li>
-                ))}
+                {docs.map((doc) => {
+                  const targetUrl = doc.link || getImageUrl(doc.file_url);
+                  const isFile = !doc.link;
+                  return (
+                    <li key={doc.id}>
+                      <a 
+                        href={targetUrl} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        onClick={(e) => {
+                          if (isFile) {
+                            handleDownload(e, targetUrl, doc.title);
+                          }
+                        }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '10px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', textDecoration: 'none' }}
+                      >
+                        {getDocIconAndColor(doc)}
+                        <span style={{ fontSize: '0.88rem', fontWeight: '600', color: '#0A1E38', lineHeight: '1.3' }}>
+                          {doc.title}
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </div>

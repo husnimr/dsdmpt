@@ -270,7 +270,7 @@ export default function AdminInformasiPage() {
   const handleCardSubmit = async (e) => {
     e.preventDefault();
     if (!cardTitle.trim()) {
-      showToast('error', 'Judul kartu informasi wajib diisi!');
+      showToast('error', 'Judul informasi wajib diisi!');
       return;
     }
     setCardSubmitting(true);
@@ -298,9 +298,9 @@ export default function AdminInformasiPage() {
       });
 
       if (res.status === 401) return handleUnauthorized();
-      if (!res.ok) throw new Error('Gagal menyimpan kartu informasi');
+      if (!res.ok) throw new Error('Gagal menyimpan informasi');
 
-      showToast('success', cardModalType === 'create' ? 'Kartu informasi berhasil dibuat!' : 'Kartu informasi berhasil diperbarui!');
+      showToast('success', cardModalType === 'create' ? 'informasi berhasil dibuat!' : 'informasi berhasil diperbarui!');
       setCardModalOpen(false);
       fetchData();
     } catch (err) {
@@ -312,7 +312,7 @@ export default function AdminInformasiPage() {
 
   // Delete Card
   const handleDeleteCard = async (id) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus kartu informasi ini?')) return;
+    if (!window.confirm('Apakah Anda yakin ingin menghapus informasi ini?')) return;
     try {
       const res = await fetch(`${BACKEND_URL}/api/admin/informasi/${id}`, {
         method: 'DELETE',
@@ -320,7 +320,7 @@ export default function AdminInformasiPage() {
       });
       if (res.status === 401) return handleUnauthorized();
       if (!res.ok) throw new Error('Gagal menghapus');
-      showToast('success', 'Kartu informasi berhasil dihapus!');
+      showToast('success', 'informasi berhasil dihapus!');
       fetchData();
     } catch (err) {
       showToast('error', err.message);
@@ -512,14 +512,13 @@ export default function AdminInformasiPage() {
           ) : (
             <div className="admin-grid-columns">
               
-              {/* Left Column: Kartu Informasi */}
+              {/* Left Column: Informasi */}
               <div className="admin-panel-card">
                 <div className="panel-header">
                   <div className="panel-title-area">
-                    <Info size={20} className="panel-icon" />
                     <div>
-                      <h3>Kartu Informasi</h3>
-                      <p>Kartu dengan deskripsi, gambar, dan/atau lampiran PDF</p>
+                      <h3>Informasi</h3>
+                      <p>Informasi dengan deskripsi, gambar, dan/atau lampiran PDF</p>
                     </div>
                   </div>
                   <button onClick={() => openCardModal('create')} className="btn-add-item">
@@ -529,7 +528,7 @@ export default function AdminInformasiPage() {
 
                 <div className="items-list">
                   {cards.length === 0 ? (
-                    <div className="empty-state">Belum ada kartu informasi.</div>
+                    <div className="empty-state">Belum ada informasi.</div>
                   ) : (
                     cards.map((card, index) => (
                       <div key={card.id} className="item-row">
@@ -589,7 +588,6 @@ export default function AdminInformasiPage() {
               <div className="admin-panel-card">
                 <div className="panel-header">
                   <div className="panel-title-area">
-                    <FileText size={20} className="panel-icon" />
                     <div>
                       <h3>Dokumen Terkini</h3>
                       <p>Tautan unduh dokumen kepegawaian internal</p>
@@ -669,7 +667,7 @@ export default function AdminInformasiPage() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-box">
             <div className="modal-header">
-              <h3>{cardModalType === 'create' ? 'Tambah Kartu Informasi Baru' : 'Edit Kartu Informasi'}</h3>
+              <h3>{cardModalType === 'create' ? 'Tambah informasi Baru' : 'Edit informasi'}</h3>
               <button onClick={() => setCardModalOpen(false)} className="btn-close-modal">&times;</button>
             </div>
             <form onSubmit={handleCardSubmit} className="modal-form">
@@ -697,14 +695,8 @@ export default function AdminInformasiPage() {
               <div className="form-group">
                 <label>Gambar (Opsional)</label>
                 <div className="upload-input-group">
-                  <input 
-                    type="text" 
-                    value={cardImage} 
-                    onChange={(e) => setCardImage(e.target.value)}
-                    placeholder="URL" 
-                  />
-                  <label className="btn-upload-file">
-                    {uploadingCardImg ? 'Mengunggah...' : <><Upload size={14} /> Pilih File</>}
+                  <label className="btn-upload-file" style={{ width: '100%', justifyContent: 'center' }}>
+                    {uploadingCardImg ? 'Mengunggah...' : <><Upload size={14} /> Pilih Gambar</>}
                     <input 
                       type="file" 
                       accept="image/*" 
@@ -725,13 +717,7 @@ export default function AdminInformasiPage() {
               <div className="form-group">
                 <label>Lampiran Berkas PDF (Opsional)</label>
                 <div className="upload-input-group">
-                  <input 
-                    type="text" 
-                    value={cardFile} 
-                    onChange={(e) => setCardFile(e.target.value)}
-                    placeholder="URL" 
-                  />
-                  <label className="btn-upload-file">
+                  <label className="btn-upload-file" style={{ width: '100%', justifyContent: 'center' }}>
                     {uploadingCardFile ? 'Mengunggah...' : <><Upload size={14} /> Pilih PDF</>}
                     <input 
                       type="file" 
@@ -784,16 +770,7 @@ export default function AdminInformasiPage() {
               <div className="form-group">
                 <label>Opsi 1: Dokumen (PDF, Docx, xlsx, dll)</label>
                 <div className="upload-input-group">
-                  <input 
-                    type="text" 
-                    value={docFile} 
-                    onChange={(e) => {
-                      setDocFile(e.target.value);
-                      if (e.target.value) setDocLink(''); // mutually exclusive
-                    }}
-                    placeholder="" 
-                  />
-                  <label className="btn-upload-file">
+                  <label className="btn-upload-file" style={{ width: '100%', justifyContent: 'center' }}>
                     {uploadingDocFile ? 'Mengunggah...' : <><Upload size={14} /> Unggah File</>}
                     <input 
                       type="file" 
@@ -807,6 +784,12 @@ export default function AdminInformasiPage() {
                     />
                   </label>
                 </div>
+                {docFile && (
+                  <div className="pdf-preview-info" style={{ marginTop: '0.5rem' }}>
+                    <FileText size={16} /> <span>{docFile}</span>
+                    <button type="button" onClick={() => setDocFile('')} className="btn-remove-uploaded-link">Hapus</button>
+                  </div>
+                )}
               </div>
 
               <div className="form-group">

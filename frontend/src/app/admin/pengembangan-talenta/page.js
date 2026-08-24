@@ -545,7 +545,6 @@ export default function AdminPengembanganTalentaPage() {
             <div className="admin-card" style={{ marginBottom: '2rem' }}>
               <div className="admin-card-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <FileText size={18} />
                   <h2>Hero Section</h2>
                 </div>
               </div>
@@ -610,8 +609,7 @@ export default function AdminPengembanganTalentaPage() {
             <div className="admin-card">
               <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Star size={18} />
-                  <h2>Daftar Program Pengembangan Talenta</h2>
+                  <h2>Daftar Program</h2>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                   {/* Search Input in Head Table */}

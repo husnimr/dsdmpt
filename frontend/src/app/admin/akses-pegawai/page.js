@@ -321,7 +321,6 @@ export default function AdminAksesPegawaiPage() {
             <div className="admin-card" style={{ marginBottom: '2rem' }}>
               <div className="admin-card-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <FileText size={18} />
                   <h2>Hero Section</h2>
                 </div>
               </div>
@@ -385,14 +384,13 @@ export default function AdminAksesPegawaiPage() {
             <div className="admin-card">
               <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Lock size={18} />
                   <h2>Daftar Akses Pegawai</h2>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <span className="user-count-badge">{links.length} Sistem</span>
                   <button className="admin-add-btn" onClick={openCreateModal} style={{ margin: 0 }}>
                     <Plus size={16} />
-                    <span>Tambah Link</span>
+                    <span>Tambah</span>
                   </button>
                 </div>
               </div>

@@ -307,7 +307,6 @@ export default function AdminGlobalTalentPage() {
              {/* HERO SECTION CARD */}
              <div className="admin-card" style={{ marginBottom: '2rem' }}>
                <div className="admin-card-header">
-                 <FileText size={20} />
                  <h2>Hero Section</h2>
                </div>
                
@@ -370,7 +369,6 @@ export default function AdminGlobalTalentPage() {
              {/* Intro & Gambar Section */}
              <div className="admin-card">
               <div className="admin-card-header">
-                <FileText size={20} />
                 <h2>Deskripsi & Gambar</h2>
               </div>
               <div className="admin-form intro-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem' }}>
@@ -434,7 +432,6 @@ export default function AdminGlobalTalentPage() {
             <div className="admin-card">
               <div className="admin-card-header" style={{ display: 'flex', justifycontent: 'space-between', alignitems: 'center' }}>
                 <div style={{ display: 'flex', alignitems: 'center', gap: '0.5rem' }}>
-                  <FileText size={20} />
                   <h2>Aturan Umum</h2>
                 </div>
                 <button type="button" className="list-add-btn" onClick={addAturanItem}>
@@ -467,7 +464,6 @@ export default function AdminGlobalTalentPage() {
             <div className="admin-card">
               <div className="admin-card-header" style={{ display: 'flex', justifycontent: 'space-between', alignitems: 'center' }}>
                 <div style={{ display: 'flex', alignitems: 'center', gap: '0.5rem' }}>
-                  <FileText size={20} />
                   <h2>Alur Pelaksanaan Secara Umum</h2>
                 </div>
                 <button type="button" className="list-add-btn" onClick={addAlurItem}>

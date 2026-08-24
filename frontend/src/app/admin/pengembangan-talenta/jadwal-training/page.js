@@ -148,7 +148,7 @@ export default function AdminJadwalTrainingPage() {
       if (!res.ok) throw new Error('Gagal mengupload gambar');
       const data = await res.json();
       setIntroImage(data.url);
-      showToast('success', 'Gambar intro berhasil diupload!');
+      showToast('success', 'Gambar berhasil diupload!');
     } catch (err) {
       showToast('error', err.message || 'Gagal mengupload gambar');
     } finally {
@@ -247,7 +247,6 @@ export default function AdminJadwalTrainingPage() {
                 <div className="admin-card" style={{ marginBottom: '2rem' }}>
                   <div className="admin-card-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <FileText size={18} />
                       <h2>Hero Section</h2>
                     </div>
                   </div>
@@ -313,7 +312,6 @@ export default function AdminJadwalTrainingPage() {
                 <div className="admin-card" style={{ marginBottom: '2rem' }}>
                   <div className="admin-card-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <FileText size={18} />
                       <h2>Deskripsi & Gambar</h2>
                     </div>
                   </div>
