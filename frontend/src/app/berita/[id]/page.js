@@ -194,36 +194,38 @@ export default function DetailBeritaPage() {
           </div>
 
           {/* Content Split Area */}
-          <div className="detail-split-grid">
+          <div className="detail-split-grid" style={galleryImages.length <= 1 ? { gridTemplateColumns: '1fr' } : {}}>
             
             {/* Left Side: Clickable Image Gallery */}
-            <div className="detail-gallery-sidebar">
-              {galleryImages.slice(0, 3).map((imgSrc, idx) => {
-                const isLast = idx === 2;
-                const hasMore = galleryImages.length > 3;
-                const extraCount = galleryImages.length - 3;
-                
-                return (
-                  <div 
-                    key={idx} 
-                    className={`gallery-thumbnail-card card-slot-${idx}`} 
-                    onClick={() => openLightbox(idx)}
-                  >
-                    <img src={getImageUrl(imgSrc)} alt={`Gallery item ${idx + 1}`} className="gallery-thumb" />
-                    
-                    {isLast && hasMore ? (
-                      <div className="gallery-thumb-overlay-always">
-                        <span className="extra-count-text">+{extraCount}</span>
-                      </div>
-                    ) : (
-                      <div className="gallery-thumb-overlay">
-                        <span className="zoom-text">Lihat Gambar</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {galleryImages.length > 1 && (
+              <div className="detail-gallery-sidebar">
+                {galleryImages.slice(0, 3).map((imgSrc, idx) => {
+                  const isLast = idx === 2;
+                  const hasMore = galleryImages.length > 3;
+                  const extraCount = galleryImages.length - 3;
+                  
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`gallery-thumbnail-card card-slot-${idx}`} 
+                      onClick={() => openLightbox(idx)}
+                    >
+                      <img src={getImageUrl(imgSrc)} alt={`Gallery item ${idx + 1}`} className="gallery-thumb" />
+                      
+                      {isLast && hasMore ? (
+                        <div className="gallery-thumb-overlay-always">
+                          <span className="extra-count-text">+{extraCount}</span>
+                        </div>
+                      ) : (
+                        <div className="gallery-thumb-overlay">
+                          <span className="zoom-text">Lihat Gambar</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Right Side: Rich Text Content */}
             <div className="detail-rich-text">

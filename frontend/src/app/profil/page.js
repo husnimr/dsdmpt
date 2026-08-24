@@ -232,6 +232,16 @@ export default function ProfilPage() {
 
   const pkSubtitle = settings.profil_program_kerja_subtitle || 'Program kerja utama yang diamanatkan dalam rencana strategis universitas guna mendukung sasaran strategis pusat talenta terbaik adalah sebagai berikut';
 
+  // Parse dynamic Pimpinan data from settings
+  let pimpinanData = PIMPINAN_DATA;
+  if (settings.profil_pimpinan_json) {
+    try {
+      pimpinanData = JSON.parse(settings.profil_pimpinan_json);
+    } catch (e) {
+      console.error("Gagal parse dynamic pimpinan data", e);
+    }
+  }
+
 
   return (
     <div>
@@ -246,7 +256,7 @@ export default function ProfilPage() {
           <div className="subpage-hero-overlay" />
           <div className="subpage-hero-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', zIndex: 2 }}>
             <h1 className="subpage-hero-title">
-              {activeTab === 'profil' ? (settings.profil_hero_title || 'Profil') : 'Struktur Organisasi DSDMPT'}
+              {activeTab === 'profil' ? (settings.profil_hero_title || 'Profil') : (activeTab === 'struktur' ? 'Struktur Organisasi DSDMPT' : 'Pimpinan Direktorat DSDMPT')}
             </h1>
             {activeTab === 'profil' && settings.profil_hero_desc && (
               <p className="subpage-hero-desc" style={{ color: 'rgba(255, 255, 255, 0.85)', marginTop: '0.75rem', fontSize: '1.05rem', maxWidth: '700px', fontWeight: '400', lineHeight: '1.5' }}>
@@ -585,7 +595,7 @@ export default function ProfilPage() {
             </div>
           )}
 
-          {activeTab === 'pimpinan' && (
+          {activeTab === 'pimpinan' && pimpinanData && pimpinanData.director && (
             <div className="pimpinan-direktorat-container" style={{ padding: '1rem 0 4rem 0', width: '100%', overflowX: 'auto' }}>
               <div style={{ minWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 1rem' }}>
                 
@@ -611,14 +621,18 @@ export default function ProfilPage() {
                     );
                   };
 
+                  const colsCount = (pimpinanData.subdirectorates || []).length || 1;
+                  const horizontalSpanPercent = colsCount > 1 ? 100 - (100 / colsCount) : 0;
+                  const horizontalOffsetPercent = colsCount > 1 ? (50 / colsCount) : 50;
+
                   return (
                     <>
                       {/* Top Level: Director */}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', width: '25%' }}>
                         <PimpinanCard 
-                          name={PIMPINAN_DATA.director.name} 
-                          role={PIMPINAN_DATA.director.role} 
-                          imageSrc={PIMPINAN_DATA.director.image} 
+                          name={pimpinanData.director.name} 
+                          role={pimpinanData.director.role} 
+                          imageSrc={pimpinanData.director.image} 
                           isDirector={true}
                         />
                       </div>
@@ -631,21 +645,23 @@ export default function ProfilPage() {
                       {/* Sub-Directorate Columns Connected by tree structure */}
                       <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         
-                        {/* Horizontal line: Spans exactly from center of column 1 (12.5%) to center of column 4 (87.5%) */}
-                        <div style={{ 
-                          position: 'absolute', 
-                          top: 0, 
-                          left: '12.5%', 
-                          right: '12.5%', 
-                          height: '2px', 
-                          backgroundColor: '#CBD5E1',
-                          zIndex: 1
-                        }} />
+                        {/* Horizontal line: Dynamically calculated based on column count */}
+                        {colsCount > 1 && (
+                          <div style={{ 
+                            position: 'absolute', 
+                            top: 0, 
+                            left: `${horizontalOffsetPercent}%`, 
+                            right: `${horizontalOffsetPercent}%`, 
+                            height: '2px', 
+                            backgroundColor: '#CBD5E1',
+                            zIndex: 1
+                          }} />
+                        )}
 
-                        {/* 4 Columns Container */}
+                        {/* Columns Container */}
                         <div style={{ display: 'flex', width: '100%', boxSizing: 'border-box', alignItems: 'stretch' }}>
-                          {PIMPINAN_DATA.subdirectorates.map((sub) => (
-                            <div key={sub.id} style={{ width: '25%', padding: '0 0.75rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                          {(pimpinanData.subdirectorates || []).map((sub) => (
+                            <div key={sub.id} style={{ width: `${100 / colsCount}%`, padding: '0 0.75rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
                               {/* Vertical line from horizontal line to Kasubdit card */}
                               <div style={{ width: '2px', height: '14px', backgroundColor: '#CBD5E1', zIndex: 1, flexShrink: 0 }} />
                               
@@ -657,7 +673,7 @@ export default function ProfilPage() {
                               />
 
                               {/* Kasie list connected vertically under each Kasubdit */}
-                              {sub.kasie.map((ks, index) => (
+                              {(sub.kasie || []).map((ks, index) => (
                                 <React.Fragment key={index}>
                                   <div style={{ width: '2px', height: '16px', backgroundColor: '#CBD5E1', zIndex: 1, flexShrink: 0 }} />
                                   <PimpinanCard 

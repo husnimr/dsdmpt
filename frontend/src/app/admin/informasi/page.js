@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plus, 
   Edit2, 
@@ -48,7 +48,12 @@ export default function AdminInformasiPage() {
   const [docSubmitting, setDocSubmitting] = useState(false);
 
   // Global settings for Hero section
-  const [heroImage, setHeroImage] = useState('');
+  const [heroTitle, setHeroTitle] = useState('Informasi');
+  const [heroDesc, setHeroDesc] = useState('');
+  const [heroImage, setHeroImage] = useState('/uploads/ui_rectorate_hero.png');
+  const [savingHero, setSavingHero] = useState(false);
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const heroFileRef = useRef(null);
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -109,9 +114,64 @@ export default function AdminInformasiPage() {
     try {
       const res = await fetch(`${BACKEND_URL}/api/settings`);
       const data = await res.json();
-      setHeroImage(data.hero_image || '/uploads/ui_rectorate_hero.png');
+      setHeroTitle(data.informasi_hero_title || 'Informasi');
+      setHeroDesc(data.informasi_hero_desc || '');
+      setHeroImage(data.informasi_hero_image || data.hero_image || '/uploads/ui_rectorate_hero.png');
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    setSavingHero(true);
+    try {
+      const payload = {
+        informasi_hero_title: heroTitle,
+        informasi_hero_desc: heroDesc,
+        informasi_hero_image: heroImage,
+      };
+
+      const res = await fetch(`${BACKEND_URL}/api/admin/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error('Gagal menyimpan settings');
+      showToast('success', 'Perubahan Hero Section berhasil disimpan!');
+    } catch (err) {
+      showToast('error', err.message);
+    } finally {
+      setSavingHero(false);
+    }
+  };
+
+  const handleHeroImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingHero(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(`${BACKEND_URL}/api/admin/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getToken()}` },
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error('Gagal mengupload gambar');
+      const data = await res.json();
+      setHeroImage(data.url);
+      showToast('success', 'Background Image berhasil diperbarui');
+    } catch (err) {
+      showToast('error', err.message);
+    } finally {
+      setUploadingHero(false);
     }
   };
 
@@ -379,6 +439,70 @@ export default function AdminInformasiPage() {
               <span>{toast.message}</span>
             </div>
           )}
+
+          {/* HERO SECTION CARD */}
+          <div className="admin-card">
+            <div className="admin-card-header">
+              <h2>Hero Section</h2>
+            </div>
+            
+            <div className="admin-card-body flex-row-layout">
+              <div className="inputs-column">
+                <div className="admin-field">
+                  <label>Judul Halaman</label>
+                  <input 
+                    type="text" 
+                    value={heroTitle}
+                    onChange={(e) => setHeroTitle(e.target.value)}
+                  />
+                </div>
+                <div className="admin-field" style={{ marginTop: '1rem' }}>
+                  <label>Deskripsi Judul (Opsional)</label>
+                  <textarea 
+                    rows={3} 
+                    value={heroDesc}
+                    onChange={(e) => setHeroDesc(e.target.value)}
+                    placeholder="Masukkan deskripsi banner hero..."
+                  />
+                </div>
+              </div>
+
+              <div className="image-column">
+                <label>Background Image</label>
+                <div className="image-uploader-wrapper">
+                  <img src={getImageUrl(heroImage)} alt="Hero Background" />
+                  <button 
+                    type="button"
+                    className="upload-overlay-btn"
+                    onClick={() => heroFileRef.current?.click()}
+                    disabled={uploadingHero}
+                  >
+                    <Upload size={16} />
+                    {uploadingHero ? 'Mengunggah...' : 'Upload Image'}
+                  </button>
+                  <input 
+                    type="file" 
+                    ref={heroFileRef} 
+                    accept="image/*"
+                    onChange={handleHeroImageUpload} 
+                    style={{ display: 'none' }}
+                  />
+                </div>
+                <span className="image-hint-text">Recommended size: 1920x600px. Max size: 2MB.</span>
+              </div>
+            </div>
+
+            <div className="admin-card-footer" style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem 1.5rem', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+              <button 
+                type="button"
+                className="btn-save" 
+                onClick={handleSaveSettings}
+                disabled={savingHero}
+              >
+                {savingHero ? 'Menyimpan...' : 'Simpan Perubahan'}
+              </button>
+            </div>
+          </div>
 
           {loading ? (
             <div className="admin-loading-spinner-container">
@@ -724,6 +848,133 @@ export default function AdminInformasiPage() {
           margin: 0 auto;
           padding: 2.5rem;
         }
+
+        /* Hero Section Card and components */
+        .admin-card {
+          background: #FFFFFF;
+          border-radius: 16px;
+          border: 1px solid #E2E8F0;
+          margin-bottom: 2rem;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .admin-card-header {
+          padding: 1.25rem 1.5rem;
+          border-bottom: 1px solid #F1F5F9;
+        }
+        .admin-card-header h2 {
+          font-size: 1.05rem;
+          font-weight: 700;
+          color: #1E293B;
+          margin: 0;
+        }
+        .admin-card-body {
+          padding: 1.5rem;
+        }
+        .flex-row-layout {
+          display: flex;
+          gap: 2rem;
+          align-items: flex-start;
+        }
+        .inputs-column {
+          flex: 1.2;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .image-column {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        .image-column label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #475569;
+          margin-bottom: 0.5rem;
+        }
+        .admin-field {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+        }
+        .admin-field label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #475569;
+        }
+        .admin-field input[type="text"],
+        .admin-field textarea {
+          width: 100%;
+          padding: 0.65rem 0.75rem;
+          border: 1px solid #CBD5E1;
+          border-radius: 8px;
+          font-size: 0.88rem;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+        .admin-field input[type="text"]:focus,
+        .admin-field textarea:focus {
+          border-color: #0B2F61;
+        }
+        .image-uploader-wrapper {
+          position: relative;
+          width: 100%;
+          height: 180px;
+          border-radius: 8px;
+          overflow: hidden;
+          background: #F1F5F9;
+          border: 1px dashed #CBD5E1;
+        }
+        .image-uploader-wrapper img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .upload-overlay-btn {
+          position: absolute;
+          inset: 0;
+          background: rgba(15, 23, 42, 0.6);
+          color: #FFFFFF;
+          border: none;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          opacity: 0;
+          transition: opacity 0.2s;
+        }
+        .image-uploader-wrapper:hover .upload-overlay-btn {
+          opacity: 1;
+        }
+        .image-hint-text {
+          font-size: 0.75rem;
+          color: #64748B;
+          margin-top: 0.5rem;
+        }
+        .btn-save {
+          background: #FFC72C;
+          color: #001f3f;
+          border: none;
+          padding: 0.6rem 1.5rem;
+          border-radius: 6px;
+          font-size: 0.88rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .btn-save:hover:not(:disabled) {
+          background: #E0AE20;
+        }
+        .btn-save:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
         .admin-header-row {
           display: flex;
           justify-content: space-between;

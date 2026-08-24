@@ -82,6 +82,12 @@ export default function JadwalTrainingPage() {
   const [trainings, setTrainings] = useState([]);
   const [yearsList, setYearsList] = useState([2025, 2026]);
   const [settings, setSettings] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when month or year filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedMonth, selectedYear]);
 
   useEffect(() => {
     // Fetch settings
@@ -207,6 +213,10 @@ export default function JadwalTrainingPage() {
     return false;
   });
 
+  const itemsPerPage = 6;
+  const totalPages = Math.ceil(filteredTrainings.length / itemsPerPage);
+  const displayedTrainings = filteredTrainings.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div style={{ fontFamily: 'var(--font-body)', color: 'var(--text-main)', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
       
@@ -221,6 +231,11 @@ export default function JadwalTrainingPage() {
           <div className="subpage-hero-overlay" />
           <div className="subpage-hero-content">
             <h1 className="subpage-hero-title">{settings.jadwal_training_hero_title || 'Jadwal Training'}</h1>
+            {settings.jadwal_training_hero_desc && (
+              <p className="subpage-hero-sub" style={{ color: 'rgba(255,255,255,0.9)', marginTop: '0.5rem', fontSize: '1.1rem' }}>
+                {settings.jadwal_training_hero_desc}
+              </p>
+            )}
           </div>
         </section>
       </div>
@@ -360,10 +375,10 @@ export default function JadwalTrainingPage() {
 
             <div className="schedule-panel-divider" />
 
-            {/* Grid Layout of Premium Cards */}
+             {/* Grid Layout of Premium Cards */}
             <div className="training-grid">
-              {filteredTrainings.length > 0 ? (
-                filteredTrainings.map((prog) => {
+              {displayedTrainings.length > 0 ? (
+                displayedTrainings.map((prog) => {
                   const isPublic = prog.type === 'public' || prog.type === 'PUBLIK';
                   return (
                     <div key={prog.id} className="training-card">
@@ -395,6 +410,42 @@ export default function JadwalTrainingPage() {
                 </div>
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="pagination-wrapper">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="pagination-arrow-btn"
+                  title="Halaman Sebelumnya"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                {Array.from({ length: totalPages }).map((_, idx) => {
+                  const pageNum = idx + 1;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`pagination-number-btn ${currentPage === pageNum ? 'active' : ''}`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="pagination-arrow-btn"
+                  title="Halaman Selanjutnya"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
 
           </div>
 
@@ -706,6 +757,63 @@ export default function JadwalTrainingPage() {
             flex-direction: column;
             align-items: flex-start;
           }
+        }
+
+        /* Pagination Styles */
+        .pagination-wrapper {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 3rem;
+          user-select: none;
+        }
+        .pagination-arrow-btn {
+          width: 38px;
+          height: 38px;
+          border-radius: 8px;
+          border: 1px solid #E2E8F0;
+          background: #FFFFFF;
+          color: #475569;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .pagination-arrow-btn:hover:not(:disabled) {
+          background: #F1F5F9;
+          border-color: #CBD5E1;
+          color: #0F172A;
+        }
+        .pagination-arrow-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+        .pagination-number-btn {
+          width: 38px;
+          height: 38px;
+          border-radius: 8px;
+          border: 1px solid #E2E8F0;
+          background: #FFFFFF;
+          color: #475569;
+          font-size: 0.9rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .pagination-number-btn:hover {
+          background: #F1F5F9;
+          border-color: #CBD5E1;
+          color: #0F172A;
+        }
+        .pagination-number-btn.active {
+          background: #0B2F61;
+          border-color: #0B2F61;
+          color: #FFFFFF;
         }
       `}} />
     </div>

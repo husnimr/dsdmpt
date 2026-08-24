@@ -49,6 +49,8 @@ export default function BeritaPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [heroImage, setHeroImage] = useState('');
+  const [heroTitle, setHeroTitle] = useState('Berita');
+  const [heroDesc, setHeroDesc] = useState('Berita dan informasi seputar SDM dan pengembangan talenta Universitas Indonesia');
   const [selectedNews, setSelectedNews] = useState(null);
   const [activeTab, setActiveTab] = useState('berita');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -61,11 +63,15 @@ export default function BeritaPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch hero image from settings
+  // Fetch hero image and content from settings
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/settings`)
       .then(r => r.json())
-      .then(d => setHeroImage(d.hero_image || ''))
+      .then(d => {
+        setHeroTitle(d.berita_hero_title !== undefined ? d.berita_hero_title : 'Berita');
+        setHeroDesc(d.berita_hero_desc !== undefined ? d.berita_hero_desc : 'Berita dan informasi seputar SDM dan pengembangan talenta Universitas Indonesia');
+        setHeroImage(d.berita_hero_image || d.hero_image || '');
+      })
       .catch(() => {});
   }, []);
 
@@ -103,14 +109,12 @@ export default function BeritaPage() {
       <div className="subpage-hero-wrapper">
         <section
           className="subpage-hero"
-          style={{ backgroundImage: `url(${getImageUrl(heroImage)})` }}
+          style={{ backgroundImage: `url(${getImageUrl(heroImage || '/uploads/ui_rectorate_hero.png')})` }}
         >
           <div className="subpage-hero-overlay" />
           <div className="subpage-hero-content">
-            <h1 className="subpage-hero-title">Berita</h1>
-            <p className="subpage-hero-sub">
-              Berita dan informasi seputar SDM dan pengembangan talenta Universitas Indonesia
-            </p>
+            <h1 className="subpage-hero-title">{heroTitle}</h1>
+            {heroDesc && <p className="subpage-hero-sub">{heroDesc}</p>}
           </div>
         </section>
       </div>

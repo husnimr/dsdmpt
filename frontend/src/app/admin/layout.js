@@ -195,6 +195,8 @@ export default function AdminLayout({ children }) {
         .admin-page-content-area {
           flex: 1;
           background: #F8FAFC;
+          overflow-y: auto;
+          height: calc(100vh - 70px);
         }
 
         /* Clean up secondary/duplicate elements from child page implementations */

@@ -143,6 +143,113 @@ export default function AdminProfilPage() {
     }
   ]);
 
+  // Pimpinan Direktorat states
+  const [directorName, setDirectorName] = useState('Dr.Eng.Ir. Muhammad Arif Budiyanto, S.T., M.T. IPM');
+  const [directorRole, setDirectorRole] = useState('DIREKTUR SDM DAN PENGEMBANGAN TALENTA');
+  const [directorImage, setDirectorImage] = useState('/uploads/pimpinan_0.png');
+  const [pimpinanSubdirectorates, setPimpinanSubdirectorates] = useState([
+    {
+      id: 1,
+      kasubdit: {
+        name: "Agus Anang, S.Kom., M.T.I., CHRS.",
+        role: "KASUBDIT LAYANAN, PEMBINAAN, DAN KARIER SDM",
+        image: "/uploads/pimpinan_4.png"
+      },
+      kasie: [
+        {
+          name: "Faisal Ali Ramdhani, S.Kom., CPS.",
+          role: "KASIE JABATAN FUNGSIONAL DOSEN",
+          image: "/uploads/pimpinan_5.png"
+        },
+        {
+          name: "Prilly Wiashari, S.H.",
+          role: "KASIE KARIR TENAGA KEPENDIDIKAN",
+          image: "/uploads/pimpinan_6.png"
+        },
+        {
+          name: "Muhammad Wirawan Putra, S.E., M.Ak., CHRS",
+          role: "KASIE LAYANAN DAN PEMBINAAN SDM",
+          image: "/uploads/pimpinan_7.png"
+        }
+      ]
+    },
+    {
+      id: 2,
+      kasubdit: {
+        name: "Yasinta Estherina Puspitasari, S.E.",
+        role: "KASUBDIT PENGEMBANGAN ORGANISASI, TATA LAKSANA, DAN SISTEM SDM",
+        image: "/uploads/pimpinan_1.png"
+      },
+      kasie: [
+        {
+          name: "Gita Maria, S.Sos.",
+          role: "KASIE ORGANISASI DAN TATA LAKSANA",
+          image: "/uploads/pimpinan_2.png"
+        },
+        {
+          name: "Widianto Nugroho, S.Kom.",
+          role: "KASIE PENGEMBANGAN SISTEM SDM",
+          image: "/uploads/pimpinan_3.png"
+        },
+        {
+          name: "Dwi Haryanti, S.E.",
+          role: "KASIE PERENCANAAN DAN EVALUASI ORGANISASI",
+          image: "/uploads/pimpinan_8.png"
+        }
+      ]
+    },
+    {
+      id: 3,
+      kasubdit: {
+        name: "Ermina Condro Setyowati, S.IP.",
+        role: "KASUBDIT PERENCANAAN, PENEMPATAN, PENGEMBANGAN SDM",
+        image: "/uploads/pimpinan_9.png"
+      },
+      kasie: [
+        {
+          name: "Meldy Ferian, S.E.",
+          role: "KASIE PENGEMBANGAN DOSEN",
+          image: "/uploads/pimpinan_10.png"
+        },
+        {
+          name: "Devina Amelia, S.E.",
+          role: "KASIE PENGEMBANGAN TENAGA KEPENDIDIKAN",
+          image: "/uploads/pimpinan_11.png"
+        },
+        {
+          name: "Siska Indriyani, S.H.",
+          role: "KASIE PERENCANAAN DAN PENEMPATAN SDM",
+          image: "/uploads/pimpinan_12.png"
+        }
+      ]
+    },
+    {
+      id: 4,
+      kasubdit: {
+        name: "Reni Kusuma Wardhani, S.E., M.Si.",
+        role: "KASUBDIT REMUNERASI DAN KESEJAHTERAAN",
+        image: "/uploads/pimpinan_13.png"
+      },
+      kasie: [
+        {
+          name: "Ahmad Zaki, S.E.",
+          role: "KASIE REMUNERASI DAN KESEJAHTERAAN 3 (PAYROLL)",
+          image: "/uploads/pimpinan_14.png"
+        },
+        {
+          name: "Ria Sitorus, S.E.",
+          role: "KASIE REMUNERASI DAN KESEJAHTERAAN 1 (DANA DIPA)",
+          image: "/uploads/pimpinan_15.png"
+        },
+        {
+          name: "Hani Fatimah, S.E.",
+          role: "KASIE REMUNERASI DAN KESEJAHTERAAN 2 (DANA BPPTN)",
+          image: "/uploads/pimpinan_16.png"
+        }
+      ]
+    }
+  ]);
+
   // Modal editing state for Program Kerja
   const [editingIndex, setEditingIndex] = useState(null);
   const [editTitle, setEditTitle] = useState('');
@@ -236,6 +343,22 @@ export default function AdminProfilPage() {
           console.error("Gagal parse json struktur organisasi", e);
         }
       }
+
+      if (data.profil_pimpinan_json) {
+        try {
+          const parsed = JSON.parse(data.profil_pimpinan_json);
+          if (parsed.director) {
+            setDirectorName(parsed.director.name || '');
+            setDirectorRole(parsed.director.role || '');
+            setDirectorImage(parsed.director.image || '');
+          }
+          if (parsed.subdirectorates && Array.isArray(parsed.subdirectorates)) {
+            setPimpinanSubdirectorates(parsed.subdirectorates);
+          }
+        } catch (e) {
+          console.error("Gagal parse json pimpinan", e);
+        }
+      }
     } catch (err) {
       showToast('error', 'Gagal memuat data settings');
     }
@@ -323,6 +446,137 @@ export default function AdminProfilPage() {
       showToast('error', err.message || 'Gagal menyimpan perubahan');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePimpinanImageUpload = async (file, nodeType, colIdx = null, kasieIdx = null) => {
+    if (!file) return;
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(`${BACKEND_URL}/api/admin/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: formData,
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      if (!res.ok) throw new Error('Gagal mengupload gambar');
+
+      const data = await res.json();
+      const imageUrl = data.url;
+
+      if (nodeType === 'director') {
+        setDirectorImage(imageUrl);
+      } else if (nodeType === 'kasubdit') {
+        const updated = [...pimpinanSubdirectorates];
+        updated[colIdx].kasubdit.image = imageUrl;
+        setPimpinanSubdirectorates(updated);
+      } else if (nodeType === 'kasie') {
+        const updated = [...pimpinanSubdirectorates];
+        updated[colIdx].kasie[kasieIdx].image = imageUrl;
+        setPimpinanSubdirectorates(updated);
+      }
+      showToast('success', 'Foto pimpinan berhasil diupload!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal mengupload gambar');
+    }
+  };
+
+  const handleSavePimpinan = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        profil_pimpinan_json: JSON.stringify({
+          director: {
+            name: directorName,
+            role: directorRole,
+            image: directorImage
+          },
+          subdirectorates: pimpinanSubdirectorates
+        })
+      };
+
+      const res = await fetch(`${BACKEND_URL}/api/admin/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      if (!res.ok) throw new Error('Gagal menyimpan pimpinan direktorat');
+
+      showToast('success', 'Pimpinan Direktorat berhasil disimpan!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal menyimpan perubahan');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUpdatePimpinanName = (colIdx, value, kasieIdx = null) => {
+    const updated = [...pimpinanSubdirectorates];
+    if (kasieIdx === null) {
+      updated[colIdx].kasubdit.name = value;
+    } else {
+      updated[colIdx].kasie[kasieIdx].name = value;
+    }
+    setPimpinanSubdirectorates(updated);
+  };
+
+  const handleUpdatePimpinanRole = (colIdx, value, kasieIdx = null) => {
+    const updated = [...pimpinanSubdirectorates];
+    if (kasieIdx === null) {
+      updated[colIdx].kasubdit.role = value;
+    } else {
+      updated[colIdx].kasie[kasieIdx].role = value;
+    }
+    setPimpinanSubdirectorates(updated);
+  };
+
+  const handleAddKasie = (colIdx) => {
+    const updated = [...pimpinanSubdirectorates];
+    updated[colIdx].kasie.push({ name: 'Nama Baru', role: 'KASIE BARU', image: '' });
+    setPimpinanSubdirectorates(updated);
+  };
+
+  const handleRemoveKasie = (colIdx, kasieIdx) => {
+    const updated = [...pimpinanSubdirectorates];
+    updated[colIdx].kasie.splice(kasieIdx, 1);
+    setPimpinanSubdirectorates(updated);
+  };
+
+  const handleAddNewPimpinanColumn = () => {
+    setPimpinanSubdirectorates([...pimpinanSubdirectorates, {
+      id: Date.now(),
+      kasubdit: { name: 'Nama Kasubdit', role: 'KASUBDIT BARU', image: '' },
+      kasie: [{ name: 'Nama Kasie', role: 'KASIE BARU', image: '' }]
+    }]);
+  };
+
+  const handleRemovePimpinanColumn = (colIdx) => {
+    if (confirm('Apakah Anda yakin ingin menghapus Sub Direktorat ini beserta seluruh jajaran Kasienya?')) {
+      const updated = [...pimpinanSubdirectorates];
+      updated.splice(colIdx, 1);
+      setPimpinanSubdirectorates(updated);
     }
   };
 
@@ -598,6 +852,25 @@ export default function AdminProfilPage() {
               >
                 Struktur Organisasi
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('pimpinan')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1rem',
+                  fontWeight: '700',
+                  color: activeTab === 'pimpinan' ? '#0B2F61' : '#64748B',
+                  borderBottom: activeTab === 'pimpinan' ? '3px solid #FFC72C' : '3px solid transparent',
+                  padding: '0.75rem 1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  outline: 'none',
+                  marginBottom: '-2px'
+                }}
+              >
+                Pimpinan Direktorat
+              </button>
             </div>
 
             {activeTab === 'info' && (
@@ -790,7 +1063,7 @@ export default function AdminProfilPage() {
                   <div className="admin-card-body flex-row-layout">
                     <div className="inputs-column">
                       <div className="admin-field">
-                        <label>Jabatan Direktur</label>
+                        <label>Jabatan</label>
                         <input 
                           type="text" 
                           value={directorTitle}
@@ -1085,6 +1358,401 @@ export default function AdminProfilPage() {
                   </button>
                   <button 
                     onClick={handleSaveStruktur}
+                    className="btn-save"
+                    disabled={saving}
+                    style={{ padding: '0.65rem 1.75rem', fontSize: '0.9rem', fontWeight: '700' }}
+                  >
+                    {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  </button>
+                </div>
+
+              </div>
+            )}
+
+            {activeTab === 'pimpinan' && (
+              <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                
+                {/* CARD: Pimpinan Utama (Direktur) */}
+                <div className="admin-card" style={{ marginBottom: '2rem' }}>
+                  <div className="admin-card-header">
+                    <h2>Pimpinan Utama (Direktur)</h2>
+                  </div>
+                  <div className="admin-card-body flex-row-layout">
+                    
+                    {/* Director Photo */}
+                    <div className="image-column" style={{ maxWidth: '160px' }}>
+                      <label>Foto</label>
+                      <div className="image-uploader-wrapper" style={{ height: '180px', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
+                        <img 
+                          src={getImageUrl(directorImage || '/uploads/pimpinan_0.png')} 
+                          alt="Foto Direktur" 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        <button 
+                          type="button"
+                          className="upload-overlay-btn"
+                          onClick={(e) => e.currentTarget.nextSibling.click()}
+                          style={{ position: 'absolute', bottom: '8px', right: '8px', background: '#0B2F61', color: '#fff', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        >
+                          <Upload size={16} />
+                        </button>
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={(e) => handlePimpinanImageUpload(e.target.files[0], 'director')} 
+                          style={{ display: 'none' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="inputs-column" style={{ flex: 1 }}>
+                      <div className="admin-field">
+                        <label>Nama</label>
+                        <input 
+                          type="text" 
+                          value={directorName}
+                          onChange={(e) => setDirectorName(e.target.value)}
+                          placeholder="Nama lengkap beserta gelar..."
+                        />
+                      </div>
+                      <div className="admin-field" style={{ marginTop: '1rem' }}>
+                        <label>Jabatan</label>
+                        <input 
+                          type="text" 
+                          value={directorRole}
+                          onChange={(e) => setDirectorRole(e.target.value)}
+                          placeholder="Contoh: DIREKTUR SDM DAN PENGEMBANGAN TALENTA"
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* CARD: Jajaran Sub-Directorate Columns Editor */}
+                <div className="admin-card" style={{ marginBottom: '2rem' }}>
+                  <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h2>Jajaran Kasubdit & Kasie</h2>
+                    <button 
+                      type="button"
+                      className="btn-add-pk" 
+                      onClick={handleAddNewPimpinanColumn}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                    >
+                      <Plus size={16} /> Tambah Sub-Direktorat
+                    </button>
+                  </div>
+                  <div className="admin-card-body">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+                      {pimpinanSubdirectorates.map((sub, colIdx) => (
+                        <div 
+                          key={sub.id || colIdx} 
+                          style={{ 
+                            background: '#F8FAFC', 
+                            border: '1px solid #E2E8F0', 
+                            borderTop: '6px solid #0B2F61', 
+                            borderRadius: '12px', 
+                            padding: '1.25rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.25rem'
+                          }}
+                        >
+                          {/* Sub-Directorate Header Actions */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.75rem' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#0B2F61' }}>Sub-Direktorat {colIdx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePimpinanColumn(colIdx)}
+                              style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                            >
+                              <Trash2 size={14} /> Hapus Kolom
+                            </button>
+                          </div>
+
+                          {/* KASUBDIT CARD */}
+                          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '1rem', position: 'relative' }}>
+                            <span style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '0.65rem', fontWeight: '800', background: '#E0ECFB', color: '#0B2F61', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>KASUBDIT</span>
+                            
+                            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                              {/* Photo */}
+                              <div style={{ width: '70px', height: '85px', borderRadius: '6px', overflow: 'hidden', position: 'relative', background: '#F1F5F9', border: '1px solid #CBD5E1', flexShrink: 0 }}>
+                                <img 
+                                  src={getImageUrl(sub.kasubdit.image || '')} 
+                                  alt="Foto Kasubdit" 
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                                <button 
+                                  type="button"
+                                  onClick={(e) => e.currentTarget.nextSibling.click()}
+                                  style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(15,23,42,0.85)', border: 'none', color: '#fff', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                >
+                                  <Upload size={10} />
+                                </button>
+                                <input 
+                                  type="file" 
+                                  accept="image/*"
+                                  onChange={(e) => handlePimpinanImageUpload(e.target.files[0], 'kasubdit', colIdx)} 
+                                  style={{ display: 'none' }}
+                                />
+                              </div>
+
+                              {/* Details */}
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                <div className="admin-field" style={{ margin: 0 }}>
+                                  <label style={{ fontSize: '0.7rem', fontWeight: '800' }}>Nama Kasubdit</label>
+                                  <input 
+                                    type="text" 
+                                    value={sub.kasubdit.name} 
+                                    onChange={(e) => handleUpdatePimpinanName(colIdx, e.target.value)}
+                                    style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                                  />
+                                </div>
+                                <div className="admin-field" style={{ margin: 0 }}>
+                                  <label style={{ fontSize: '0.7rem', fontWeight: '800' }}>Jabatan Kasubdit</label>
+                                  <input 
+                                    type="text" 
+                                    value={sub.kasubdit.role} 
+                                    onChange={(e) => handleUpdatePimpinanRole(colIdx, e.target.value)}
+                                    style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* KASIE LIST */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#475569' }}>Daftar Kepala Seksi (Kasie)</label>
+                            
+                            {(sub.kasie || []).map((ks, kasieIdx) => (
+                              <div key={kasieIdx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '0.75rem', position: 'relative' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                                  <span style={{ fontSize: '0.65rem', fontWeight: '800', color: '#64748B' }}>KASIE {kasieIdx + 1}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveKasie(colIdx, kasieIdx)}
+                                    style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                    title="Hapus Kasie"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                  {/* Photo */}
+                                  <div style={{ width: '55px', height: '65px', borderRadius: '4px', overflow: 'hidden', position: 'relative', background: '#F1F5F9', border: '1px solid #CBD5E1', flexShrink: 0 }}>
+                                    <img 
+                                      src={getImageUrl(ks.image || '')} 
+                                      alt="Foto Kasie" 
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                    <button 
+                                      type="button"
+                                      onClick={(e) => e.currentTarget.nextSibling.click()}
+                                      style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(15,23,42,0.85)', border: 'none', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                    >
+                                      <Upload size={8} />
+                                    </button>
+                                    <input 
+                                      type="file" 
+                                      accept="image/*"
+                                      onChange={(e) => handlePimpinanImageUpload(e.target.files[0], 'kasie', colIdx, kasieIdx)} 
+                                      style={{ display: 'none' }}
+                                    />
+                                  </div>
+
+                                  {/* Details */}
+                                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                    <input 
+                                      type="text" 
+                                      value={ks.name} 
+                                      onChange={(e) => handleUpdatePimpinanName(colIdx, e.target.value, kasieIdx)}
+                                      placeholder="Nama Kasie"
+                                      style={{ padding: '0.25rem', fontSize: '0.75rem', height: '24px' }}
+                                    />
+                                    <input 
+                                      type="text" 
+                                      value={ks.role} 
+                                      onChange={(e) => handleUpdatePimpinanRole(colIdx, e.target.value, kasieIdx)}
+                                      placeholder="Jabatan Kasie"
+                                      style={{ padding: '0.25rem', fontSize: '0.75rem', height: '24px' }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+
+                            <button
+                              type="button"
+                              onClick={() => handleAddKasie(colIdx)}
+                              style={{ 
+                                background: '#FFFFFF', 
+                                border: '1px dashed #CBD5E1', 
+                                padding: '0.5rem', 
+                                borderRadius: '8px', 
+                                cursor: 'pointer', 
+                                fontSize: '0.75rem', 
+                                fontWeight: '700', 
+                                color: '#0B2F61',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.25rem'
+                              }}
+                            >
+                              <Plus size={14} /> Tambah Jabatan Kasie
+                            </button>
+                          </div>
+
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* CARD: Realtime Preview */}
+                <div className="admin-card" style={{ marginBottom: '2rem' }}>
+                  <div className="admin-card-header">
+                    <h2>Pratinjau</h2>
+                  </div>
+                  <div className="admin-card-body" style={{ background: '#F8FAFC', padding: '2rem 1rem', overflowX: 'auto' }}>
+                    <div style={{ minWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      
+                      {/* Top Level: Director */}
+                      <div className="pimpinan-node-card director-card" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        background: '#FFFFFF',
+                        border: '1px solid #E2E8F0',
+                        borderLeft: '5px solid #FFC72C',
+                        borderRadius: '12px',
+                        padding: '1.25rem 2rem',
+                        maxWidth: '450px',
+                        width: '100%',
+                        zIndex: 2,
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}>
+                        <div style={{ width: '60px', height: '70px', borderRadius: '8px', overflow: 'hidden', background: '#F1F5F9', border: '1px solid #E2E8F0', flexShrink: 0 }}>
+                          <img src={getImageUrl(directorImage || '')} alt="Director" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ textAlign: 'left' }}>
+                          <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.3' }}>{directorName || 'Nama Direktur'}</h4>
+                          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.75rem', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{directorRole || 'DIREKTUR'}</p>
+                        </div>
+                      </div>
+
+                      {/* Vertical line directly between Direktur and Columns */}
+                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                        <div style={{ width: '2px', height: '28px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
+                      </div>
+
+                      {/* Sub-Directorate Columns Connected by tree structure */}
+                      {pimpinanSubdirectorates.length > 0 && (
+                        <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          
+                          {/* Horizontal line */}
+                          {pimpinanSubdirectorates.length > 1 && (
+                            <div style={{ 
+                              position: 'absolute', 
+                              top: 0, 
+                              left: `${(0.5 / pimpinanSubdirectorates.length) * 100}%`, 
+                              right: `${(0.5 / pimpinanSubdirectorates.length) * 100}%`, 
+                              height: '2px', 
+                              backgroundColor: '#CBD5E1',
+                              zIndex: 1
+                            }} />
+                          )}
+
+                          {/* Columns Container */}
+                          <div style={{ display: 'flex', width: '100%', boxSizing: 'border-box', alignItems: 'stretch' }}>
+                            {pimpinanSubdirectorates.map((sub, colIdx) => (
+                              <div 
+                                key={sub.id || colIdx} 
+                                style={{ 
+                                  width: `${100 / pimpinanSubdirectorates.length}%`, 
+                                  padding: '0 0.75rem', 
+                                  boxSizing: 'border-box', 
+                                  display: 'flex', 
+                                  flexDirection: 'column', 
+                                  alignItems: 'center', 
+                                  position: 'relative' 
+                                }}
+                              >
+                                {/* Vertical line to Kasubdit card */}
+                                <div style={{ width: '2px', height: '14px', backgroundColor: '#CBD5E1', zIndex: 1, flexShrink: 0 }} />
+                                
+                                {/* Kasubdit Card */}
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.75rem',
+                                  background: '#FFFFFF',
+                                  border: '1px solid #E2E8F0',
+                                  borderLeft: '4px solid #0B2F61',
+                                  borderRadius: '8px',
+                                  padding: '0.75rem 1rem',
+                                  width: '100%',
+                                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                                }}>
+                                  <div style={{ width: '45px', height: '55px', borderRadius: '4px', overflow: 'hidden', background: '#F1F5F9', border: '1px solid #E2E8F0', flexShrink: 0 }}>
+                                    <img src={getImageUrl(sub.kasubdit.image || '')} alt="Kasubdit" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  </div>
+                                  <div style={{ textAlign: 'left' }}>
+                                    <h4 style={{ margin: 0, fontSize: '0.8rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.2' }}>{sub.kasubdit.name || 'Nama Kasubdit'}</h4>
+                                    <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.65rem', color: '#64748B', fontWeight: '700', lineHeight: '1.2' }}>{sub.kasubdit.role || 'KASUBDIT'}</p>
+                                  </div>
+                                </div>
+
+                                {/* Kasie list connected vertically under each Kasubdit */}
+                                {(sub.kasie || []).map((ks, index) => (
+                                  <React.Fragment key={index}>
+                                    <div style={{ width: '2px', height: '16px', backgroundColor: '#CBD5E1', zIndex: 1, flexShrink: 0 }} />
+                                    <div style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '0.75rem',
+                                      background: '#FFFFFF',
+                                      border: '1px solid #E2E8F0',
+                                      borderLeft: '4px solid #64748B',
+                                      borderRadius: '8px',
+                                      padding: '0.75rem 1rem',
+                                      width: '100%',
+                                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                                    }}>
+                                      <div style={{ width: '45px', height: '55px', borderRadius: '4px', overflow: 'hidden', background: '#F1F5F9', border: '1px solid #E2E8F0', flexShrink: 0 }}>
+                                        <img src={getImageUrl(ks.image || '')} alt="Kasie" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                      </div>
+                                      <div style={{ textAlign: 'left' }}>
+                                        <h4 style={{ margin: 0, fontSize: '0.8rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.2' }}>{ks.name || 'Nama Kasie'}</h4>
+                                        <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.65rem', color: '#64748B', fontWeight: '700', lineHeight: '1.2' }}>{ks.role || 'KASIE'}</p>
+                                      </div>
+                                    </div>
+                                  </React.Fragment>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* SAVE ACTIONS BAR PIMPINAN */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
+                  <button 
+                    type="button"
+                    className="btn-cancel" 
+                    onClick={handleCancel}
+                    disabled={saving}
+                    style={{ padding: '0.65rem 1.75rem', fontSize: '0.9rem', fontWeight: '700' }}
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    onClick={handleSavePimpinan}
                     className="btn-save"
                     disabled={saving}
                     style={{ padding: '0.65rem 1.75rem', fontSize: '0.9rem', fontWeight: '700' }}
