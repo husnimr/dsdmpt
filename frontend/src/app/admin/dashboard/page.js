@@ -272,8 +272,8 @@ export default function AdminDashboardPage() {
                 <a href="/admin/informasi" className="action-button-link">
                   <div className="action-icon blue-bg"><Plus size={16} /></div>
                   <div className="action-label-wrap">
-                    <span className="action-title">Tambah Info & File</span>
-                    <span className="action-subtitle">Buat pengumuman atau upload PDF</span>
+                    <span className="action-title">Tambah Informasi & File</span>
+                    <span className="action-subtitle">Buat pengumuman atau dokumen</span>
                   </div>
                 </a>
 

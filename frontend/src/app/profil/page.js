@@ -11,7 +11,31 @@ import {
   FileText,
   TrendingUp,
   Star,
-  Menu
+  Menu,
+  BookOpen,
+  Briefcase,
+  Calendar,
+  Compass,
+  Cpu,
+  Globe,
+  Heart,
+  Laptop,
+  Shield,
+  Activity,
+  Book,
+  Users,
+  Target,
+  Zap,
+  Settings,
+  Layers,
+  MessageSquare,
+  Search,
+  Lock,
+  FolderOpen,
+  Users2,
+  Network,
+  Presentation,
+  X
 } from 'lucide-react';
 
 const BACKEND_URL = 'http://localhost:8081';
@@ -31,7 +55,30 @@ const IconComponents = {
   FlaskConical,
   FileText,
   Star,
-  TrendingUp
+  TrendingUp,
+  BookOpen,
+  Briefcase,
+  Calendar,
+  Compass,
+  Cpu,
+  Globe,
+  Heart,
+  Laptop,
+  Shield,
+  Activity,
+  Book,
+  Users,
+  Target,
+  Zap,
+  Settings,
+  Layers,
+  MessageSquare,
+  Search,
+  Lock,
+  FolderOpen,
+  Users2,
+  Network,
+  Presentation
 };
 
 // Program Kerja mock data matching screenshot exactly
@@ -191,6 +238,7 @@ const PIMPINAN_DATA = {
 };
 
 export default function ProfilPage() {
+  const [selectedKasie, setSelectedKasie] = useState(null);
   const [activeTab, setActiveTab] = useState('profil');
   const [settings, setSettings] = useState({});
   const [pkList, setPkList] = useState([]);
@@ -554,7 +602,7 @@ export default function ProfilPage() {
                               padding: '1.25rem 1rem', 
                               boxShadow: 'var(--shadow-sm)',
                               width: '100%',
-                              minHeight: '85px',
+                              height: '100px',
                               display: 'flex',
                               flexDirection: 'column',
                               justifyContent: 'center',
@@ -576,7 +624,7 @@ export default function ProfilPage() {
                                   padding: '0.85rem 1rem', 
                                   boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                                   width: '100%',
-                                  minHeight: '52px',
+                                  height: '68px',
                                   display: 'flex',
                                   alignItems: 'center',
                                   zIndex: 2
@@ -601,9 +649,13 @@ export default function ProfilPage() {
                 
                 {/* Leader Card component helper */}
                 {(() => {
-                  const PimpinanCard = ({ name, role, imageSrc, isDirector }) => {
+                  const PimpinanCard = ({ name, role, imageSrc, isDirector, isKasie, onClick }) => {
                     return (
-                      <div className={`pimpinan-node-card ${isDirector ? 'director-card' : ''}`}>
+                      <div 
+                        className={`pimpinan-node-card ${isDirector ? 'director-card' : ''} ${isKasie ? 'kasie-card' : ''}`}
+                        onClick={onClick}
+                        style={isKasie ? { cursor: 'pointer', transition: 'all 0.2s' } : {}}
+                      >
                         <div className="pimpinan-photo-frame">
                           {imageSrc ? (
                             <img src={getImageUrl(imageSrc)} alt={name} className="pimpinan-photo" />
@@ -680,6 +732,8 @@ export default function ProfilPage() {
                                     name={ks.name} 
                                     role={ks.role} 
                                     imageSrc={ks.image}
+                                    isKasie={true}
+                                    onClick={() => setSelectedKasie(ks)}
                                   />
                                 </React.Fragment>
                               ))}
@@ -695,8 +749,54 @@ export default function ProfilPage() {
               </div>
             </div>
           )}
-
         </div>
+
+      {/* ── KASIE STAFF POPUP MODAL ── */}
+      {selectedKasie && (
+        <div className="staff-modal-backdrop" onClick={() => setSelectedKasie(null)}>
+          <div className="staff-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="staff-modal-header">
+              <div>
+                <h3 className="staff-modal-title">Staf</h3>
+                <p className="staff-modal-subtitle">{selectedKasie.name} ({selectedKasie.role})</p>
+              </div>
+              <button className="staff-modal-close" onClick={() => setSelectedKasie(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="staff-modal-body">
+              {!selectedKasie.staff || selectedKasie.staff.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#64748B' }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: '0.75rem', opacity: 0.6 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <p style={{ fontSize: '0.95rem', fontWeight: '700', margin: 0, color: '#0A1E38' }}>Belum Ada Daftar Staf</p>
+                  <p style={{ fontSize: '0.8rem', margin: '0.25rem 0 0', color: '#64748B' }}>Staf pendukung untuk seksi ini belum dimasukkan.</p>
+                </div>
+              ) : (
+                <div className="staff-grid">
+                  {selectedKasie.staff.map((st, sIdx) => (
+                    <div key={sIdx} className="staff-member-card">
+                      <div className="staff-photo-frame">
+                        {st.image ? (
+                          <img src={getImageUrl(st.image)} alt={st.name} className="staff-photo" />
+                        ) : (
+                          <div className="staff-photo-placeholder">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                          </div>
+                        )}
+                      </div>
+                      <div className="staff-info">
+                        <h4 className="staff-name">{st.name || '-'}</h4>
+                        <p className="staff-role">{st.role || 'Staf Pendukung'}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
         {/* ── PROGRAM KERJA SECTION ── */}
         {activeTab === 'profil' && (
@@ -780,6 +880,146 @@ export default function ProfilPage() {
           position: relative;
           text-align: center;
           width: 100%;
+        }
+
+        /* KASIE STAF POPUP STYLING */
+        .staff-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(15, 23, 42, 0.6);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          animation: fadeIn 0.25s ease-out;
+        }
+        .staff-modal-content {
+          background: #FFFFFF;
+          border-radius: 20px;
+          width: 90%;
+          max-width: 820px;
+          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+          overflow: hidden;
+          animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .staff-modal-header {
+          padding: 1.75rem 2rem;
+          border-bottom: 1px solid #F1F5F9;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: #F8FAFC;
+        }
+        .staff-modal-title {
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: #0A1E38;
+          margin: 0 0 0.35rem 0;
+        }
+        .staff-modal-subtitle {
+          font-size: 0.9rem;
+          color: #576574;
+          margin: 0;
+          font-weight: 600;
+        }
+        .staff-modal-close {
+          background: none;
+          border: none;
+          color: #94A3B8;
+          cursor: pointer;
+          transition: color 0.15s;
+          display: flex;
+          align-items: center;
+          padding: 0.5rem;
+          border-radius: 50%;
+        }
+        .staff-modal-close:hover {
+          color: #EF4444;
+          background: #F1F5F9;
+        }
+        .staff-modal-body {
+          padding: 2rem;
+          max-height: 60vh;
+          overflow-y: auto;
+        }
+        .staff-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.5rem;
+        }
+        .staff-member-card {
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          border-radius: 12px;
+          padding: 1.25rem;
+          display: flex;
+          align-items: center;
+          gap: 1.25rem;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+          transition: all 0.25s ease;
+        }
+        .staff-member-card:hover {
+          border-color: #A0C3F7;
+          background: #FFFFFF;
+          box-shadow: 0 10px 20px rgba(10,30,56,0.05);
+          transform: translateY(-2px);
+        }
+        .staff-photo-frame {
+          width: 80px;
+          height: 100px;
+          border-radius: 8px;
+          overflow: hidden;
+          background: #F1F5F9;
+          border: 1.5px solid #E2E8F0;
+          flex-shrink: 0;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        .staff-photo {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .staff-photo-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .staff-info {
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+          min-width: 0;
+        }
+        .staff-name {
+          font-size: 0.95rem;
+          font-weight: 800;
+          color: #0A1E38;
+          margin: 0;
+          line-height: 1.35;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .staff-role {
+          font-size: 0.78rem;
+          color: #576574;
+          margin: 0;
+          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        /* HOVER KASIE CARD */
+        .kasie-card:hover {
+          transform: translateY(-4px);
+          border-color: #A0C3F7;
+          box-shadow: 0 8px 20px rgba(10,30,56,0.08);
         }
 
         .profil-tabs {
@@ -959,9 +1199,11 @@ export default function ProfilPage() {
         .pimpinan-info {
           display: flex;
           flex-direction: column;
-          flex-grow: 1;
-          justify-content: center;
+          justify-content: flex-start;
           width: 100%;
+          min-height: 80px;
+          box-sizing: border-box;
+          padding-top: 0.25rem;
         }
         .pimpinan-photo-frame {
           width: 100%;

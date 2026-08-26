@@ -189,7 +189,7 @@ export default function PengembanganTalenta() {
               onClick={() => setActiveTab('public')}
               className={`talent-tab ${activeTab === 'public' ? 'active' : ''}`}
             >
-              Public
+              Publik
             </button>
             <button
               onClick={() => setActiveTab('internal')}

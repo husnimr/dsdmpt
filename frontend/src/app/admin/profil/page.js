@@ -18,7 +18,30 @@ import {
   FlaskConical,
   TrendingUp,
   Star,
-  X
+  X,
+  BookOpen,
+  Briefcase,
+  Calendar,
+  Compass,
+  Cpu,
+  Globe,
+  Heart,
+  Laptop,
+  Shield,
+  Activity,
+  Book,
+  Users,
+  Target,
+  Zap,
+  Settings,
+  Layers,
+  MessageSquare,
+  Search,
+  Lock,
+  FolderOpen,
+  Users2,
+  Network,
+  Presentation
 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 
@@ -32,14 +55,37 @@ const getImageUrl = (path) => {
 
 // Lucide Icon Map for Program Kerja
 const IconComponents = {
-  GraduationCap: GraduationCap,
-  UserPlus: UserPlus,
-  Award: Award,
-  Wallet: Wallet,
-  FlaskConical: FlaskConical,
-  FileText: FileText,
-  Star: Star,
-  TrendingUp: TrendingUp,
+  GraduationCap,
+  UserPlus,
+  Award,
+  Wallet,
+  FlaskConical,
+  FileText,
+  Star,
+  TrendingUp,
+  BookOpen,
+  Briefcase,
+  Calendar,
+  Compass,
+  Cpu,
+  Globe,
+  Heart,
+  Laptop,
+  Shield,
+  Activity,
+  Book,
+  Users,
+  Target,
+  Zap,
+  Settings,
+  Layers,
+  MessageSquare,
+  Search,
+  Lock,
+  FolderOpen,
+  Users2,
+  Network,
+  Presentation
 };
 
 const DEFAULT_PROGRAMS = [
@@ -384,7 +430,7 @@ export default function AdminProfilPage() {
 
   const handleAddSeksi = (colIdx) => {
     const updated = [...columns];
-    updated[colIdx].sections.push('Seksi Baru');
+    updated[colIdx].sections.push('');
     setColumns(updated);
   };
 
@@ -396,9 +442,9 @@ export default function AdminProfilPage() {
 
   const handleAddNewColumn = () => {
     setColumns([...columns, {
-      name: 'Sub Direktorat Baru',
+      name: '',
       color: '#0A1E38',
-      sections: ['Seksi Baru']
+      sections: ['']
     }]);
   };
 
@@ -449,7 +495,7 @@ export default function AdminProfilPage() {
     }
   };
 
-  const handlePimpinanImageUpload = async (file, nodeType, colIdx = null, kasieIdx = null) => {
+  const handlePimpinanImageUpload = async (file, nodeType, colIdx = null, kasieIdx = null, staffIdx = null) => {
     if (!file) return;
     try {
       const formData = new FormData();
@@ -485,8 +531,15 @@ export default function AdminProfilPage() {
         const updated = [...pimpinanSubdirectorates];
         updated[colIdx].kasie[kasieIdx].image = imageUrl;
         setPimpinanSubdirectorates(updated);
+      } else if (nodeType === 'staff') {
+        const updated = [...pimpinanSubdirectorates];
+        if (!updated[colIdx].kasie[kasieIdx].staff) {
+          updated[colIdx].kasie[kasieIdx].staff = [];
+        }
+        updated[colIdx].kasie[kasieIdx].staff[staffIdx].image = imageUrl;
+        setPimpinanSubdirectorates(updated);
       }
-      showToast('success', 'Foto pimpinan berhasil diupload!');
+      showToast('success', 'Foto berhasil diupload!');
     } catch (err) {
       showToast('error', err.message || 'Gagal mengupload gambar');
     }
@@ -554,7 +607,7 @@ export default function AdminProfilPage() {
 
   const handleAddKasie = (colIdx) => {
     const updated = [...pimpinanSubdirectorates];
-    updated[colIdx].kasie.push({ name: 'Nama Baru', role: 'KASIE BARU', image: '' });
+    updated[colIdx].kasie.push({ name: '', role: '', image: '' });
     setPimpinanSubdirectorates(updated);
   };
 
@@ -564,11 +617,38 @@ export default function AdminProfilPage() {
     setPimpinanSubdirectorates(updated);
   };
 
+  const handleAddStaff = (colIdx, kasieIdx) => {
+    const updated = [...pimpinanSubdirectorates];
+    if (!updated[colIdx].kasie[kasieIdx].staff) {
+      updated[colIdx].kasie[kasieIdx].staff = [];
+    }
+    updated[colIdx].kasie[kasieIdx].staff.push({ name: '', role: '', image: '' });
+    setPimpinanSubdirectorates(updated);
+  };
+
+  const handleRemoveStaff = (colIdx, kasieIdx, staffIdx) => {
+    const updated = [...pimpinanSubdirectorates];
+    updated[colIdx].kasie[kasieIdx].staff.splice(staffIdx, 1);
+    setPimpinanSubdirectorates(updated);
+  };
+
+  const handleUpdateStaffName = (colIdx, kasieIdx, staffIdx, value) => {
+    const updated = [...pimpinanSubdirectorates];
+    updated[colIdx].kasie[kasieIdx].staff[staffIdx].name = value;
+    setPimpinanSubdirectorates(updated);
+  };
+
+  const handleUpdateStaffRole = (colIdx, kasieIdx, staffIdx, value) => {
+    const updated = [...pimpinanSubdirectorates];
+    updated[colIdx].kasie[kasieIdx].staff[staffIdx].role = value;
+    setPimpinanSubdirectorates(updated);
+  };
+
   const handleAddNewPimpinanColumn = () => {
     setPimpinanSubdirectorates([...pimpinanSubdirectorates, {
       id: Date.now(),
-      kasubdit: { name: 'Nama Kasubdit', role: 'KASUBDIT BARU', image: '' },
-      kasie: [{ name: 'Nama Kasie', role: 'KASIE BARU', image: '' }]
+      kasubdit: { name: '', role: '', image: '' },
+      kasie: [{ name: '', role: '', image: '' }]
     }]);
   };
 
@@ -1476,12 +1556,19 @@ export default function AdminProfilPage() {
                             
                             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
                               {/* Photo */}
-                              <div style={{ width: '70px', height: '85px', borderRadius: '6px', overflow: 'hidden', position: 'relative', background: '#F1F5F9', border: '1px solid #CBD5E1', flexShrink: 0 }}>
-                                <img 
-                                  src={getImageUrl(sub.kasubdit.image || '')} 
-                                  alt="Foto Kasubdit" 
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
+                              <div style={{ width: '70px', height: '85px', borderRadius: '6px', overflow: 'hidden', position: 'relative', background: '#F8FAFC', border: '1px dashed #CBD5E1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+                                {sub.kasubdit.image ? (
+                                  <img 
+                                    src={getImageUrl(sub.kasubdit.image)} 
+                                    alt="Foto Kasubdit" 
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  />
+                                ) : (
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+                                    <ImageIcon size={20} />
+                                    <span style={{ fontSize: '0.65rem', fontWeight: '600' }}>Foto</span>
+                                  </div>
+                                )}
                                 <button 
                                   type="button"
                                   onClick={(e) => e.currentTarget.nextSibling.click()}
@@ -1541,12 +1628,19 @@ export default function AdminProfilPage() {
 
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                                   {/* Photo */}
-                                  <div style={{ width: '55px', height: '65px', borderRadius: '4px', overflow: 'hidden', position: 'relative', background: '#F1F5F9', border: '1px solid #CBD5E1', flexShrink: 0 }}>
-                                    <img 
-                                      src={getImageUrl(ks.image || '')} 
-                                      alt="Foto Kasie" 
-                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
+                                  <div style={{ width: '55px', height: '65px', borderRadius: '4px', overflow: 'hidden', position: 'relative', background: '#F8FAFC', border: '1px dashed #CBD5E1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+                                    {ks.image ? (
+                                      <img 
+                                        src={getImageUrl(ks.image)} 
+                                        alt="Foto Kasie" 
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                      />
+                                    ) : (
+                                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                        <ImageIcon size={16} />
+                                        <span style={{ fontSize: '0.55rem', fontWeight: '600' }}>Foto</span>
+                                      </div>
+                                    )}
                                     <button 
                                       type="button"
                                       onClick={(e) => e.currentTarget.nextSibling.click()}
@@ -1578,6 +1672,104 @@ export default function AdminProfilPage() {
                                       placeholder="Jabatan Kasie"
                                       style={{ padding: '0.25rem', fontSize: '0.75rem', height: '24px' }}
                                     />
+                                  </div>
+                                </div>
+
+                                {/* STAFF LIST FOR THIS KASIE */}
+                                <div style={{ marginTop: '0.75rem', borderTop: '1px solid #E2E8F0', paddingTop: '0.65rem' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#475569' }}>Daftar Staf ({ks.staff ? ks.staff.length : 0})</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddStaff(colIdx, kasieIdx)}
+                                      style={{ background: '#E0ECFB', border: 'none', color: '#0B2F61', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.65rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.15rem' }}
+                                    >
+                                      <Plus size={10} /> Tambah Staf
+                                    </button>
+                                  </div>
+
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    {(ks.staff || []).map((st, staffIdx) => (
+                                      <div key={staffIdx} style={{ display: 'flex', gap: '0.4rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '0.4rem', position: 'relative' }}>
+                                        {/* Staff Photo */}
+                                        <div style={{ width: '45px', height: '55px', borderRadius: '4px', overflow: 'hidden', position: 'relative', background: '#FFFFFF', border: '1px dashed #CBD5E1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+                                          {st.image ? (
+                                            <img 
+                                              src={getImageUrl(st.image)} 
+                                              alt="Foto Staf" 
+                                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            />
+                                          ) : (
+                                            <ImageIcon size={14} />
+                                          )}
+                                          <button 
+                                            type="button"
+                                            onClick={(e) => e.currentTarget.nextSibling.click()}
+                                            style={{ position: 'absolute', bottom: '1px', right: '1px', background: 'rgba(15,23,42,0.85)', border: 'none', color: '#fff', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                          >
+                                            <Upload size={6} />
+                                          </button>
+                                          <input 
+                                            type="file" 
+                                            accept="image/*"
+                                            onChange={(e) => handlePimpinanImageUpload(e.target.files[0], 'staff', colIdx, kasieIdx, staffIdx)} 
+                                            style={{ display: 'none' }}
+                                          />
+                                        </div>
+
+                                        {/* Staff Info Inputs */}
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                          <input 
+                                            type="text" 
+                                            value={st.name} 
+                                            onChange={(e) => handleUpdateStaffName(colIdx, kasieIdx, staffIdx, e.target.value)}
+                                            placeholder="Nama Staf"
+                                            style={{ padding: '0.15rem 0.25rem', fontSize: '0.7rem', height: '20px' }}
+                                          />
+                                          <input 
+                                            type="text" 
+                                            value={st.role} 
+                                            onChange={(e) => handleUpdateStaffRole(colIdx, kasieIdx, staffIdx, e.target.value)}
+                                            placeholder="Jabatan Staf"
+                                            style={{ padding: '0.15rem 0.25rem', fontSize: '0.7rem', height: '20px' }}
+                                          />
+                                        </div>
+
+                                        {/* Remove Staff Button */}
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveStaff(colIdx, kasieIdx, staffIdx)}
+                                          onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#EF4444';
+                                            e.currentTarget.style.color = '#FFFFFF';
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#FEE2E2';
+                                            e.currentTarget.style.color = '#EF4444';
+                                          }}
+                                          style={{ 
+                                            position: 'absolute', 
+                                            top: '4px', 
+                                            right: '4px', 
+                                            width: '18px', 
+                                            height: '18px', 
+                                            borderRadius: '50%', 
+                                            backgroundColor: '#FEE2E2', 
+                                            color: '#EF4444', 
+                                            border: 'none', 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'center', 
+                                            cursor: 'pointer', 
+                                            transition: 'all 0.15s ease',
+                                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                          }}
+                                          title="Hapus Staf"
+                                        >
+                                          <X size={11} />
+                                        </button>
+                                      </div>
+                                    ))}
                                   </div>
                                 </div>
                               </div>
@@ -1792,20 +1984,23 @@ export default function AdminProfilPage() {
 
               <div className="admin-field">
                 <label>Pilih Icon</label>
-                <select 
-                  value={editIcon}
-                  onChange={(e) => setEditIcon(e.target.value)}
-                  className="icon-select"
-                >
-                  <option value="GraduationCap">Graduation Cap</option>
-                  <option value="UserPlus">User Plus</option>
-                  <option value="Award">Award Badge</option>
-                  <option value="Wallet">Wallet / Money</option>
-                  <option value="FlaskConical">Flask / Research</option>
-                  <option value="FileText">Document / Text</option>
-                  <option value="Star">Star</option>
-                  <option value="TrendingUp">Trending Up</option>
-                </select>
+                <div className="icon-grid-picker">
+                  {Object.keys(IconComponents).map((iconName) => {
+                    const IconComp = IconComponents[iconName];
+                    const isSelected = editIcon === iconName;
+                    return (
+                      <button
+                        key={iconName}
+                        type="button"
+                        className={`icon-picker-btn ${isSelected ? 'selected' : ''}`}
+                        onClick={() => setEditIcon(iconName)}
+                        title={iconName}
+                      >
+                        <IconComp size={20} />
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="admin-field">
@@ -2255,8 +2450,40 @@ export default function AdminProfilPage() {
           flex-direction: column;
           gap: 1.25rem;
         }
-        .icon-select {
-          width: 100%;
+        .icon-grid-picker {
+          display: grid;
+          grid-template-columns: repeat(8, 1fr);
+          gap: 0.5rem;
+          background: #F8FAFC;
+          border: 1px solid #CBD5E1;
+          border-radius: 8px;
+          padding: 0.75rem;
+          max-height: 160px;
+          overflow-y: auto;
+        }
+        .icon-picker-btn {
+          aspect-ratio: 1;
+          background: #FFFFFF;
+          border: 1px solid #E2E8F0;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: #475569;
+          transition: all 0.15s;
+          padding: 0.5rem;
+        }
+        .icon-picker-btn:hover {
+          background: #F1F5F9;
+          color: #0B2F61;
+          border-color: #CBD5E1;
+        }
+        .icon-picker-btn.selected {
+          background: #FFC72C;
+          color: #001f3f;
+          border-color: #FFC72C;
+          box-shadow: 0 0 0 2px rgba(255, 199, 44, 0.2);
         }
         .modal-footer {
           padding: 1rem 1.5rem;

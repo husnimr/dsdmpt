@@ -16,7 +16,8 @@ import {
   PlusCircle,
   Link,
   Phone,
-  FileDown
+  FileDown,
+  Image as ImageIcon
 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 
@@ -695,7 +696,7 @@ export default function AdminPengembanganTalentaPage() {
                                 background: item.type === 'internal' ? '#FEF3C7' : '#DBEAFE',
                                 color: item.type === 'internal' ? '#D97706' : '#2563EB'
                               }}>
-                                {item.type}
+                                {item.type === 'public' ? 'Publik' : 'Internal'}
                               </span>
                             </td>
                             <td style={{ textAlign: 'right' }}>
@@ -855,7 +856,7 @@ export default function AdminPengembanganTalentaPage() {
                       onChange={(e) => setType(e.target.value)}
                       style={{ padding: '0.65rem', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '0.88rem', background: '#FFFFFF' }}
                     >
-                      <option value="public">Public</option>
+                      <option value="public">Publik</option>
                       <option value="internal">Internal</option>
                     </select>
                   </div>
@@ -993,12 +994,19 @@ export default function AdminPengembanganTalentaPage() {
                 <div className="admin-field">
                   <label>Gambar</label>
                   <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div style={{ width: '100px', height: '60px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #E2E8F0', background: '#F8FAFC' }}>
-                      <img 
-                        src={getImageUrl(image) || '/uploads/talent_1.jpg'} 
-                        alt="Preview" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
+                    <div style={{ width: '100px', height: '60px', borderRadius: '6px', overflow: 'hidden', border: '1px dashed #CBD5E1', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', flexShrink: 0 }}>
+                      {image ? (
+                        <img 
+                          src={getImageUrl(image)} 
+                          alt="Preview" 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                          <ImageIcon size={18} />
+                          <span style={{ fontSize: '0.55rem', fontWeight: '600', marginTop: '0.1rem' }}>Kosong</span>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <button

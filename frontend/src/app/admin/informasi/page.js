@@ -667,12 +667,12 @@ export default function AdminInformasiPage() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-box">
             <div className="modal-header">
-              <h3>{cardModalType === 'create' ? 'Tambah informasi Baru' : 'Edit informasi'}</h3>
+              <h3>{cardModalType === 'create' ? 'Tambah Informasi Baru' : 'Edit Informasi'}</h3>
               <button onClick={() => setCardModalOpen(false)} className="btn-close-modal">&times;</button>
             </div>
             <form onSubmit={handleCardSubmit} className="modal-form">
               <div className="form-group">
-                <label>Judul Kartu <span className="required">*</span></label>
+                <label>Judul Informasi <span className="required">*</span></label>
                 <input 
                   type="text" 
                   value={cardTitle} 
