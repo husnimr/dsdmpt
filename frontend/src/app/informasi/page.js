@@ -9,7 +9,8 @@ import {
   Download,
   Eye,
   FileSpreadsheet,
-  Link as LinkIcon
+  Link as LinkIcon,
+  ChevronRight
 } from 'lucide-react';
 
 const BACKEND_URL = 'http://localhost:8081';
@@ -29,6 +30,7 @@ export default function Informasi() {
   const [cards, setCards] = useState([]);
   const [docs, setDocs] = useState([]);
   const [activePdfUrl, setActivePdfUrl] = useState(null);
+  const [selectedCard, setSelectedCard] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -146,144 +148,87 @@ export default function Informasi() {
         <div className="container detail-container-grid">
           
           {/* Left Column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-            {cards.map((card) => (
-              <div 
-                key={card.id} 
-                style={{ 
-                  backgroundColor: '#ffffff', 
-                  borderRadius: '16px', 
-                  border: '1px solid #E2E8F0', 
-                  padding: '2rem', 
-                  boxShadow: 'var(--shadow-sm)' 
-                }}
-              >
-                <h2 style={{ 
-                  fontSize: '1.4rem', 
-                  color: '#0A1E38', 
-                  borderBottom: '3px solid #F2C94C', 
-                  paddingBottom: '0.5rem', 
-                  marginBottom: '1.5rem', 
-                  display: 'inline-block' 
-                }}>
-                  {card.title}
-                </h2>
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
+              {cards.map((card) => (
+                <div 
+                  key={card.id} 
+                  onClick={() => setSelectedCard(card)}
+                  style={{ 
+                    backgroundColor: '#ffffff', 
+                    borderRadius: '10px', 
+                    border: '1px solid #E2E8F0', 
+                    padding: '1rem', 
+                    boxShadow: 'var(--shadow-sm)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-start',
+                    gap: '0.65rem',
+                    height: '100%'
+                  }}
+                  className="info-card-interactive"
+                >
+                  {/* Title & Truncated description */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <h3 style={{ fontSize: '1rem', color: '#0A1E38', fontWeight: '700', margin: 0, lineHeight: '1.3' }}>
+                      {card.title}
+                    </h3>
+                    {card.description && (
+                      <p style={{ 
+                        color: '#64748B', 
+                        fontSize: '0.78rem', 
+                        lineHeight: '1.4',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        margin: 0
+                      }}>
+                        {card.description}
+                      </p>
+                    )}
+                  </div>
 
-                {card.description && (
-                  <p style={{ 
-                    color: '#576574', 
-                    fontSize: '0.95rem', 
-                    lineHeight: '1.7', 
-                    marginBottom: '1.5rem',
-                    whiteSpace: 'pre-wrap'
-                  }}>
-                    {card.description}
-                  </p>
-                )}
-
-                {/* If the card has both description and file, but NO image, we render a PDF cover style block */}
-                {!card.image_url && card.file_url ? (
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '2rem', 
-                    alignItems: 'center', 
-                    backgroundColor: '#F8FAFC', 
-                    borderRadius: '12px', 
-                    padding: '1.5rem', 
-                    border: '1px solid #E2E8F0' 
-                  }}>
+                  {/* Thumbnail area for images ONLY (height 70px for compactness) */}
+                  {card.image_url && (
                     <div style={{ 
-                      width: '100px', 
-                      height: '130px', 
-                      borderRadius: '8px', 
-                      backgroundColor: '#FEF2F2', 
-                      border: '1px solid #FCA5A5',
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
+                      width: '100%', 
+                      height: '70px', 
+                      borderRadius: '6px', 
+                      overflow: 'hidden', 
+                      border: '1px solid #E2E8F0',
                       flexShrink: 0
                     }}>
-                      <FileText size={48} style={{ color: '#EF4444' }} />
+                      <img 
+                        src={getImageUrl(card.image_url)} 
+                        alt={card.title} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
                     </div>
+                  )}
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <h3 style={{ fontSize: '1.1rem', color: '#0A1E38', fontWeight: '700' }}>Dokumen PDF</h3>
-                      <p style={{ fontSize: '0.85rem', color: '#576574', margin: 0 }}>Unduh atau baca langsung lampiran dokumen.</p>
-                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-                        <button 
-                          onClick={() => setActivePdfUrl(activePdfUrl === card.file_url ? null : card.file_url)} 
-                          className="btn-primary" 
-                          style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', gap: '0.5rem', borderRadius: '8px' }}
-                        >
-                          <Eye size={16} /> {activePdfUrl === card.file_url ? 'Tutup' : 'Baca'}
-                        </button>
-                        <a 
-                          href={getImageUrl(card.file_url)} 
-                          download
-                          className="btn-secondary" 
-                          style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', gap: '0.5rem', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#ffffff' }}
-                        >
-                          <Download size={16} /> Unduh
-                        </a>
-                      </div>
+                  {/* Footer item: just icons! */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #F1F5F9', paddingTop: '0.5rem', marginTop: 'auto' }}>
+                    {/* Left: file type indicator icon */}
+                    <div>
+                      {card.file_url ? (
+                        <FileText size={16} style={{ color: '#EF4444' }} title="Dokumen PDF" />
+                      ) : (
+                        <div style={{ minHeight: '16px' }}></div>
+                      )}
                     </div>
+                    
+                    {/* Right: navigation arrow icon */}
+                    <span className="arrow-indicator" style={{ color: '#0A1E38', transition: 'transform 0.2s', display: 'flex', alignItems: 'center' }}>
+                      <ChevronRight size={16} />
+                    </span>
                   </div>
-                ) : null}
-
-                {/* If the card has an image_url, render the image */}
-                {card.image_url && (
-                  <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-sm)' }}>
-                    <img 
-                      src={getImageUrl(card.image_url)} 
-                      alt={card.title} 
-                      style={{ width: '100%', height: 'auto', display: 'block' }}
-                    />
-                  </div>
-                )}
-
-                {/* If card has image AND file_url, provide a download action button under the image */}
-                {card.image_url && card.file_url && (
-                  <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
-                    <button 
-                      onClick={() => setActivePdfUrl(activePdfUrl === card.file_url ? null : card.file_url)}
-                      className="btn-primary"
-                      style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', gap: '0.5rem', borderRadius: '8px' }}
-                    >
-                      <Eye size={16} /> {activePdfUrl === card.file_url ? 'Tutup Preview' : 'Baca Lampiran'}
-                    </button>
-                    <a 
-                      href={getImageUrl(card.file_url)} 
-                      download
-                      className="btn-secondary"
-                      style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', gap: '0.5rem', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#ffffff' }}
-                    >
-                      <Download size={16} /> Unduh Lampiran
-                    </a>
-                  </div>
-                )}
-
-                {/* Embedded PDF Reader for this card if active */}
-                {activePdfUrl === card.file_url && (
-                  <div style={{ marginTop: '2rem', border: '1px solid #E2E8F0', borderRadius: '12px', overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
-                    <div style={{ backgroundColor: '#0A1E38', padding: '0.75rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ffffff' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>PDF Preview: {card.title}</span>
-                      <button 
-                        onClick={() => setActivePdfUrl(null)} 
-                        style={{ color: '#ffffff', opacity: '0.8', background: 'transparent', cursor: 'pointer', border: 'none' }}
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-                    <iframe 
-                      src={getImageUrl(card.file_url)} 
-                      width="100%" 
-                      height="580px" 
-                      style={{ border: 'none', display: 'block' }}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Right Column: Dokumen Terkini */}
@@ -324,6 +269,189 @@ export default function Informasi() {
 
         </div>
       </main>
+
+      {selectedCard && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem 1rem'
+          }}
+          onClick={() => {
+            setSelectedCard(null);
+            setActivePdfUrl(null);
+          }}
+        >
+          <div 
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '800px',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div 
+              style={{
+                padding: '1.25rem 1.5rem',
+                borderBottom: '1px solid #E2E8F0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: '#0A1E38',
+                color: '#FFFFFF'
+              }}
+            >
+              <h3 style={{ fontWeight: '700', fontSize: '1.1rem', margin: 0, color: '#FFFFFF' }}>{selectedCard.title}</h3>
+              <button 
+                onClick={() => {
+                  setSelectedCard(null);
+                  setActivePdfUrl(null);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#FFFFFF',
+                  cursor: 'pointer',
+                  opacity: 0.8,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
+              {selectedCard.description && (
+                <p style={{ 
+                  color: '#576574', 
+                  fontSize: '0.95rem', 
+                  lineHeight: '1.7', 
+                  marginBottom: '1.5rem',
+                  whiteSpace: 'pre-wrap'
+                }}>
+                  {selectedCard.description}
+                </p>
+              )}
+
+              {/* If the card has both description and file, but NO image, we render a PDF cover style block */}
+              {!selectedCard.image_url && selectedCard.file_url ? (
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '2rem', 
+                  alignItems: 'center', 
+                  backgroundColor: '#F8FAFC', 
+                  borderRadius: '12px', 
+                  padding: '1.5rem', 
+                  border: '1px solid #E2E8F0' 
+                }}>
+                  <div style={{ 
+                    width: '100px', 
+                    height: '130px', 
+                    borderRadius: '8px', 
+                    backgroundColor: '#FEF2F2', 
+                    border: '1px solid #FCA5A5',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <FileText size={48} style={{ color: '#EF4444' }} />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <h3 style={{ fontSize: '1.1rem', color: '#0A1E38', fontWeight: '700', margin: 0 }}>Dokumen PDF</h3>
+                    <p style={{ fontSize: '0.85rem', color: '#576574', margin: 0 }}>Unduh atau baca langsung lampiran dokumen.</p>
+                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                      <button 
+                        onClick={() => setActivePdfUrl(activePdfUrl === selectedCard.file_url ? null : selectedCard.file_url)} 
+                        className="btn-primary" 
+                        style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', gap: '0.5rem', borderRadius: '8px' }}
+                      >
+                        <Eye size={16} /> {activePdfUrl === selectedCard.file_url ? 'Tutup' : 'Baca'}
+                      </button>
+                      <a 
+                        href={getImageUrl(selectedCard.file_url)} 
+                        download
+                        className="btn-secondary" 
+                        style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', gap: '0.5rem', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#ffffff', color: '#475569', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+                      >
+                        <Download size={16} /> Unduh
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* If the card has an image_url, render the image */}
+              {selectedCard.image_url && (
+                <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-sm)' }}>
+                  <img 
+                    src={getImageUrl(selectedCard.image_url)} 
+                    alt={selectedCard.title} 
+                    style={{ width: '100%', height: 'auto', display: 'block' }}
+                  />
+                </div>
+              )}
+
+              {/* If card has image AND file_url, provide a download action button under the image */}
+              {selectedCard.image_url && selectedCard.file_url && (
+                <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
+                  <button 
+                    onClick={() => setActivePdfUrl(activePdfUrl === selectedCard.file_url ? null : selectedCard.file_url)}
+                    className="btn-primary"
+                    style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', gap: '0.5rem', borderRadius: '8px' }}
+                  >
+                    <Eye size={16} /> {activePdfUrl === selectedCard.file_url ? 'Tutup Preview' : 'Baca Lampiran'}
+                  </button>
+                  <a 
+                    href={getImageUrl(selectedCard.file_url)} 
+                    download
+                    className="btn-secondary"
+                    style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', gap: '0.5rem', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#ffffff', color: '#475569', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+                  >
+                    <Download size={16} /> Unduh Lampiran
+                  </a>
+                </div>
+              )}
+
+              {/* Embedded PDF Reader for this card if active */}
+              {activePdfUrl === selectedCard.file_url && (
+                <div style={{ marginTop: '2rem', border: '1px solid #E2E8F0', borderRadius: '12px', overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
+                  <div style={{ backgroundColor: '#0A1E38', padding: '0.75rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#ffffff' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>PDF Preview: {selectedCard.title}</span>
+                    <button 
+                      onClick={() => setActivePdfUrl(null)} 
+                      style={{ color: '#ffffff', opacity: '0.8', background: 'transparent', cursor: 'pointer', border: 'none' }}
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <iframe 
+                    src={getImageUrl(selectedCard.file_url)} 
+                    width="100%" 
+                    height="450px" 
+                    style={{ border: 'none', display: 'block' }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── FOOTER ── */}
       <footer className="footer">
@@ -391,6 +519,14 @@ export default function Informasi() {
           display: grid;
           grid-template-columns: 2fr 1fr;
           gap: 2.5rem;
+        }
+        .info-card-interactive:hover {
+          transform: translateY(-4px);
+          border-color: #0A1E38 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+        }
+        .info-card-interactive:hover .arrow-indicator {
+          transform: translateX(4px);
         }
         @media (max-width: 991px) {
           .detail-container-grid {

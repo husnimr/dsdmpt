@@ -169,30 +169,30 @@ export default function Statistik() {
                     <tr style={{ backgroundColor: '#0A1E38', color: '#ffffff', fontWeight: 'bold' }}>
                       <th style={{ padding: '1.2rem 1.5rem' }}>No</th>
                       <th style={{ padding: '1.2rem 1.5rem' }}>Nama Fakultas</th>
-                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>Dosen PNS</th>
-                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>Dosen Tetap Non PNS</th>
-                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>Dosen NIDK</th>
-                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>Total Dosen</th>
+                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>Dosen PNS</th>
+                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>Dosen Tetap Non PNS</th>
+                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>Dosen NIDK</th>
+                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>Total Dosen</th>
                     </tr>
                   </thead>
                   <tbody>
                     {DATA_DOSEN.map((row, index) => (
                       <tr key={row.no} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
-                        <td style={{ padding: '1.1rem 1.5rem', color: '#576574' }}>{row.no}</td>
+                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'center', color: '#576574' }}>{row.no}</td>
                         <td style={{ padding: '1.1rem 1.5rem', fontWeight: '600', color: '#0C1A30' }}>{row.fakultas}</td>
-                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'right', color: '#2C3A47' }}>{row.pns.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'right', color: '#2C3A47' }}>{row.tetapNonPns.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'right', color: '#2C3A47' }}>{row.nidk.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'right', fontWeight: 'bold', color: '#0C1A30' }}>{row.total.toLocaleString('id-ID')}</td>
+                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'center', color: '#2C3A47' }}>{row.pns.toLocaleString('id-ID')}</td>
+                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'center', color: '#2C3A47' }}>{row.tetapNonPns.toLocaleString('id-ID')}</td>
+                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'center', color: '#2C3A47' }}>{row.nidk.toLocaleString('id-ID')}</td>
+                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'center', fontWeight: 'bold', color: '#0C1A30' }}>{row.total.toLocaleString('id-ID')}</td>
                       </tr>
                     ))}
                     {/* Grand Total Row */}
                     <tr style={{ backgroundColor: '#F2C94C', color: '#0A1E38', fontWeight: '800', fontSize: '1rem' }}>
                       <td colSpan="2" style={{ padding: '1.2rem 1.5rem' }}>Grand Total</td>
-                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>1.097</td>
-                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>824</td>
-                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>450</td>
-                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>2.471</td>
+                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>1.097</td>
+                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>824</td>
+                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>450</td>
+                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>2.471</td>
                     </tr>
                   </tbody>
                 </table>
@@ -238,27 +238,27 @@ export default function Statistik() {
                     <tr style={{ backgroundColor: '#0A1E38', color: '#ffffff', fontWeight: 'bold' }}>
                       <th style={{ padding: '1.2rem 1.5rem' }}>No</th>
                       <th style={{ padding: '1.2rem 1.5rem' }}>Unit Kerja</th>
-                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>Non PNS</th>
-                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>PNS</th>
-                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>Grand Total</th>
+                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>Non PNS</th>
+                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>PNS</th>
+                      <th style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>Grand Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {DATA_TENDIK.map((row, index) => (
                       <tr key={row.no} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
-                        <td style={{ padding: '1.1rem 1.5rem', color: '#576574' }}>{row.no}</td>
+                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'center', color: '#576574' }}>{row.no}</td>
                         <td style={{ padding: '1.1rem 1.5rem', fontWeight: '600', color: '#0C1A30' }}>{row.unit}</td>
-                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'right', color: '#2C3A47' }}>{row.nonPns.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'right', color: '#2C3A47' }}>{row.pns.toLocaleString('id-ID')}</td>
-                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'right', fontWeight: 'bold', color: '#0C1A30' }}>{row.total.toLocaleString('id-ID')}</td>
+                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'center', color: '#2C3A47' }}>{row.nonPns.toLocaleString('id-ID')}</td>
+                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'center', color: '#2C3A47' }}>{row.pns.toLocaleString('id-ID')}</td>
+                        <td style={{ padding: '1.1rem 1.5rem', textAlign: 'center', fontWeight: 'bold', color: '#0C1A30' }}>{row.total.toLocaleString('id-ID')}</td>
                       </tr>
                     ))}
                     {/* Grand Total Row */}
                     <tr style={{ backgroundColor: '#F2C94C', color: '#0A1E38', fontWeight: '800', fontSize: '1rem' }}>
                       <td colSpan="2" style={{ padding: '1.2rem 1.5rem' }}>Grand Total</td>
-                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>1.765</td>
-                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>299</td>
-                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>2.064</td>
+                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>1.765</td>
+                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>299</td>
+                      <td style={{ padding: '1.2rem 1.5rem', textAlign: 'center' }}>2.064</td>
                     </tr>
                   </tbody>
                 </table>
@@ -330,6 +330,9 @@ export default function Statistik() {
         .statistik-tab:hover:not(.active) {
           border-color: #0A1E38;
           color: #0A1E38;
+        }
+        table th, table td {
+          border: 1px solid #E2E8F0;
         }
       `}</style>
     </div>
