@@ -76,6 +76,7 @@ const STATIC_FALLBACK_DATA = [
 export default function JadwalTrainingPage() {
   const [selectedMonth, setSelectedMonth] = useState("Agustus");
   const [selectedYear, setSelectedYear] = useState(2026);
+  const [selectedType, setSelectedType] = useState("all");
   const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
   const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
   
@@ -84,10 +85,10 @@ export default function JadwalTrainingPage() {
   const [settings, setSettings] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Reset page when month or year filter changes
+  // Reset page when month, year, or type filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, selectedType]);
 
   useEffect(() => {
     // Fetch settings
@@ -191,9 +192,19 @@ export default function JadwalTrainingPage() {
     return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
   };
 
-  // Filter trainings matching the selected month name and year
+  // Filter trainings matching the selected month name and year, and the selected type
   const filteredTrainings = trainings.filter(item => {
     if (!item.date) return false;
+
+    // Filter by type
+    if (selectedType !== "all") {
+      const typeLower = (item.type || "").toLowerCase();
+      const targetType = selectedType === "public" ? ["public", "publik"] : ["internal"];
+      if (!targetType.includes(typeLower)) {
+        return false;
+      }
+    }
+
     const normalized = item.date.toLowerCase();
     
     // 1. Textual format match (e.g. "18 Agustus 2026")
@@ -286,90 +297,115 @@ export default function JadwalTrainingPage() {
                 <p className="schedule-subtitle">Tahun Akademik {selectedYear}</p>
               </div>
 
-              {/* Month & Year Slider & Dropdown Navigation */}
-              <div className="month-navigation">
-                <button 
-                  onClick={(e) => { e.stopPropagation(); handlePrevMonth(); }} 
-                  className="btn-nav-month" 
-                  title="Bulan Sebelumnya"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                
-                <div className="inline-selector-group">
-                  {/* Month Dropdown */}
-                  <div className="dropdown-container-inline" onClick={(e) => e.stopPropagation()}>
-                    <button 
-                      onClick={() => {
-                        setMonthDropdownOpen(!monthDropdownOpen);
-                        setYearDropdownOpen(false);
-                      }} 
-                      className="current-inline-btn"
-                      title="Pilih Bulan"
-                    >
-                      {selectedMonth}
-                    </button>
-                    
-                    {monthDropdownOpen && (
-                      <div className="month-dropdown-list">
-                        {MONTHS.map((month) => (
-                          <div 
-                            key={month} 
-                            className={`month-dropdown-item ${selectedMonth === month ? 'selected' : ''}`}
-                            onClick={() => {
-                              setSelectedMonth(month);
-                              setMonthDropdownOpen(false);
-                            }}
-                          >
-                            {month}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+              {/* Filters Container */}
+              <div className="filters-container">
+                {/* Month & Year Slider & Dropdown Navigation */}
+                <div className="month-navigation">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handlePrevMonth(); }} 
+                    className="btn-nav-month" 
+                    title="Bulan Sebelumnya"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  
+                  <div className="inline-selector-group">
+                    {/* Month Dropdown */}
+                    <div className="dropdown-container-inline" onClick={(e) => e.stopPropagation()}>
+                      <button 
+                        onClick={() => {
+                          setMonthDropdownOpen(!monthDropdownOpen);
+                          setYearDropdownOpen(false);
+                        }} 
+                        className="current-inline-btn"
+                        title="Pilih Bulan"
+                      >
+                        {selectedMonth}
+                      </button>
+                      
+                      {monthDropdownOpen && (
+                        <div className="month-dropdown-list">
+                          {MONTHS.map((month) => (
+                            <div 
+                              key={month} 
+                              className={`month-dropdown-item ${selectedMonth === month ? 'selected' : ''}`}
+                              onClick={() => {
+                                setSelectedMonth(month);
+                                setMonthDropdownOpen(false);
+                              }}
+                            >
+                              {month}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Spacer Space */}
+                    <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#0A1E38', userSelect: 'none' }}>&nbsp;</span>
+
+                    {/* Year Dropdown */}
+                    <div className="dropdown-container-inline" onClick={(e) => e.stopPropagation()}>
+                      <button 
+                        onClick={() => {
+                          setYearDropdownOpen(!yearDropdownOpen);
+                          setMonthDropdownOpen(false);
+                        }} 
+                        className="current-inline-btn"
+                        title="Pilih Tahun"
+                      >
+                        {selectedYear}
+                      </button>
+                      
+                      {yearDropdownOpen && (
+                        <div className="month-dropdown-list year-list">
+                          {yearsList.map((year) => (
+                            <div 
+                              key={year} 
+                              className={`month-dropdown-item ${selectedYear === year ? 'selected' : ''}`}
+                              onClick={() => {
+                                setSelectedYear(year);
+                                setYearDropdownOpen(false);
+                              }}
+                            >
+                              {year}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Spacer Space */}
-                  <span style={{ fontSize: '0.95rem', fontWeight: '800', color: '#0A1E38', userSelect: 'none' }}>&nbsp;</span>
-
-                  {/* Year Dropdown */}
-                  <div className="dropdown-container-inline" onClick={(e) => e.stopPropagation()}>
-                    <button 
-                      onClick={() => {
-                        setYearDropdownOpen(!yearDropdownOpen);
-                        setMonthDropdownOpen(false);
-                      }} 
-                      className="current-inline-btn"
-                      title="Pilih Tahun"
-                    >
-                      {selectedYear}
-                    </button>
-                    
-                    {yearDropdownOpen && (
-                      <div className="month-dropdown-list year-list">
-                        {yearsList.map((year) => (
-                          <div 
-                            key={year} 
-                            className={`month-dropdown-item ${selectedYear === year ? 'selected' : ''}`}
-                            onClick={() => {
-                              setSelectedYear(year);
-                              setYearDropdownOpen(false);
-                            }}
-                          >
-                            {year}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleNextMonth(); }} 
+                    className="btn-nav-month" 
+                    title="Bulan Selanjutnya"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
                 </div>
 
-                <button 
-                  onClick={(e) => { e.stopPropagation(); handleNextMonth(); }} 
-                  className="btn-nav-month" 
-                  title="Bulan Selanjutnya"
-                >
-                  <ChevronRight size={18} />
-                </button>
+                {/* Type Filter */}
+                <div className="type-filter-group">
+                  <button 
+                    onClick={() => setSelectedType("all")} 
+                    className={`type-filter-btn ${selectedType === 'all' ? 'active' : ''}`}
+                  >
+                    Semua
+                  </button>
+                  <button 
+                    onClick={() => setSelectedType("internal")} 
+                    className={`type-filter-btn ${selectedType === 'internal' ? 'active' : ''}`}
+                  >
+                    Internal
+                  </button>
+                  <button 
+                    onClick={() => setSelectedType("public")} 
+                    className={`type-filter-btn ${selectedType === 'public' ? 'active' : ''}`}
+                  >
+                    Publik
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -559,6 +595,13 @@ export default function JadwalTrainingPage() {
           margin: 1.5rem 0 2rem 0;
         }
 
+        .filters-container {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+
         /* Month & Year Navigation & Dropdown Selection */
         .month-navigation {
           display: flex;
@@ -580,6 +623,34 @@ export default function JadwalTrainingPage() {
           align-items: center;
           justify-content: center;
           border-radius: 50%;
+        }
+        
+        .type-filter-group {
+          display: flex;
+          background-color: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          border-radius: 50px;
+          padding: 0.25rem;
+          gap: 0.25rem;
+        }
+        .type-filter-btn {
+          border: none;
+          background: none;
+          padding: 0.4rem 1.2rem;
+          font-family: var(--font-heading);
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #64748B;
+          border-radius: 50px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .type-filter-btn:hover {
+          color: #0A1E38;
+        }
+        .type-filter-btn.active {
+          background-color: #0A1E38;
+          color: #FFFFFF;
         }
         .btn-nav-month:hover {
           color: #0A1E38;

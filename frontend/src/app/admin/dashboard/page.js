@@ -182,7 +182,7 @@ export default function AdminDashboardPage() {
 
           <div className="stat-panel-card">
             <div className="stat-icon-wrapper docs-color">
-              <Download size={24} />
+              <FileText size={24} />
             </div>
             <div className="stat-text-info">
               <span className="stat-label">Dokumen</span>
@@ -288,7 +288,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* System Info */}
-            <div className="split-main-card">
+            {/* <div className="split-main-card">
               <div className="split-card-header">
                 <div className="header-title-area">
                   <Database size={18} className="header-icon" />
@@ -311,7 +311,7 @@ export default function AdminDashboardPage() {
                   <span className="sys-val">v1.2.0 (Next.js)</span>
                 </div>
               </div>
-            </div>
+            </div> */}
 
           </div>
 

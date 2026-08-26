@@ -60,9 +60,7 @@ export default function NewsForm({ mode = 'create', newsId = null }) {
   
   const [publishedAt, setPublishedAt] = useState('');
   const [slug, setSlug] = useState('');
-
-  const [activeTab, setActiveTab] = useState('write'); // 'write' | 'preview'
-
+  
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -389,47 +387,18 @@ export default function NewsForm({ mode = 'create', newsId = null }) {
                     </span>
                   </div>
 
-                  {/* Dual Pane Editor Tabs */}
-                  <div className="tabs-container">
-                    <button 
-                      type="button" 
-                      className={`tab-button ${activeTab === 'write' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('write')}
-                    >
-                      <FileText size={16} />
-                      <span>Tulis Konten</span>
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`tab-button ${activeTab === 'preview' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('preview')}
-                    >
-                      <Eye size={16} />
-                      <span>Pratinjau Halaman</span>
-                    </button>
-                  </div>
-
-                  {/* Body Editor Textarea or Preview */}
+                  {/* Body Editor Textarea */}
                   <div className="editor-card body-editor-card">
-                    {activeTab === 'write' ? (
-                       <>
-                         <CustomRichEditor 
-                           value={content}
-                           onChange={(data) => setContent(data)}
-                         />
-                         <div className="editor-footer" style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-end', fontSize: '0.78rem', color: '#64748B' }}>
-                           <span>{getWordCount()} Kata</span>
-                           <span className="footer-dot" style={{ margin: '0 0.4rem' }}>•</span>
-                           <span>{getCharCount()} Karakter</span>
-                         </div>
-                       </>
-                     ) : (
-                       <div 
-                         className="markdown-preview-container"
-                         dangerouslySetInnerHTML={{ __html: content }}
-                       />
-                     )}
-                   </div>
+                    <CustomRichEditor 
+                      value={content}
+                      onChange={(data) => setContent(data)}
+                    />
+                    <div className="editor-footer" style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-end', fontSize: '0.78rem', color: '#64748B' }}>
+                      <span>{getWordCount()} Kata</span>
+                      <span className="footer-dot" style={{ margin: '0 0.4rem' }}>•</span>
+                      <span>{getCharCount()} Karakter</span>
+                    </div>
+                  </div>
 
                 </div>
 

@@ -41,7 +41,9 @@ import {
   FolderOpen,
   Users2,
   Network,
-  Presentation
+  Presentation,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 
@@ -133,6 +135,8 @@ const DEFAULT_PROGRAMS = [
 
 export default function AdminProfilPage() {
   const [activeTab, setActiveTab] = useState('info');
+  const [activeSubdirAccordion, setActiveSubdirAccordion] = useState(0);
+  const [activeOrgAccordion, setActiveOrgAccordion] = useState(0);
 
   // Hero section states
   const [heroTitle, setHeroTitle] = useState('Profil');
@@ -1161,118 +1165,160 @@ export default function AdminProfilPage() {
                     <h2>Sub Direktorat & Seksi</h2>
                   </div>
                   <div className="admin-card-body">
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
-                      {columns.map((col, colIdx) => (
-                        <div 
-                          key={colIdx} 
-                          style={{ 
-                            background: '#F8FAFC', 
-                            border: '1px solid #E2E8F0', 
-                            borderTop: `6px solid ${col.color || '#0A1E38'}`, 
-                            borderRadius: '8px', 
-                            padding: '1.25rem',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '1rem'
-                          }}
-                        >
-                          {/* Sub-Directorate Name & Color Select */}
-                          <div className="admin-field">
-                            <label style={{ fontSize: '0.75rem', fontWeight: '800' }}>Nama Sub-Direktorat</label>
-                            <textarea
-                              rows={3}
-                              value={col.name}
-                              onChange={(e) => handleUpdateColumnName(colIdx, e.target.value)}
-                              style={{ padding: '0.5rem', fontSize: '0.85rem', fontWeight: '600' }}
-                            />
-                          </div>
-
-                          <div className="admin-field">
-                            <label style={{ fontSize: '0.75rem', fontWeight: '800' }}>Warna</label>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <input
-                                type="color"
-                                value={col.color || '#0A1E38'}
-                                onChange={(e) => handleUpdateColumnColor(colIdx, e.target.value)}
-                                style={{ width: '40px', height: '36px', border: '1px solid #CBD5E1', borderRadius: '4px', padding: '0px', cursor: 'pointer' }}
-                              />
-                              <input
-                                type="text"
-                                value={col.color || '#0A1E38'}
-                                onChange={(e) => handleUpdateColumnColor(colIdx, e.target.value)}
-                                style={{ flex: 1, padding: '0.45rem', fontSize: '0.85rem', borderRadius: '6px', border: '1px solid #CBD5E1', fontFamily: 'inherit' }}
-                              />
-                            </div>
-                          </div>
-
-                          {/* List of sections (Seksi) */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#475569' }}>Daftar Seksi</label>
-                            {col.sections.map((seksi, seksiIdx) => (
-                              <div key={seksiIdx} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                                <input
-                                  type="text"
-                                  value={seksi}
-                                  onChange={(e) => handleUpdateSeksi(colIdx, seksiIdx, e.target.value)}
-                                  style={{ flex: 1, padding: '0.45rem', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #CBD5E1' }}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveSeksi(colIdx, seksiIdx)}
-                                  style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}
-                                  title="Hapus Seksi"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {columns.map((col, colIdx) => {
+                        const isOpen = activeOrgAccordion === colIdx;
+                        const title = col.name || `Sub-Direktorat ${colIdx + 1}`;
+                        
+                        return (
+                          <div 
+                            key={colIdx} 
+                            style={{ 
+                              background: '#FFFFFF', 
+                              border: '1px solid #E2E8F0', 
+                              borderRadius: '12px',
+                              overflow: 'hidden',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                            }}
+                          >
+                            {/* Accordion Header */}
+                            <div 
+                              onClick={() => setActiveOrgAccordion(isOpen ? null : colIdx)}
+                              style={{ 
+                                background: isOpen ? '#F1F5F9' : '#F8FAFC', 
+                                padding: '1rem 1.25rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                cursor: 'pointer',
+                                transition: 'background-color 0.2s',
+                                borderBottom: isOpen ? '1px solid #E2E8F0' : 'none'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+                                {isOpen ? <ChevronUp size={18} style={{ color: '#0B2F61' }} /> : <ChevronDown size={18} style={{ color: '#0B2F61' }} />}
+                                <span style={{ fontSize: '0.9rem', fontWeight: '800', color: col.color || '#0B2F61' }}>
+                                  {title}
+                                </span>
                               </div>
-                            ))}
+                              
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveColumn(colIdx);
+                                }}
+                                style={{ 
+                                  background: 'none', 
+                                  border: 'none', 
+                                  color: '#EF4444', 
+                                  cursor: 'pointer', 
+                                  fontSize: '0.75rem', 
+                                  fontWeight: '700', 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '0.25rem',
+                                  padding: '0.25rem 0.5rem',
+                                  borderRadius: '6px',
+                                  transition: 'background-color 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FEE2E2'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                              >
+                                <Trash2 size={14} /> Hapus Sub-Direktorat
+                              </button>
+                            </div>
 
-                            <button
-                              type="button"
-                              onClick={() => handleAddSeksi(colIdx)}
-                              style={{ 
-                                marginTop: '0.5rem', 
-                                background: '#FFFFFF', 
-                                border: '1px dashed #CBD5E1', 
-                                padding: '0.5rem', 
-                                borderRadius: '6px', 
-                                cursor: 'pointer', 
-                                fontSize: '0.75rem', 
-                                fontWeight: '700', 
-                                color: '#0B2F61',
-                                transition: 'all 0.2s',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.25rem'
-                              }}
-                            >
-                              <Plus size={14} /> Tambah Seksi
-                            </button>
-                          </div>
+                            {/* Accordion Body */}
+                            {isOpen && (
+                              <div 
+                                style={{ 
+                                  padding: '1.25rem',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '1.25rem',
+                                  background: '#FFFFFF'
+                                }}
+                              >
+                                {/* Sub-Directorate Name & Color Select */}
+                                <div className="admin-field">
+                                  <label style={{ fontSize: '0.75rem', fontWeight: '800' }}>Nama Sub-Direktorat</label>
+                                  <textarea
+                                    rows={3}
+                                    value={col.name}
+                                    onChange={(e) => handleUpdateColumnName(colIdx, e.target.value)}
+                                    style={{ padding: '0.5rem', fontSize: '0.85rem', fontWeight: '600' }}
+                                  />
+                                </div>
 
-                          {/* Delete column button */}
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #E2E8F0', paddingTop: '0.75rem', marginTop: '0.5rem' }}>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveColumn(colIdx)}
-                              style={{ 
-                                background: 'none', 
-                                border: 'none', 
-                                color: '#EF4444', 
-                                cursor: 'pointer', 
-                                fontSize: '0.75rem', 
-                                fontWeight: '700',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.25rem'
-                              }}
-                            >
-                              <Trash2 size={14} /> Hapus Sub-Direktorat
-                            </button>
+                                <div className="admin-field">
+                                  <label style={{ fontSize: '0.75rem', fontWeight: '800' }}>Warna Tema Visual</label>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <input
+                                      type="color"
+                                      value={col.color || '#0A1E38'}
+                                      onChange={(e) => handleUpdateColumnColor(colIdx, e.target.value)}
+                                      style={{ width: '40px', height: '36px', border: '1px solid #CBD5E1', borderRadius: '4px', padding: '0px', cursor: 'pointer' }}
+                                    />
+                                    <input
+                                      type="text"
+                                      value={col.color || '#0A1E38'}
+                                      onChange={(e) => handleUpdateColumnColor(colIdx, e.target.value)}
+                                      style={{ flex: 1, padding: '0.45rem', fontSize: '0.85rem', borderRadius: '6px', border: '1px solid #CBD5E1', fontFamily: 'inherit' }}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* List of sections (Seksi) */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                  <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#475569' }}>Daftar Seksi</label>
+                                  {col.sections.map((seksi, seksiIdx) => (
+                                    <div key={seksiIdx} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                      <input
+                                        type="text"
+                                        value={seksi}
+                                        onChange={(e) => handleUpdateSeksi(colIdx, seksiIdx, e.target.value)}
+                                        style={{ flex: 1, padding: '0.45rem', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #CBD5E1' }}
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveSeksi(colIdx, seksiIdx)}
+                                        style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}
+                                        title="Hapus Seksi"
+                                      >
+                                        <Trash2 size={16} />
+                                      </button>
+                                    </div>
+                                  ))}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddSeksi(colIdx)}
+                                    style={{ 
+                                      marginTop: '0.5rem', 
+                                      background: '#FFFFFF', 
+                                      border: '1px dashed #CBD5E1', 
+                                      padding: '0.5rem', 
+                                      borderRadius: '6px', 
+                                      cursor: 'pointer', 
+                                      fontSize: '0.75rem', 
+                                      fontWeight: '700', 
+                                      color: '#0B2F61',
+                                      transition: 'all 0.2s',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      gap: '0.25rem'
+                                    }}
+                                  >
+                                    <Plus size={14} /> Tambah Seksi
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
 
                       {/* Button add new column */}
                       <button
@@ -1280,24 +1326,23 @@ export default function AdminProfilPage() {
                         onClick={handleAddNewColumn}
                         style={{ 
                           border: '2px dashed #CBD5E1', 
-                          borderRadius: '8px', 
-                          padding: '2rem 1.25rem',
+                          borderRadius: '12px', 
+                          padding: '1.25rem',
                           display: 'flex',
-                          flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
                           gap: '0.5rem',
-                          background: 'none',
+                          background: '#FFFFFF',
                           cursor: 'pointer',
                           color: '#64748B',
-                          minHeight: '260px',
+                          fontWeight: '700',
                           transition: 'all 0.2s'
                         }}
                         onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0B2F61'; e.currentTarget.style.color = '#0B2F61'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#64748B'; }}
                       >
-                        <Plus size={24} />
-                        <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>Tambah Sub-Direktorat</span>
+                        <Plus size={18} />
+                        <span style={{ fontSize: '0.85rem' }}>Tambah Sub-Direktorat Baru</span>
                       </button>
                     </div>
                   </div>
@@ -1523,282 +1568,332 @@ export default function AdminProfilPage() {
                     </button>
                   </div>
                   <div className="admin-card-body">
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
-                      {pimpinanSubdirectorates.map((sub, colIdx) => (
-                        <div 
-                          key={sub.id || colIdx} 
-                          style={{ 
-                            background: '#F8FAFC', 
-                            border: '1px solid #E2E8F0', 
-                            borderTop: '6px solid #0B2F61', 
-                            borderRadius: '12px', 
-                            padding: '1.25rem',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '1.25rem'
-                          }}
-                        >
-                          {/* Sub-Directorate Header Actions */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.75rem' }}>
-                            <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#0B2F61' }}>Sub-Direktorat {colIdx + 1}</span>
-                            <button
-                              type="button"
-                              onClick={() => handleRemovePimpinanColumn(colIdx)}
-                              style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {pimpinanSubdirectorates.map((sub, colIdx) => {
+                        const isOpen = activeSubdirAccordion === colIdx;
+                        const title = sub.kasubdit.role || `Sub-Direktorat ${colIdx + 1}`;
+                        
+                        return (
+                          <div 
+                            key={sub.id || colIdx} 
+                            style={{ 
+                              background: '#FFFFFF', 
+                              border: '1px solid #E2E8F0', 
+                              borderRadius: '12px',
+                              overflow: 'hidden',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                            }}
+                          >
+                            {/* Accordion Header */}
+                            <div 
+                              onClick={() => setActiveSubdirAccordion(isOpen ? null : colIdx)}
+                              style={{ 
+                                background: isOpen ? '#F1F5F9' : '#F8FAFC', 
+                                padding: '1rem 1.25rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                cursor: 'pointer',
+                                transition: 'background-color 0.2s',
+                                borderBottom: isOpen ? '1px solid #E2E8F0' : 'none'
+                              }}
                             >
-                              <Trash2 size={14} /> Hapus Kolom
-                            </button>
-                          </div>
-
-                          {/* KASUBDIT CARD */}
-                          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '1rem', position: 'relative' }}>
-                            <span style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '0.65rem', fontWeight: '800', background: '#E0ECFB', color: '#0B2F61', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>KASUBDIT</span>
-                            
-                            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-                              {/* Photo */}
-                              <div style={{ width: '70px', height: '85px', borderRadius: '6px', overflow: 'hidden', position: 'relative', background: '#F8FAFC', border: '1px dashed #CBD5E1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
-                                {sub.kasubdit.image ? (
-                                  <img 
-                                    src={getImageUrl(sub.kasubdit.image)} 
-                                    alt="Foto Kasubdit" 
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                  />
-                                ) : (
-                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
-                                    <ImageIcon size={20} />
-                                    <span style={{ fontSize: '0.65rem', fontWeight: '600' }}>Foto</span>
-                                  </div>
-                                )}
-                                <button 
-                                  type="button"
-                                  onClick={(e) => e.currentTarget.nextSibling.click()}
-                                  style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(15,23,42,0.85)', border: 'none', color: '#fff', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                >
-                                  <Upload size={10} />
-                                </button>
-                                <input 
-                                  type="file" 
-                                  accept="image/*"
-                                  onChange={(e) => handlePimpinanImageUpload(e.target.files[0], 'kasubdit', colIdx)} 
-                                  style={{ display: 'none' }}
-                                />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+                                {isOpen ? <ChevronUp size={18} style={{ color: '#0B2F61' }} /> : <ChevronDown size={18} style={{ color: '#0B2F61' }} />}
+                                <span style={{ fontSize: '0.9rem', fontWeight: '800', color: '#0B2F61' }}>
+                                  {title}
+                                </span>
                               </div>
-
-                              {/* Details */}
-                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                <div className="admin-field" style={{ margin: 0 }}>
-                                  <label style={{ fontSize: '0.7rem', fontWeight: '800' }}>Nama Kasubdit</label>
-                                  <input 
-                                    type="text" 
-                                    value={sub.kasubdit.name} 
-                                    onChange={(e) => handleUpdatePimpinanName(colIdx, e.target.value)}
-                                    style={{ padding: '0.35rem', fontSize: '0.8rem' }}
-                                  />
-                                </div>
-                                <div className="admin-field" style={{ margin: 0 }}>
-                                  <label style={{ fontSize: '0.7rem', fontWeight: '800' }}>Jabatan Kasubdit</label>
-                                  <input 
-                                    type="text" 
-                                    value={sub.kasubdit.role} 
-                                    onChange={(e) => handleUpdatePimpinanRole(colIdx, e.target.value)}
-                                    style={{ padding: '0.35rem', fontSize: '0.8rem' }}
-                                  />
-                                </div>
-                              </div>
+                              
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemovePimpinanColumn(colIdx);
+                                }}
+                                style={{ 
+                                  background: 'none', 
+                                  border: 'none', 
+                                  color: '#EF4444', 
+                                  cursor: 'pointer', 
+                                  fontSize: '0.75rem', 
+                                  fontWeight: '700', 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '0.25rem',
+                                  padding: '0.25rem 0.5rem',
+                                  borderRadius: '6px',
+                                  transition: 'background-color 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FEE2E2'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                              >
+                                <Trash2 size={14} /> Hapus Kolom
+                              </button>
                             </div>
-                          </div>
 
-                          {/* KASIE LIST */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#475569' }}>Daftar Kepala Seksi (Kasie)</label>
-                            
-                            {(sub.kasie || []).map((ks, kasieIdx) => (
-                              <div key={kasieIdx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '0.75rem', position: 'relative' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                                  <span style={{ fontSize: '0.65rem', fontWeight: '800', color: '#64748B' }}>KASIE {kasieIdx + 1}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveKasie(colIdx, kasieIdx)}
-                                    style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                                    title="Hapus Kasie"
-                                  >
-                                    <Trash2 size={12} />
-                                  </button>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                  {/* Photo */}
-                                  <div style={{ width: '55px', height: '65px', borderRadius: '4px', overflow: 'hidden', position: 'relative', background: '#F8FAFC', border: '1px dashed #CBD5E1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
-                                    {ks.image ? (
-                                      <img 
-                                        src={getImageUrl(ks.image)} 
-                                        alt="Foto Kasie" 
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            {/* Accordion Body */}
+                            {isOpen && (
+                              <div 
+                                style={{ 
+                                  padding: '1.25rem',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '1.25rem',
+                                  background: '#FFFFFF'
+                                }}
+                              >
+                                {/* KASUBDIT CARD */}
+                                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '1rem', position: 'relative' }}>
+                                  <span style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '0.65rem', fontWeight: '800', background: '#E0ECFB', color: '#0B2F61', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>KASUBDIT</span>
+                                  
+                                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                                    {/* Photo */}
+                                    <div style={{ width: '70px', height: '85px', borderRadius: '6px', overflow: 'hidden', position: 'relative', background: '#FFFFFF', border: '1px dashed #CBD5E1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+                                      {sub.kasubdit.image ? (
+                                        <img 
+                                          src={getImageUrl(sub.kasubdit.image)} 
+                                          alt="Foto Kasubdit" 
+                                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                      ) : (
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+                                          <ImageIcon size={20} />
+                                          <span style={{ fontSize: '0.65rem', fontWeight: '600' }}>Foto</span>
+                                        </div>
+                                      )}
+                                      <button 
+                                        type="button"
+                                        onClick={(e) => e.currentTarget.nextSibling.click()}
+                                        style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(15,23,42,0.85)', border: 'none', color: '#fff', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                      >
+                                        <Upload size={10} />
+                                      </button>
+                                      <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => handlePimpinanImageUpload(e.target.files[0], 'kasubdit', colIdx)} 
+                                        style={{ display: 'none' }}
                                       />
-                                    ) : (
-                                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                        <ImageIcon size={16} />
-                                        <span style={{ fontSize: '0.55rem', fontWeight: '600' }}>Foto</span>
-                                      </div>
-                                    )}
-                                    <button 
-                                      type="button"
-                                      onClick={(e) => e.currentTarget.nextSibling.click()}
-                                      style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(15,23,42,0.85)', border: 'none', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                    >
-                                      <Upload size={8} />
-                                    </button>
-                                    <input 
-                                      type="file" 
-                                      accept="image/*"
-                                      onChange={(e) => handlePimpinanImageUpload(e.target.files[0], 'kasie', colIdx, kasieIdx)} 
-                                      style={{ display: 'none' }}
-                                    />
-                                  </div>
+                                    </div>
 
-                                  {/* Details */}
-                                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                                    <input 
-                                      type="text" 
-                                      value={ks.name} 
-                                      onChange={(e) => handleUpdatePimpinanName(colIdx, e.target.value, kasieIdx)}
-                                      placeholder="Nama Kasie"
-                                      style={{ padding: '0.25rem', fontSize: '0.75rem', height: '24px' }}
-                                    />
-                                    <input 
-                                      type="text" 
-                                      value={ks.role} 
-                                      onChange={(e) => handleUpdatePimpinanRole(colIdx, e.target.value, kasieIdx)}
-                                      placeholder="Jabatan Kasie"
-                                      style={{ padding: '0.25rem', fontSize: '0.75rem', height: '24px' }}
-                                    />
+                                    {/* Details */}
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                      <div className="admin-field" style={{ margin: 0 }}>
+                                        <label style={{ fontSize: '0.7rem', fontWeight: '800' }}>Nama Kasubdit</label>
+                                        <input 
+                                          type="text" 
+                                          value={sub.kasubdit.name} 
+                                          onChange={(e) => handleUpdatePimpinanName(colIdx, e.target.value)}
+                                          style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                                        />
+                                      </div>
+                                      <div className="admin-field" style={{ margin: 0 }}>
+                                        <label style={{ fontSize: '0.7rem', fontWeight: '800' }}>Jabatan Kasubdit</label>
+                                        <input 
+                                          type="text" 
+                                          value={sub.kasubdit.role} 
+                                          onChange={(e) => handleUpdatePimpinanRole(colIdx, e.target.value)}
+                                          style={{ padding: '0.35rem', fontSize: '0.8rem' }}
+                                        />
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
 
-                                {/* STAFF LIST FOR THIS KASIE */}
-                                <div style={{ marginTop: '0.75rem', borderTop: '1px solid #E2E8F0', paddingTop: '0.65rem' }}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                    <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#475569' }}>Daftar Staf ({ks.staff ? ks.staff.length : 0})</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAddStaff(colIdx, kasieIdx)}
-                                      style={{ background: '#E0ECFB', border: 'none', color: '#0B2F61', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.65rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.15rem' }}
-                                    >
-                                      <Plus size={10} /> Tambah Staf
-                                    </button>
-                                  </div>
+                                {/* KASIE LIST */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                  <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#475569' }}>Daftar Kepala Seksi (Kasie)</label>
+                                  
+                                  {(sub.kasie || []).map((ks, kasieIdx) => (
+                                    <div key={kasieIdx} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '0.75rem', position: 'relative' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                                        <span style={{ fontSize: '0.65rem', fontWeight: '800', color: '#64748B' }}>KASIE {kasieIdx + 1}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveKasie(colIdx, kasieIdx)}
+                                          style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                          title="Hapus Kasie"
+                                        >
+                                          <Trash2 size={12} />
+                                        </button>
+                                      </div>
 
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                    {(ks.staff || []).map((st, staffIdx) => (
-                                      <div key={staffIdx} style={{ display: 'flex', gap: '0.4rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '0.4rem', position: 'relative' }}>
-                                        {/* Staff Photo */}
-                                        <div style={{ width: '45px', height: '55px', borderRadius: '4px', overflow: 'hidden', position: 'relative', background: '#FFFFFF', border: '1px dashed #CBD5E1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
-                                          {st.image ? (
+                                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        {/* Photo */}
+                                        <div style={{ width: '55px', height: '65px', borderRadius: '4px', overflow: 'hidden', position: 'relative', background: '#FFFFFF', border: '1px dashed #CBD5E1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+                                          {ks.image ? (
                                             <img 
-                                              src={getImageUrl(st.image)} 
-                                              alt="Foto Staf" 
+                                              src={getImageUrl(ks.image)} 
+                                              alt="Foto Kasie" 
                                               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             />
                                           ) : (
-                                            <ImageIcon size={14} />
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                              <ImageIcon size={16} />
+                                              <span style={{ fontSize: '0.55rem', fontWeight: '600' }}>Foto</span>
+                                            </div>
                                           )}
                                           <button 
                                             type="button"
                                             onClick={(e) => e.currentTarget.nextSibling.click()}
-                                            style={{ position: 'absolute', bottom: '1px', right: '1px', background: 'rgba(15,23,42,0.85)', border: 'none', color: '#fff', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                            style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(15,23,42,0.85)', border: 'none', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                                           >
-                                            <Upload size={6} />
+                                            <Upload size={8} />
                                           </button>
                                           <input 
                                             type="file" 
                                             accept="image/*"
-                                            onChange={(e) => handlePimpinanImageUpload(e.target.files[0], 'staff', colIdx, kasieIdx, staffIdx)} 
+                                            onChange={(e) => handlePimpinanImageUpload(e.target.files[0], 'kasie', colIdx, kasieIdx)} 
                                             style={{ display: 'none' }}
                                           />
                                         </div>
 
-                                        {/* Staff Info Inputs */}
-                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                        {/* Details */}
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                                           <input 
                                             type="text" 
-                                            value={st.name} 
-                                            onChange={(e) => handleUpdateStaffName(colIdx, kasieIdx, staffIdx, e.target.value)}
-                                            placeholder="Nama Staf"
-                                            style={{ padding: '0.15rem 0.25rem', fontSize: '0.7rem', height: '20px' }}
+                                            value={ks.name} 
+                                            onChange={(e) => handleUpdatePimpinanName(colIdx, e.target.value, kasieIdx)}
+                                            placeholder="Nama Kasie"
+                                            style={{ padding: '0.25rem', fontSize: '0.75rem', height: '24px' }}
                                           />
                                           <input 
                                             type="text" 
-                                            value={st.role} 
-                                            onChange={(e) => handleUpdateStaffRole(colIdx, kasieIdx, staffIdx, e.target.value)}
-                                            placeholder="Jabatan Staf"
-                                            style={{ padding: '0.15rem 0.25rem', fontSize: '0.7rem', height: '20px' }}
+                                            value={ks.role} 
+                                            onChange={(e) => handleUpdatePimpinanRole(colIdx, e.target.value, kasieIdx)}
+                                            placeholder="Jabatan Kasie"
+                                            style={{ padding: '0.25rem', fontSize: '0.75rem', height: '24px' }}
                                           />
                                         </div>
-
-                                        {/* Remove Staff Button */}
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveStaff(colIdx, kasieIdx, staffIdx)}
-                                          onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = '#EF4444';
-                                            e.currentTarget.style.color = '#FFFFFF';
-                                          }}
-                                          onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = '#FEE2E2';
-                                            e.currentTarget.style.color = '#EF4444';
-                                          }}
-                                          style={{ 
-                                            position: 'absolute', 
-                                            top: '4px', 
-                                            right: '4px', 
-                                            width: '18px', 
-                                            height: '18px', 
-                                            borderRadius: '50%', 
-                                            backgroundColor: '#FEE2E2', 
-                                            color: '#EF4444', 
-                                            border: 'none', 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center', 
-                                            cursor: 'pointer', 
-                                            transition: 'all 0.15s ease',
-                                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                                          }}
-                                          title="Hapus Staf"
-                                        >
-                                          <X size={11} />
-                                        </button>
                                       </div>
-                                    ))}
-                                  </div>
+
+                                      {/* STAFF LIST FOR THIS KASIE */}
+                                      <div style={{ marginTop: '0.75rem', borderTop: '1px solid #E2E8F0', paddingTop: '0.65rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                          <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#475569' }}>Daftar Staf ({ks.staff ? ks.staff.length : 0})</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleAddStaff(colIdx, kasieIdx)}
+                                            style={{ background: '#E0ECFB', border: 'none', color: '#0B2F61', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.65rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.15rem' }}
+                                          >
+                                            <Plus size={10} /> Tambah Staf
+                                          </button>
+                                        </div>
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                          {(ks.staff || []).map((st, staffIdx) => (
+                                            <div key={staffIdx} style={{ display: 'flex', gap: '0.4rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '0.4rem', position: 'relative' }}>
+                                              {/* Staff Photo */}
+                                              <div style={{ width: '45px', height: '55px', borderRadius: '4px', overflow: 'hidden', position: 'relative', background: '#FFFFFF', border: '1px dashed #CBD5E1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+                                                {st.image ? (
+                                                  <img 
+                                                    src={getImageUrl(st.image)} 
+                                                    alt="Foto Staf" 
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                  />
+                                                ) : (
+                                                  <ImageIcon size={14} />
+                                                )}
+                                                <button 
+                                                  type="button"
+                                                  onClick={(e) => e.currentTarget.nextSibling.click()}
+                                                  style={{ position: 'absolute', bottom: '1px', right: '1px', background: 'rgba(15,23,42,0.85)', border: 'none', color: '#fff', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                >
+                                                  <Upload size={6} />
+                                                </button>
+                                                <input 
+                                                  type="file" 
+                                                  accept="image/*"
+                                                  onChange={(e) => handlePimpinanImageUpload(e.target.files[0], 'staff', colIdx, kasieIdx, staffIdx)} 
+                                                  style={{ display: 'none' }}
+                                                />
+                                              </div>
+
+                                              {/* Staff Info Inputs */}
+                                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                                <input 
+                                                  type="text" 
+                                                  value={st.name} 
+                                                  onChange={(e) => handleUpdateStaffName(colIdx, kasieIdx, staffIdx, e.target.value)}
+                                                  placeholder="Nama Staf"
+                                                  style={{ padding: '0.15rem 0.25rem', fontSize: '0.7rem', height: '20px' }}
+                                                />
+                                                <input 
+                                                  type="text" 
+                                                  value={st.role} 
+                                                  onChange={(e) => handleUpdateStaffRole(colIdx, kasieIdx, staffIdx, e.target.value)}
+                                                  placeholder="Jabatan Staf"
+                                                  style={{ padding: '0.15rem 0.25rem', fontSize: '0.7rem', height: '20px' }}
+                                                />
+                                              </div>
+
+                                              {/* Remove Staff Button */}
+                                              <button
+                                                type="button"
+                                                onClick={() => handleRemoveStaff(colIdx, kasieIdx, staffIdx)}
+                                                onMouseEnter={(e) => {
+                                                  e.currentTarget.style.backgroundColor = '#EF4444';
+                                                  e.currentTarget.style.color = '#FFFFFF';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                  e.currentTarget.style.backgroundColor = '#FEE2E2';
+                                                  e.currentTarget.style.color = '#EF4444';
+                                                }}
+                                                style={{ 
+                                                  position: 'absolute', 
+                                                  top: '4px', 
+                                                  right: '4px', 
+                                                  width: '18px', 
+                                                  height: '18px', 
+                                                  borderRadius: '50%', 
+                                                  backgroundColor: '#FEE2E2', 
+                                                  color: '#EF4444', 
+                                                  border: 'none', 
+                                                  display: 'flex', 
+                                                  alignItems: 'center', 
+                                                  justifyContent: 'center', 
+                                                  cursor: 'pointer', 
+                                                  transition: 'all 0.15s ease',
+                                                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                                }}
+                                                title="Hapus Staf"
+                                              >
+                                                <X size={11} />
+                                              </button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddKasie(colIdx)}
+                                    style={{ 
+                                      background: '#FFFFFF', 
+                                      border: '1px dashed #CBD5E1', 
+                                      padding: '0.5rem', 
+                                      borderRadius: '8px', 
+                                      cursor: 'pointer', 
+                                      fontSize: '0.75rem', 
+                                      fontWeight: '700', 
+                                      color: '#0B2F61',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      gap: '0.25rem'
+                                    }}
+                                  >
+                                    <Plus size={14} /> Tambah Jabatan Kasie
+                                  </button>
                                 </div>
                               </div>
-                            ))}
-
-                            <button
-                              type="button"
-                              onClick={() => handleAddKasie(colIdx)}
-                              style={{ 
-                                background: '#FFFFFF', 
-                                border: '1px dashed #CBD5E1', 
-                                padding: '0.5rem', 
-                                borderRadius: '8px', 
-                                cursor: 'pointer', 
-                                fontSize: '0.75rem', 
-                                fontWeight: '700', 
-                                color: '#0B2F61',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.25rem'
-                              }}
-                            >
-                              <Plus size={14} /> Tambah Jabatan Kasie
-                            </button>
+                            )}
                           </div>
-
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

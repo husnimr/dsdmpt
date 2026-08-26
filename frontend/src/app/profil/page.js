@@ -665,9 +665,33 @@ export default function ProfilPage() {
                             </div>
                           )}
                         </div>
-                        <div className="pimpinan-info">
+                        <div className="pimpinan-info" style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
                           <h4 className="pimpinan-name">{name}</h4>
-                          <p className="pimpinan-role">{role}</p>
+                          <p className="pimpinan-role" style={{ flexGrow: 1 }}>{role}</p>
+                          
+                          {isKasie && (
+                            <div style={{ marginTop: '0.75rem', width: '100%' }}>
+                              <span 
+                                style={{ 
+                                  display: 'inline-flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center', 
+                                  backgroundColor: '#0B2F61', 
+                                  color: '#FFFFFF', 
+                                  fontSize: '0.72rem', 
+                                  fontWeight: '700', 
+                                  padding: '0.35rem 0.75rem', 
+                                  borderRadius: '6px', 
+                                  width: '100%',
+                                  boxSizing: 'border-box',
+                                  transition: 'background-color 0.2s',
+                                  boxShadow: '0 2px 4px rgba(11, 47, 97, 0.2)'
+                                }}
+                              >
+                                Lihat Staf
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
