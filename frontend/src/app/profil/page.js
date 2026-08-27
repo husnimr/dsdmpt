@@ -241,7 +241,7 @@ const PIMPINAN_DATA = {
 
 export default function ProfilPage() {
   const [selectedKasie, setSelectedKasie] = useState(null);
-  const [selectedSubditIndex, setSelectedSubditIndex] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null);
   const [activeTab, setActiveTab] = useState('profil');
   const [settings, setSettings] = useState({});
   const [pkList, setPkList] = useState([]);
@@ -387,14 +387,15 @@ export default function ProfilPage() {
                           borderRadius: '12px', 
                           border: '1px solid #E2E8F0', 
                           borderLeft: '5px solid #F2C94C', 
-                          padding: '1.25rem 2rem', 
+                          padding: '1.25rem 2rem 1.6rem 2rem', 
                           display: 'flex', 
                           alignItems: 'center', 
                           gap: '1rem',
                           boxShadow: 'var(--shadow-md)',
                           maxWidth: '450px',
                           width: '100%',
-                          zIndex: 2
+                          zIndex: 2,
+                          position: 'relative'
                         }}>
                           <div style={{ width: '42px', height: '50px', borderRadius: '50%', backgroundColor: '#FEF9E7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F2C94C', flexShrink: 0 }}>
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -403,6 +404,34 @@ export default function ProfilPage() {
                             <h4 style={{ margin: 0, fontSize: '1.05rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.3' }}>Direktur SDM</h4>
                             <p style={{ margin: 0, fontSize: '1.05rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.3' }}>dan Pengembangan Talenta</p>
                           </div>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedNode({ type: 'director' });
+                            }}
+                            style={{
+                              position: 'absolute',
+                              bottom: '0.4rem',
+                              right: '0.4rem',
+                              background: '#F1F5F9',
+                              border: 'none',
+                              borderRadius: '50%',
+                              width: '24px',
+                              height: '24px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#0A1E38',
+                              transition: 'background-color 0.2s',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'}
+                            title="Lihat Bawahan Direktur"
+                          >
+                            <ChevronRight size={14} />
+                          </button>
                         </div>
                       </div>
                       
@@ -437,7 +466,7 @@ export default function ProfilPage() {
                                <button 
                                  onClick={(e) => {
                                    e.stopPropagation();
-                                   setSelectedSubditIndex(0);
+                                   setSelectedNode({ type: 'subdit', colIdx: 0 });
                                  }}
                                  style={{
                                    position: 'absolute',
@@ -464,16 +493,19 @@ export default function ProfilPage() {
                                </button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #0A1E38', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #0A1E38', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Karir Jabatan Fungsional Dosen</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 0, kasieIdx: 0 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #0A1E38', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #0A1E38', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Karir Tenaga Kependidikan</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 0, kasieIdx: 1 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #0A1E38', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #0A1E38', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Layanan dan Pembinaan SDM</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 0, kasieIdx: 2 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                            </div>
  
@@ -488,7 +520,7 @@ export default function ProfilPage() {
                                <button 
                                  onClick={(e) => {
                                    e.stopPropagation();
-                                   setSelectedSubditIndex(1);
+                                   setSelectedNode({ type: 'subdit', colIdx: 1 });
                                  }}
                                  style={{
                                    position: 'absolute',
@@ -515,16 +547,18 @@ export default function ProfilPage() {
                                </button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #27AE60', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #27AE60', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Organisasi dan Tata Laksana</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 1, kasieIdx: 0 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
                              <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #27AE60', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Pengembangan Sistem SDM</p>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #27AE60', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #27AE60', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Perencanaan dan Evaluasi Organisasi</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 1, kasieIdx: 1 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                            </div>
  
@@ -539,7 +573,7 @@ export default function ProfilPage() {
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedSubditIndex(2);
+                                    setSelectedNode({ type: 'subdit', colIdx: 2 });
                                   }}
                                   style={{
                                     position: 'absolute',
@@ -566,16 +600,19 @@ export default function ProfilPage() {
                                 </button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #C0392B', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #C0392B', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Pengembangan Dosen</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 2, kasieIdx: 0 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #C0392B', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #C0392B', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Pengembangan Tenaga Kependidikan</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 2, kasieIdx: 1 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #C0392B', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #C0392B', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Perencanaan dan Penempatan SDM</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 2, kasieIdx: 2 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                            </div>
  
@@ -590,7 +627,7 @@ export default function ProfilPage() {
                                <button 
                                  onClick={(e) => {
                                    e.stopPropagation();
-                                   setSelectedSubditIndex(3);
+                                   setSelectedNode({ type: 'subdit', colIdx: 3 });
                                  }}
                                  style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'}
                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'}
@@ -600,16 +637,19 @@ export default function ProfilPage() {
                                </button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #F2C94C', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #F2C94C', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Remunerasi dan Kesejahteraan 3 (Payroll)</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 3, kasieIdx: 0 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #F2C94C', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #F2C94C', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Remunerasi dan Kesejahteraan 1 (Dana Dipa)</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 3, kasieIdx: 1 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                              <div style={{ width: '2px', height: '24px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
-                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #F2C94C', padding: '0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                             <div style={{ backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #E2E8F0', borderLeft: '3px solid #F2C94C', padding: '0.85rem 1.8rem 0.85rem 1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', width: '100%', minHeight: '52px', display: 'flex', alignItems: 'center', zIndex: 2, position: 'relative' }}>
                                <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>Seksi Remunerasi dan Kesejahteraan 2 (Dana BPPTN dan Damas)</p>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: 3, kasieIdx: 2 }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                              </div>
                            </div>
                          </div>
@@ -636,14 +676,15 @@ export default function ProfilPage() {
                         borderRadius: '12px', 
                         border: '1px solid #E2E8F0', 
                         borderLeft: '5px solid #F2C94C', 
-                        padding: '1.25rem 2rem', 
+                        padding: '1.25rem 2rem 1.6rem 2rem', 
                         display: 'flex', 
                         alignItems: 'center', 
                         gap: '1rem',
                         boxShadow: 'var(--shadow-md)',
                         maxWidth: '450px',
                         width: '100%',
-                        zIndex: 2
+                        zIndex: 2,
+                        position: 'relative'
                       }}>
                         <div style={{ width: '42px', height: '50px', borderRadius: '50%', backgroundColor: '#FEF9E7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F2C94C', flexShrink: 0 }}>
                           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -658,6 +699,34 @@ export default function ProfilPage() {
                             </p>
                           )}
                         </div>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedNode({ type: 'director' });
+                          }}
+                          style={{
+                            position: 'absolute',
+                            bottom: '0.4rem',
+                            right: '0.4rem',
+                            background: '#F1F5F9',
+                            border: 'none',
+                            borderRadius: '50%',
+                            width: '24px',
+                            height: '24px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#0A1E38',
+                            transition: 'background-color 0.2s',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'}
+                          title="Lihat Bawahan Direktur"
+                        >
+                          <ChevronRight size={14} />
+                        </button>
                       </div>
                     </div>
                     
@@ -722,7 +791,7 @@ export default function ProfilPage() {
                               <button 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedSubditIndex(colIdx);
+                                  setSelectedNode({ type: 'subdit', colIdx: colIdx });
                                 }}
                                 style={{
                                   position: 'absolute',
@@ -757,16 +826,18 @@ export default function ProfilPage() {
                                   backgroundColor: '#ffffff', 
                                   borderRadius: '6px', 
                                   border: '1px solid #E2E8F0', 
-                                  borderLeft: `3px solid ${col.color || '#0A1E38'}`, 
-                                  padding: '0.85rem 1rem', 
+                                  borderLeft: `3px solid ${col.color || '#0A1E38'}`,
+                                  padding: '0.85rem 1.8rem 0.85rem 1rem',
                                   boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                                   width: '100%',
                                   height: '68px',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  zIndex: 2
+                                  zIndex: 2,
+                                  position: 'relative'
                                 }}>
-                                  <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3' }}>{seksi}</p>
+                                  <p style={{ margin: 0, fontSize: '0.72rem', color: '#0A1E38', fontWeight: '700', lineHeight: '1.3', overflow: 'hidden', textOverflow: 'ellipsis' }}>{seksi}</p>
+                                  <button onClick={(e) => { e.stopPropagation(); setSelectedNode({ type: 'kasie', colIdx: colIdx, kasieIdx: seksiIdx }); }} style={{ position: 'absolute', bottom: '0.3rem', right: '0.3rem', background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '18px', height: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A1E38', transition: 'background-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E2E8F0'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'} title="Lihat Staf Seksi"><ChevronRight size={10} /></button>
                                 </div>
                               </React.Fragment>
                             ))}
@@ -790,8 +861,8 @@ export default function ProfilPage() {
                     return (
                       <div 
                         className={`pimpinan-node-card ${isDirector ? 'director-card' : ''} ${isKasie ? 'kasie-card' : ''}`}
-                        onClick={onClick}
-                        style={isKasie ? { cursor: 'pointer', transition: 'all 0.2s' } : {}}
+                        onClick={isKasie ? undefined : onClick}
+                        style={isKasie ? { transition: 'all 0.2s' } : {}}
                       >
                         <div className="pimpinan-photo-frame">
                           {imageSrc ? (
@@ -805,30 +876,6 @@ export default function ProfilPage() {
                         <div className="pimpinan-info" style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
                           <h4 className="pimpinan-name">{name}</h4>
                           <p className="pimpinan-role" style={{ flexGrow: 1 }}>{role}</p>
-                          
-                          {isKasie && (
-                            <div style={{ marginTop: '0.75rem', width: '100%' }}>
-                              <span 
-                                style={{ 
-                                  display: 'inline-flex', 
-                                  alignItems: 'center', 
-                                  justifyContent: 'center', 
-                                  backgroundColor: '#0B2F61', 
-                                  color: '#FFFFFF', 
-                                  fontSize: '0.72rem', 
-                                  fontWeight: '700', 
-                                  padding: '0.35rem 0.75rem', 
-                                  borderRadius: '6px', 
-                                  width: '100%',
-                                  boxSizing: 'border-box',
-                                  transition: 'background-color 0.2s',
-                                  boxShadow: '0 2px 4px rgba(11, 47, 97, 0.2)'
-                                }}
-                              >
-                                Lihat Staf
-                              </span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     );
@@ -912,7 +959,7 @@ export default function ProfilPage() {
           )}
         </div>
 
-      {selectedSubditIndex !== null && (
+      {selectedNode !== null && (
         <div 
           style={{
             position: 'fixed',
@@ -924,7 +971,7 @@ export default function ProfilPage() {
             justifyContent: 'center',
             padding: '2rem 1rem'
           }}
-          onClick={() => setSelectedSubditIndex(null)}
+          onClick={() => setSelectedNode(null)}
         >
           <div 
             style={{
@@ -952,9 +999,11 @@ export default function ProfilPage() {
                 color: '#FFFFFF'
               }}
             >
-              <h3 style={{ fontWeight: '700', fontSize: '1.1rem', margin: 0, color: '#FFFFFF' }}>Pimpinan Sub Direktorat</h3>
+              <h3 style={{ fontWeight: '700', fontSize: '1.1rem', margin: 0, color: '#FFFFFF' }}>
+                {selectedNode.type === 'director' ? 'Pimpinan Direktorat' : selectedNode.type === 'subdit' ? 'Pimpinan Sub Direktorat' : 'Pimpinan Seksi'}
+              </h3>
               <button 
-                onClick={() => setSelectedSubditIndex(null)}
+                onClick={() => setSelectedNode(null)}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -986,32 +1035,107 @@ export default function ProfilPage() {
                   { name: "Perencanaan, Penempatan, Pengembangan SDM", color: "#C0392B" },
                   { name: "Remunerasi dan Kesejahteraan", color: "#F2C94C" }
                 ];
-                
-                const col = cols[selectedSubditIndex];
-                if (!col) return null;
 
-                const sub = pimpinanData?.subdirectorates && pimpinanData.subdirectorates[selectedSubditIndex];
-                
-                const subName = col.kasubdit_name || sub?.kasubdit?.name || (selectedSubditIndex === 0 ? "Agus Anang, S.Kom., M.T.I., CHRS." : selectedSubditIndex === 1 ? "Yasinta Estherina Puspitasari, S.E." : selectedSubditIndex === 2 ? "Meidi Derriansyah, S.Pd., M.Si." : "Arli Setiawati, M.S.M.");
-                const subRole = col.kasubdit_title || sub?.kasubdit?.role || (selectedSubditIndex === 0 ? "Kasubdit Layanan, Pembinaan, dan Karier SDM" : selectedSubditIndex === 1 ? "Kasubdit Pengembangan Organisasi Tata Laksana" : selectedSubditIndex === 2 ? "Kasubdit Perencanaan, Penempatan, Pengembangan SDM" : "Kasubdit Remunerasi dan Kesejahteraan");
-                const subImage = col.kasubdit_image || sub?.kasubdit?.image || (selectedSubditIndex === 0 ? "/uploads/pimpinan_4.png" : selectedSubditIndex === 1 ? "/uploads/pimpinan_2.png" : selectedSubditIndex === 2 ? "/uploads/pimpinan_11.png" : "/uploads/pimpinan_3.png");
+                let titleLabel = "";
+                let titleName = "";
+                let colColor = "#0A1E38";
 
-                const kasieList = sub?.kasie || (PIMPINAN_DATA?.subdirectorates && PIMPINAN_DATA.subdirectorates[selectedSubditIndex]?.kasie) || [];
+                // Leader info
+                let leaderName = "";
+                let leaderRole = "";
+                let leaderImage = "";
+
+                // Subordinates info
+                let subordinates = [];
+
+                if (selectedNode.type === 'director') {
+                  titleLabel = "Direktorat";
+                  titleName = "Direktorat SDM dan Pengembangan Talenta";
+                  colColor = "#F2C94C";
+
+                  leaderName = structureData?.director?.name || pimpinanData?.director?.name || "Dr. Abdillah Ahsan, S.E., M.S.E.";
+                  leaderRole = structureData?.director?.title || pimpinanData?.director?.role || "Direktur SDM dan Pengembangan Talenta";
+                  leaderImage = structureData?.director?.image || pimpinanData?.director?.image || "/uploads/pimpinan_1.png";
+
+                  subordinates = cols.map((col, idx) => {
+                    const sub = pimpinanData?.subdirectorates && pimpinanData.subdirectorates[idx];
+                    const defaultName = idx === 0 ? "Agus Anang, S.Kom., M.T.I., CHRS." : idx === 1 ? "Yasinta Estherina Puspitasari, S.E." : idx === 2 ? "Meidi Derriansyah, S.Pd., M.Si." : "Arli Setiawati, M.S.M.";
+                    const defaultRole = idx === 0 ? "Kasubdit Layanan, Pembinaan, dan Karier SDM" : idx === 1 ? "Kasubdit Pengembangan Organisasi Tata Laksana" : idx === 2 ? "Kasubdit Perencanaan, Penempatan, Pengembangan SDM" : "Kasubdit Remunerasi dan Kesejahteraan";
+                    const defaultImg = idx === 0 ? "/uploads/pimpinan_4.png" : idx === 1 ? "/uploads/pimpinan_2.png" : idx === 2 ? "/uploads/pimpinan_11.png" : "/uploads/pimpinan_3.png";
+
+                    return {
+                      name: col.kasubdit_name || sub?.kasubdit?.name || defaultName,
+                      role: col.kasubdit_title || sub?.kasubdit?.role || defaultRole,
+                      image: col.kasubdit_image || sub?.kasubdit?.image || defaultImg,
+                      borderColor: col.color || "#0A1E38"
+                    };
+                  });
+                } else if (selectedNode.type === 'subdit') {
+                  const colIdx = selectedNode.colIdx;
+                  const col = cols[colIdx];
+                  if (!col) return null;
+
+                  titleLabel = "Sub Direktorat";
+                  titleName = col.name;
+                  colColor = col.color || "#0A1E38";
+
+                  const sub = pimpinanData?.subdirectorates && pimpinanData.subdirectorates[colIdx];
+                  const defaultName = colIdx === 0 ? "Agus Anang, S.Kom., M.T.I., CHRS." : colIdx === 1 ? "Yasinta Estherina Puspitasari, S.E." : colIdx === 2 ? "Meidi Derriansyah, S.Pd., M.Si." : "Arli Setiawati, M.S.M.";
+                  const defaultRole = colIdx === 0 ? "Kasubdit Layanan, Pembinaan, dan Karier SDM" : colIdx === 1 ? "Kasubdit Pengembangan Organisasi Tata Laksana" : colIdx === 2 ? "Kasubdit Perencanaan, Penempatan, Pengembangan SDM" : "Kasubdit Remunerasi dan Kesejahteraan";
+                  const defaultImg = colIdx === 0 ? "/uploads/pimpinan_4.png" : colIdx === 1 ? "/uploads/pimpinan_2.png" : colIdx === 2 ? "/uploads/pimpinan_11.png" : "/uploads/pimpinan_3.png";
+
+                  leaderName = col.kasubdit_name || sub?.kasubdit?.name || defaultName;
+                  leaderRole = col.kasubdit_title || sub?.kasubdit?.role || defaultRole;
+                  leaderImage = col.kasubdit_image || sub?.kasubdit?.image || defaultImg;
+
+                  const kasieList = sub?.kasie || (PIMPINAN_DATA?.subdirectorates && PIMPINAN_DATA.subdirectorates[colIdx]?.kasie) || [];
+                  subordinates = kasieList.map(ks => ({
+                    name: ks.name || 'Nama Seksi',
+                    role: ks.role || 'Kepala Seksi',
+                    image: ks.image || '',
+                    borderColor: colColor
+                  }));
+                } else if (selectedNode.type === 'kasie') {
+                  const colIdx = selectedNode.colIdx;
+                  const kasieIdx = selectedNode.kasieIdx;
+                  const col = cols[colIdx];
+                  colColor = col?.color || "#0A1E38";
+
+                  const sub = pimpinanData?.subdirectorates && pimpinanData.subdirectorates[colIdx];
+                  const fallbackSub = PIMPINAN_DATA?.subdirectorates && PIMPINAN_DATA.subdirectorates[colIdx];
+                  const ks = sub?.kasie?.[kasieIdx] || fallbackSub?.kasie?.[kasieIdx];
+                  if (!ks) return null;
+
+                  titleLabel = "Seksi";
+                  titleName = ks.role || "Kepala Seksi";
+
+                  leaderName = ks.name || "Nama Seksi";
+                  leaderRole = ks.role || "Kepala Seksi";
+                  leaderImage = ks.image || "";
+
+                  const staffList = ks.staff || [];
+                  subordinates = staffList.map(st => ({
+                    name: st.name || 'Nama Staf',
+                    role: st.role || 'Staf',
+                    image: st.image || '',
+                    borderColor: colColor
+                  }));
+                }
 
                 return (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', minWidth: '600px' }}>
-                    {/* Subdit Title Header */}
+                    {/* Title Header */}
                     <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: '800', color: col.color || '#0A1E38', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sub Direktorat</span>
-                      <h4 style={{ margin: '0.25rem 0 0 0', fontSize: '1.25rem', color: '#0A1E38', fontWeight: '800' }}>{col.name}</h4>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '800', color: colColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{titleLabel}</span>
+                      <h4 style={{ margin: '0.25rem 0 0 0', fontSize: '1.25rem', color: '#0A1E38', fontWeight: '800' }}>{titleName}</h4>
                     </div>
 
-                    {/* Kasubdit Card (Top Level) */}
+                    {/* Leader Card (Top Level) */}
                     <div style={{ 
                       backgroundColor: '#ffffff',
                       borderRadius: '12px',
                       border: '1px solid #E2E8F0',
-                      borderLeft: `5px solid ${col.color || '#0A1E38'}`,
+                      borderLeft: `5px solid ${colColor}`,
                       padding: '0.85rem 1.25rem',
                       display: 'flex',
                       alignItems: 'center',
@@ -1020,75 +1144,96 @@ export default function ProfilPage() {
                       width: '380px',
                       zIndex: 2
                     }}>
-                      <img 
-                        src={getImageUrl(subImage)} 
-                        alt={subName} 
-                        style={{ width: '55px', height: '55px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #E2E8F0', flexShrink: 0 }}
-                      />
+                      {leaderImage ? (
+                        <img 
+                          src={getImageUrl(leaderImage)} 
+                          alt={leaderName} 
+                          style={{ width: '55px', height: '55px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #E2E8F0', flexShrink: 0 }}
+                        />
+                      ) : (
+                        <div style={{ width: '55px', height: '55px', borderRadius: '50%', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', border: '2px solid #E2E8F0', flexShrink: 0 }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                      )}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', overflow: 'hidden' }}>
-                        <h4 style={{ margin: 0, fontSize: '0.85rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.2' }}>{subName}</h4>
-                        <p style={{ margin: 0, fontSize: '0.7rem', color: '#64748B', fontWeight: '600' }}>{subRole}</p>
+                        <h4 style={{ margin: 0, fontSize: '0.85rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.2' }}>{leaderName}</h4>
+                        <p style={{ margin: 0, fontSize: '0.7rem', color: '#64748B', fontWeight: '600' }}>{leaderRole}</p>
                       </div>
                     </div>
 
                     {/* Vertical Connector Line */}
-                    {kasieList.length > 0 && (
+                    {subordinates.length > 0 && (
                       <div style={{ width: '2px', height: '30px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
                     )}
 
-                    {/* Horizontal Line for branching to Kasies */}
-                    {kasieList.length > 0 && (
+                    {/* Horizontal Line for branching to Subordinates */}
+                    {subordinates.length > 0 && (
                       <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        {kasieList.length > 1 && (
+                        {subordinates.length > 1 && (
                           <div style={{ 
                             position: 'absolute', 
                             top: 0, 
-                            left: `${(0.5 / kasieList.length) * 100}%`, 
-                            right: `${(0.5 / kasieList.length) * 100}%`, 
+                            left: `${(0.5 / subordinates.length) * 100}%`, 
+                            right: `${(0.5 / subordinates.length) * 100}%`, 
                             height: '2px', 
                             backgroundColor: '#CBD5E1',
                             zIndex: 1
                           }} />
                         )}
 
-                        {/* Kasie Columns */}
+                        {/* Subordinates Columns */}
                         <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', boxSizing: 'border-box' }}>
-                          {kasieList.map((ks, idx) => {
-                            const ksName = ks.name || 'Nama Seksi';
-                            const ksRole = ks.role || 'Kepala Seksi';
-                            const ksImage = ks.image || '';
+                          {subordinates.map((subNode, idx) => {
+                            const subNodeName = subNode.name || 'Nama';
+                            const subNodeRole = subNode.role || 'Jabatan';
+                            const subNodeImage = subNode.image || '';
 
                             return (
-                              <div key={idx} style={{ width: `${100 / kasieList.length}%`, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', padding: '0 0.5rem', boxSizing: 'border-box' }}>
+                              <div key={idx} style={{ width: `${100 / subordinates.length}%`, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', padding: '0 0.35rem', boxSizing: 'border-box' }}>
                                 <div style={{ width: '2px', height: '15px', backgroundColor: '#CBD5E1', zIndex: 1 }} />
                                 
                                 <div style={{ 
                                   backgroundColor: '#ffffff',
                                   borderRadius: '10px',
                                   border: '1px solid #E2E8F0',
-                                  borderLeft: `4px solid ${col.color || '#0A1E38'}`,
+                                  borderLeft: `4px solid ${subNode.borderColor || colColor}`,
                                   padding: '0.65rem 0.85rem',
                                   display: 'flex',
                                   alignItems: 'center',
                                   gap: '0.75rem',
                                   boxShadow: '0 4px 6px rgba(0,0,0,0.03)',
                                   width: '100%',
+                                  maxWidth: selectedNode.type === 'director' ? '205px' : '230px',
                                   zIndex: 2
                                 }}>
-                                  <img 
-                                    src={getImageUrl(ksImage)} 
-                                    alt={ksName} 
-                                    style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #E2E8F0', flexShrink: 0 }}
-                                  />
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', overflow: 'hidden' }}>
-                                    <h4 style={{ margin: 0, fontSize: '0.75rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.2', textOverflow: 'ellipsis', overflow: 'hidden' }}>{ksName}</h4>
-                                    <p style={{ margin: 0, fontSize: '0.65rem', color: '#64748B', fontWeight: '600', lineHeight: '1.2', textOverflow: 'ellipsis', overflow: 'hidden' }}>{ksRole}</p>
+                                  {subNodeImage ? (
+                                    <img 
+                                      src={getImageUrl(subNodeImage)} 
+                                      alt={subNodeName} 
+                                      style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #E2E8F0', flexShrink: 0 }}
+                                    />
+                                  ) : (
+                                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', border: '1.5px solid #E2E8F0', flexShrink: 0 }}>
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    </div>
+                                  )}
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', textAlign: 'left', overflow: 'hidden' }}>
+                                    <h4 style={{ margin: 0, fontSize: '0.7rem', color: '#0A1E38', fontWeight: '800', lineHeight: '1.2', wordBreak: 'break-word' }}>{subNodeName}</h4>
+                                    <p style={{ margin: 0, fontSize: '0.6rem', color: '#64748B', fontWeight: '600', lineHeight: '1.2', wordBreak: 'break-word' }}>{subNodeRole}</p>
                                   </div>
                                 </div>
                               </div>
                             );
                           })}
                         </div>
+                      </div>
+                    )}
+
+                    {selectedNode.type === 'kasie' && subordinates.length === 0 && (
+                      <div style={{ textAlign: 'center', padding: '2rem', color: '#64748B', backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', width: '380px', marginTop: '1rem', boxShadow: '0 4px 6px rgba(0,0,0,0.03)' }}>
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: '0.5rem', opacity: 0.6 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <h4 style={{ margin: 0, fontSize: '0.85rem', color: '#0A1E38', fontWeight: '800' }}>Belum Ada Daftar Staf</h4>
+                        <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.72rem', color: '#64748B' }}>Staf pendukung untuk seksi ini belum dimasukkan.</p>
                       </div>
                     )}
                   </div>

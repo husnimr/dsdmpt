@@ -9,7 +9,9 @@ import {
   Shield,
   Target,
   Settings,
-  CheckSquare
+  CheckSquare,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 const BACKEND_URL = 'http://localhost:8081';
@@ -26,6 +28,14 @@ export default function GlobalTalent() {
   const [settings, setSettings] = useState({});
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [expandedAlur, setExpandedAlur] = useState({});
+
+  const toggleAlur = (idx) => {
+    setExpandedAlur(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -123,9 +133,9 @@ export default function GlobalTalent() {
               };
 
               return (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2.5rem', justifyContent: 'center' }}>
                   {aturanList.map((item, idx) => (
-                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.5rem', background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-sm)' }}>
+                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.5rem', background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-sm)', flex: '1 1 280px', maxWidth: '350px' }}>
                       <div style={{ width: '60px', height: '60px', borderRadius: '50px', backgroundColor: '#F8FAFC', color: '#0A1E38', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)', marginBottom: '1.25rem', border: '1px solid #E2E8F0' }}>
                         {getIcon(idx)}
                       </div>
@@ -201,10 +211,20 @@ export default function GlobalTalent() {
                       }}
                     >
                       <div style={{ width: '45%', padding: '1.5rem', backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-sm)', borderLeft: '4px solid #F2C94C' }}>
-                        <h3 style={{ fontSize: '1.05rem', color: '#0A1E38', fontWeight: '700', marginBottom: '0.5rem' }}>{step.title}</h3>
-                        <p style={{ fontSize: '0.85rem', color: '#576574', lineHeight: '1.6', margin: 0 }}>
-                          {step.desc}
-                        </p>
+                        <div 
+                          onClick={() => toggleAlur(idx)}
+                          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', gap: '0.5rem' }}
+                        >
+                          <h3 style={{ fontSize: '1.05rem', color: '#0A1E38', fontWeight: '700', margin: 0 }}>{step.title}</h3>
+                          <span style={{ color: '#576574', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                            {expandedAlur[idx] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </span>
+                        </div>
+                        {expandedAlur[idx] && (
+                          <p style={{ fontSize: '0.85rem', color: '#576574', lineHeight: '1.6', marginTop: '0.75rem', marginBottom: 0 }}>
+                            {step.desc}
+                          </p>
+                        )}
                       </div>
                       <div style={{ zIndex: 10, width: '32px', height: '32px', borderRadius: '50px', backgroundColor: '#0A1E38', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.85rem' }}>
                         {idx + 1}
