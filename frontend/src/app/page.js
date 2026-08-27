@@ -25,14 +25,13 @@ const getImageUrl = (path) => {
   return path;
 };
 
-const slugify = (text, id) => {
-  if (!text) return String(id);
-  const clean = text
+const slugify = (text) => {
+  if (!text) return '';
+  return text
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
-  return `${clean}-${id}`;
 };
 
 // UI 9 Core Values Data
@@ -256,7 +255,7 @@ export default function Home() {
           </div>
           <div className="news-grid">
             {news.map((item, idx) => (
-              <a href={`/berita/${slugify(item.title, item.id)}`} key={item.id} className="news-card aos-init aos-fade-up" id={`news-card-${item.id}`} style={{ textDecoration: 'none', color: 'inherit', transitionDelay: `${idx * 0.08}s` }}>
+              <a href={`/berita/${item.slug || slugify(item.title)}`} key={item.id} className="news-card aos-init aos-fade-up" id={`news-card-${item.id}`} style={{ textDecoration: 'none', color: 'inherit', transitionDelay: `${idx * 0.08}s` }}>
                 <div className="news-img-wrapper">
                   <img src={getImageUrl(item.image_url)} alt={item.title} className="news-img" />
                 </div>
