@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import { 
   Users, 
   User, 
@@ -32,6 +33,174 @@ const slugify = (text) => {
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
+};
+
+// Animated counter helper component
+const Counter = ({ target, duration = 2000, suffix = "" }) => {
+  const [count, setCount] = useState(0);
+  const countRef = useRef(null);
+
+  useEffect(() => {
+    let startTime = null;
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      
+      // Easing function for smooth slowing down
+      const easeOutQuad = progress * (2 - progress);
+      const currentVal = Math.floor(easeOutQuad * target);
+      
+      setCount(currentVal);
+      if (progress < 1) {
+        countRef.current = window.requestAnimationFrame(step);
+      } else {
+        setCount(target);
+      }
+    };
+    
+    countRef.current = window.requestAnimationFrame(step);
+    return () => {
+      if (countRef.current) {
+        window.cancelAnimationFrame(countRef.current);
+      }
+    };
+  }, [target, duration]);
+
+  // Format with thousand separator if needed (e.g. 18.400)
+  const formatNumber = (num) => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  return <span>{formatNumber(count)}{suffix}</span>;
+};
+
+// Interactive Rotating Circle Component
+const InteractiveRotatingCircle = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const points = [
+    {
+      id: 0,
+      number: "01",
+      title: "DAMPAK GLOBAL",
+      heading: "Dari Depok, melangkah ke dunia.",
+      description: "UI menghubungkan gagasan Indonesia dengan jejaring pengetahuan global untuk menjawab tantangan lintas batas.",
+      stats: [
+        { label: "MITRA UNIVERSITAS DUNIA", value: "120+" },
+        { label: "NEGARA TUJUAN MOBILITAS", value: "32" },
+        { label: "UNIVERSITAS TERBAIK INDONESIA", value: "#1" }
+      ],
+      angle: 0
+    },
+    {
+      id: 1,
+      number: "02",
+      title: "KEUNGGULAN AKADEMIK",
+      heading: "Pendidikan kelas dunia untuk talenta masa depan.",
+      description: "Menghasilkan lulusan yang kompetitif, berintegritas, dan siap memimpin transformasi di berbagai sektor industri.",
+      stats: [
+        { label: "PROGRAM STUDI S1-S3", value: "290+" },
+        { label: "DOSEN & PENELITI TETAP", value: "1.900+" },
+        { label: "AKREDITASI INTERNASIONAL", value: "85%" }
+      ],
+      angle: 45
+    },
+    {
+      id: 2,
+      number: "03",
+      title: "SEJARAH & TRADISI",
+      heading: "Warisan kecemerlangan sejak tahun 1954.",
+      description: "Berdiri tegak sebagai pionir pendidikan tinggi nasional yang konsisten menjaga mutu akademik dan pengabdian masyarakat.",
+      stats: [
+        { label: "ALUMNI TERSEBAR", value: "340K+" },
+        { label: "TAHUN DEDIKASI", value: "70+" },
+        { label: "KLASTER PTN TERBAIK", value: "4" }
+      ],
+      angle: 90
+    }
+  ];
+
+  const currentActiveAngle = points[activeIndex].angle;
+  const rotationAngle = -currentActiveAngle;
+
+  return (
+    <section className="interactive-circle-section">
+      <div className="container interactive-grid">
+        
+        {/* Left Side: Interactive Circle */}
+        <div className="circle-visualization-container">
+          <div className="circle-track-wrapper">
+            {/* The actual rotating dark circle line */}
+            <div 
+              className="rotating-dark-ring" 
+              style={{ 
+                transform: `rotate(${rotationAngle}deg)`,
+                transition: 'transform 1.2s cubic-bezier(0.25, 1, 0.5, 1)' 
+              }}
+            >
+              {/* Outer border glow line */}
+              <div className="ring-line"></div>
+              
+              {/* The interactive points / buttons */}
+              {points.map((pt, index) => {
+                const isActive = activeIndex === index;
+                const ptTransform = `rotate(${pt.angle}deg) translate(280px) rotate(${-pt.angle - rotationAngle}deg)`;
+                
+                return (
+                  <button
+                    key={pt.id}
+                    className={`circle-dot-button ${isActive ? 'active' : ''}`}
+                    style={{ 
+                      transform: ptTransform,
+                      transition: 'background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, transform 1.2s cubic-bezier(0.25, 1, 0.5, 1)'
+                    }}
+                    onClick={() => setActiveIndex(index)}
+                  >
+                    <span className="dot-number">{pt.number}</span>
+                    <span className="dot-title">{pt.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Dynamic Content */}
+        <div className="dynamic-info-container">
+          <h2 className="main-heading">
+            Kampus yang menggerakkan <br />
+            <span className="text-highlight">kemajuan.</span>
+          </h2>
+          
+          <div className="content-card-holder">
+            {points.map((pt, index) => {
+              const isActive = activeIndex === index;
+              return (
+                <div 
+                  key={pt.id} 
+                  className={`fade-content-block ${isActive ? 'active' : ''}`}
+                >
+                  <div className="section-badge">{pt.title}</div>
+                  <h3 className="sub-heading">{pt.heading}</h3>
+                  <p className="description-text">{pt.description}</p>
+                  
+                  <div className="horizontal-stats-grid">
+                    {pt.stats.map((st, i) => (
+                      <div key={i} className="mini-stat-item">
+                        <div className="mini-stat-value">{st.value}</div>
+                        <div className="mini-stat-label">{st.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
 };
 
 // UI 9 Core Values Data
@@ -176,10 +345,85 @@ export default function Home() {
       {/* Hero Section */}
       <section 
         className="hero" 
-        style={{ backgroundImage: `url(${getImageUrl('/uploads/herohome.png')})` }} 
+        style={{ backgroundImage: `url(${getImageUrl('/uploads/opening_building.png')})` }} 
         id="hero-section"
       >
+        <div className="hero-gradient-overlay"></div>
+        <div className="hero-statistics-container">
+          <div className="hero-statistics-grid">
+            
+            {/* Stat 1 */}
+            <div className="stat-card" style={{ '--delay': '0.1s' }}>
+              <div className="stat-pin-wrapper">
+                <div className="stat-pin-glow"></div>
+                <div className="stat-pin-line"></div>
+              </div>
+              <div className="stat-value"><Counter target={4} /></div>
+              <div className="stat-label">Klaster PTN Terbaik Indonesia</div>
+              <div className="stat-sub">QS ASIA UNIVERSITY RANKINGS</div>
+            </div>
+
+            {/* Stat 2 */}
+            <div className="stat-card" style={{ '--delay': '0.2s' }}>
+              <div className="stat-pin-wrapper">
+                <div className="stat-pin-glow"></div>
+                <div className="stat-pin-line"></div>
+              </div>
+              <div className="stat-value"><Counter target={18400} suffix="+" /></div>
+              <div className="stat-label">Mahasiswa Aktif Program S1-S3</div>
+              <div className="stat-sub">SELURUH FAKULTAS</div>
+            </div>
+
+            {/* Stat 3 */}
+            <div className="stat-card" style={{ '--delay': '0.3s' }}>
+              <div className="stat-pin-wrapper">
+                <div className="stat-pin-glow"></div>
+                <div className="stat-pin-line"></div>
+              </div>
+              <div className="stat-value"><Counter target={2100} suffix="+" /></div>
+              <div className="stat-label">Mahasiswa Internasional</div>
+              <div className="stat-sub">LEBIH DARI 60 NEGARA</div>
+            </div>
+
+            {/* Stat 4 */}
+            <div className="stat-card" style={{ '--delay': '0.4s' }}>
+              <div className="stat-pin-wrapper">
+                <div className="stat-pin-glow"></div>
+                <div className="stat-pin-line"></div>
+              </div>
+              <div className="stat-value"><Counter target={1900} suffix="+" /></div>
+              <div className="stat-label">Dosen & Peneliti Tetap</div>
+              <div className="stat-sub">13 FAKULTAS, 2 SEKOLAH</div>
+            </div>
+
+            {/* Stat 5 */}
+            <div className="stat-card" style={{ '--delay': '0.5s' }}>
+              <div className="stat-pin-wrapper">
+                <div className="stat-pin-glow"></div>
+                <div className="stat-pin-line"></div>
+              </div>
+              <div className="stat-value"><Counter target={450} suffix="+" /></div>
+              <div className="stat-label">Mitra Universitas Global</div>
+              <div className="stat-sub">KERJA SAMA INTERNASIONAL</div>
+            </div>
+
+            {/* Stat 6 */}
+            <div className="stat-card" style={{ '--delay': '0.6s' }}>
+              <div className="stat-pin-wrapper">
+                <div className="stat-pin-glow"></div>
+                <div className="stat-pin-line"></div>
+              </div>
+              <div className="stat-value"><Counter target={1954} /></div>
+              <div className="stat-label">Tahun Berdiri Sebagai PTN</div>
+              <div className="stat-sub">WARISAN AKADEMIK</div>
+            </div>
+
+          </div>
+        </div>
       </section>
+
+      {/* Interactive Rotating Circle Section */}
+      <InteractiveRotatingCircle />
 
       {/* About Section */}
       <section id="about">
@@ -272,35 +516,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-grid">
-            <div className="footer-logo-side">
-              <div className="footer-logo-row" style={{ marginBottom: '1rem' }}>
-                <img 
-                  src={getImageUrl('/uploads/footer_logo.png')} 
-                  alt="DSDMPTUI Logo" 
-                  style={{ height: '68px', width: 'auto', objectFit: 'contain' }}
-                />
-              </div>
-              <p className="footer-desc">Direktorat Sumber Daya Manusia dan Pengembangan Talenta</p>
-              <p className="footer-copyright">&copy; {new Date().getFullYear()}. All Right Reserved</p>
-            </div>
-            <div className="footer-social-side">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="social-icon" id="instagram-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noreferrer" className="social-icon" id="youtube-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="social-icon" id="linkedin-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* MODALS */}
       
