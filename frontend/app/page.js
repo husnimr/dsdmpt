@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import SplashIntro from './components/SplashIntro';
 import { 
   Users, 
   User, 
@@ -36,11 +37,15 @@ const slugify = (text) => {
 };
 
 // Animated counter helper component
-const Counter = ({ target, duration = 2000, suffix = "" }) => {
+const Counter = ({ target, duration = 1500, suffix = "", active = false }) => {
   const [count, setCount] = useState(0);
   const countRef = useRef(null);
 
   useEffect(() => {
+    if (!active) {
+      setCount(0);
+      return;
+    }
     let startTime = null;
     const step = (timestamp) => {
       if (!startTime) startTime = timestamp;
@@ -64,7 +69,7 @@ const Counter = ({ target, duration = 2000, suffix = "" }) => {
         window.cancelAnimationFrame(countRef.current);
       }
     };
-  }, [target, duration]);
+  }, [target, duration, active]);
 
   // Format with thousand separator if needed (e.g. 18.400)
   const formatNumber = (num) => {
@@ -114,7 +119,7 @@ const InteractiveRotatingCircle = () => {
       stats: [
         { label: "ALUMNI TERSEBAR", value: "340K+" },
         { label: "TAHUN DEDIKASI", value: "70+" },
-        { label: "KLASTER PTN TERBAIK", value: "4" }
+        { label: "KLASTER PTN TERBAIK", value: "1" }
       ],
       angle: 90
     }
@@ -217,6 +222,19 @@ const UI_NILAI_DASAR = [
 ];
 
 export default function Home() {
+  // ── Splash shows on every page load (no sessionStorage) ──
+  const [splashDone, setSplashDone] = useState(false);
+  const handleSplashEnter = () => setSplashDone(true);
+
+  // ── Hero reveal: gradient + stats animate in after 500ms ──
+  const [heroRevealed, setHeroRevealed] = useState(false);
+  useEffect(() => {
+    if (!splashDone) return;
+    const t = setTimeout(() => setHeroRevealed(true), 500);
+    return () => clearTimeout(t);
+  }, [splashDone]);
+
+
   const [news, setNews] = useState([]);
   const [subdirectorates, setSubdirectorates] = useState([]);
   const [settings, setSettings] = useState({});
@@ -339,84 +357,45 @@ export default function Home() {
   }
 
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
+      {!splashDone && (
+        <SplashIntro onEnter={handleSplashEnter} />
+      )}
+
       <Navbar />
 
-      {/* Hero Section */}
-      <section 
-        className="hero" 
-        style={{ backgroundImage: `url(${getImageUrl('/uploads/opening_building.png')})` }} 
+
+      {/* Hero Section — image fills viewport, gradient + stats reveal after 1.5s */}
+      <section
+        className="hero"
+        style={{ backgroundImage: `url(${getImageUrl('/uploads/opening_building.png')})` }}
         id="hero-section"
       >
-        <div className="hero-gradient-overlay"></div>
+        <div className={`hero-gradient-overlay${heroRevealed ? ' revealed' : ''}`} />
         <div className="hero-statistics-container">
           <div className="hero-statistics-grid">
-            
-            {/* Stat 1 */}
-            <div className="stat-card" style={{ '--delay': '0.1s' }}>
-              <div className="stat-pin-wrapper">
-                <div className="stat-pin-glow"></div>
-                <div className="stat-pin-line"></div>
-              </div>
-              <div className="stat-value"><Counter target={4} /></div>
-              <div className="stat-label">Klaster PTN Terbaik Indonesia</div>
-              <div className="stat-sub">QS ASIA UNIVERSITY RANKINGS</div>
-            </div>
 
-            {/* Stat 2 */}
-            <div className="stat-card" style={{ '--delay': '0.2s' }}>
-              <div className="stat-pin-wrapper">
-                <div className="stat-pin-glow"></div>
-                <div className="stat-pin-line"></div>
+            {[{t:1,l:'Klaster PTN Terbaik Indonesia',s:'QS ASIA UNIVERSITY RANKINGS',delay:'0.1s',rd:'0s'},
+              {t:18400,suf:'+',l:'Mahasiswa Aktif Program S1-S3',s:'SELURUH FAKULTAS',delay:'0.2s',rd:'0.1s'},
+              {t:2100,suf:'+',l:'Mahasiswa Internasional',s:'LEBIH DARI 60 NEGARA',delay:'0.3s',rd:'0.2s'},
+              {t:1900,suf:'+',l:'Dosen & Peneliti Tetap',s:'14 FAKULTAS, 2 SEKOLAH',delay:'0.4s',rd:'0.3s'},
+              {t:450,suf:'+',l:'Mitra Universitas Global',s:'KERJA SAMA INTERNASIONAL',delay:'0.5s',rd:'0.4s'},
+              {t:1954,l:'Tahun Berdiri Sebagai PTN',s:'WARISAN AKADEMIK',delay:'0.6s',rd:'0.5s'},
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className={`stat-card${heroRevealed ? ' revealed' : ''}`}
+                style={{ '--delay': stat.delay, '--reveal-delay': stat.rd }}
+              >
+                <div className="stat-pin-wrapper">
+                  <div className="stat-pin-glow" />
+                  <div className="stat-pin-line" />
+                </div>
+                <div className="stat-value"><Counter target={stat.t} suffix={stat.suf || ''} active={heroRevealed} /></div>
+                <div className="stat-label">{stat.l}</div>
+                <div className="stat-sub">{stat.s}</div>
               </div>
-              <div className="stat-value"><Counter target={18400} suffix="+" /></div>
-              <div className="stat-label">Mahasiswa Aktif Program S1-S3</div>
-              <div className="stat-sub">SELURUH FAKULTAS</div>
-            </div>
-
-            {/* Stat 3 */}
-            <div className="stat-card" style={{ '--delay': '0.3s' }}>
-              <div className="stat-pin-wrapper">
-                <div className="stat-pin-glow"></div>
-                <div className="stat-pin-line"></div>
-              </div>
-              <div className="stat-value"><Counter target={2100} suffix="+" /></div>
-              <div className="stat-label">Mahasiswa Internasional</div>
-              <div className="stat-sub">LEBIH DARI 60 NEGARA</div>
-            </div>
-
-            {/* Stat 4 */}
-            <div className="stat-card" style={{ '--delay': '0.4s' }}>
-              <div className="stat-pin-wrapper">
-                <div className="stat-pin-glow"></div>
-                <div className="stat-pin-line"></div>
-              </div>
-              <div className="stat-value"><Counter target={1900} suffix="+" /></div>
-              <div className="stat-label">Dosen & Peneliti Tetap</div>
-              <div className="stat-sub">13 FAKULTAS, 2 SEKOLAH</div>
-            </div>
-
-            {/* Stat 5 */}
-            <div className="stat-card" style={{ '--delay': '0.5s' }}>
-              <div className="stat-pin-wrapper">
-                <div className="stat-pin-glow"></div>
-                <div className="stat-pin-line"></div>
-              </div>
-              <div className="stat-value"><Counter target={450} suffix="+" /></div>
-              <div className="stat-label">Mitra Universitas Global</div>
-              <div className="stat-sub">KERJA SAMA INTERNASIONAL</div>
-            </div>
-
-            {/* Stat 6 */}
-            <div className="stat-card" style={{ '--delay': '0.6s' }}>
-              <div className="stat-pin-wrapper">
-                <div className="stat-pin-glow"></div>
-                <div className="stat-pin-line"></div>
-              </div>
-              <div className="stat-value"><Counter target={1954} /></div>
-              <div className="stat-label">Tahun Berdiri Sebagai PTN</div>
-              <div className="stat-sub">WARISAN AKADEMIK</div>
-            </div>
+            ))}
 
           </div>
         </div>
