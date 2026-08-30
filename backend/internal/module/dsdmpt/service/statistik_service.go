@@ -208,6 +208,9 @@ func (s *statistikService) SyncFromBkd(bkdDb *gorm.DB) ([]entity.Statistik, time
 
 	// Gather Dosen
 	for fac, acc := range dosenStats {
+		if fac == "PAU" {
+			continue
+		}
 		_, short := getFacultyAndShort(fac, "")
 		toSave = append(toSave, entity.Statistik{
 			Kategori:    "dosen",
