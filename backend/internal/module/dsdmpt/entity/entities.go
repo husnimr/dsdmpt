@@ -132,3 +132,20 @@ type DokumenTerkini struct {
 func (DokumenTerkini) TableName() string {
 	return "dokumen_terkini"
 }
+
+type Statistik struct {
+	ID          uint      `gorm:"primaryKey;autoIncrement" json:"id"`
+	Kategori    string    `gorm:"type:varchar(50);not null" json:"kategori"` // dosen / tendik
+	UnitName    string    `gorm:"type:varchar(255);not null" json:"unit_name"`
+	UnitShort   string    `gorm:"type:varchar(50);not null" json:"unit_short"`
+	Pns         int       `gorm:"type:integer;default:0" json:"pns"`
+	TetapNonPns int       `gorm:"type:integer;default:0" json:"tetap_non_pns"` // Dosen: tetap non pns, Tendik: non pns
+	Nidk        int       `gorm:"type:integer;default:0" json:"nidk"`          // Dosen: NIDK, Tendik: 0
+	Total       int       `gorm:"type:integer;default:0" json:"total"`
+	UpdatedAt   time.Time `gorm:"type:timestamp;default:now()" json:"updated_at"`
+}
+
+func (Statistik) TableName() string {
+	return "statistik"
+}
+

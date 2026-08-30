@@ -31,6 +31,15 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
+	// Connect to BKD database (bkd_db) on the same Postgres host
+	bkdDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=bkd_db port=%s sslmode=disable TimeZone=Asia/Jakarta",
+		cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBPort)
+	bkdDb, errBkd := gorm.Open(postgres.Open(bkdDsn), &gorm.Config{})
+	if errBkd != nil {
+		log.Println("Warning: Failed to connect to BKD database:", errBkd)
+	}
+
+
 	// 3. Auto Migrate Tables
 	entities := []interface{}{
 		&entity.News{},
@@ -43,6 +52,7 @@ func main() {
 		&entity.PengembanganTalenta{},
 		&entity.Informasi{},
 		&entity.DokumenTerkini{},
+		&entity.Statistik{},
 	}
 
 	for _, e := range entities {
@@ -65,6 +75,7 @@ func main() {
 	ptRepo := repository.NewPengembanganTalentaRepository(db)
 	infoRepo := repository.NewInformasiRepository(db)
 	docRepo := repository.NewDokumenTerkiniRepository(db)
+	statRepo := repository.NewStatistikRepository(db)
 
 	// 6. Initialize Services
 	newsSvc := service.NewNewsService(newsRepo)
@@ -77,6 +88,7 @@ func main() {
 	ptSvc := service.NewPengembanganTalentaService(ptRepo)
 	infoSvc := service.NewInformasiService(infoRepo)
 	docSvc := service.NewDokumenTerkiniService(docRepo)
+	statSvc := service.NewStatistikService(statRepo)
 
 	// 7. Initialize Handlers
 	authHandler := handler.NewAuthHandler(userSvc, cfg.JWTSecret)
@@ -91,6 +103,8 @@ func main() {
 	infoHandler := handler.NewInformasiHandler(infoSvc)
 	docHandler := handler.NewDokumenTerkiniHandler(docSvc)
 	uploadHandler := handler.NewUploadHandler()
+	statHandler := handler.NewStatistikHandler(statSvc, bkdDb)
+
 
 	// 8. Setup Router & CORS
 	r := gin.Default()
@@ -120,6 +134,38 @@ func main() {
 		api.GET("/pengembangan-talenta/:idOrSlug", ptHandler.Detail)
 		api.GET("/informasi", infoHandler.List)
 		api.GET("/dokumen-terkini", docHandler.List)
+		api.GET("/statistik", statHandler.GetStatistik)
+
+		
+		// Global Search Endpoint
+		api.GET("/search", func(c *gin.Context) {
+			q := c.Query("q")
+			if q == "" {
+				c.JSON(200, gin.H{
+					"news":       []interface{}{},
+					"talenta":    []interface{}{},
+					"informasi":  []interface{}{},
+				})
+				return
+			}
+			
+			likeQuery := "%" + q + "%"
+			
+			var news []entity.News
+			db.Where("title LIKE ? OR content LIKE ?", likeQuery, likeQuery).Limit(10).Find(&news)
+			
+			var talenta []entity.PengembanganTalenta
+			db.Where("title LIKE ? OR description LIKE ? OR organizer LIKE ?", likeQuery, likeQuery, likeQuery).Limit(10).Find(&talenta)
+			
+			var info []entity.Informasi
+			db.Where("title LIKE ? OR description LIKE ?", likeQuery, likeQuery).Limit(10).Find(&info)
+			
+			c.JSON(200, gin.H{
+				"news":       news,
+				"talenta":    talenta,
+				"informasi":  info,
+			})
+		})
 
 		// Protected Admin routes
 		admin := api.Group("/admin")
@@ -172,6 +218,9 @@ func main() {
 			admin.PUT("/dokumen-terkini/:id", docHandler.AdminUpdate)
 			admin.DELETE("/dokumen-terkini/:id", docHandler.AdminDelete)
 			admin.POST("/dokumen-terkini/reorder", docHandler.AdminReorder)
+
+			admin.GET("/statistik", statHandler.GetStatistik)
+			admin.POST("/statistik/sync", statHandler.Sync)
 		}
 	}
 
@@ -425,6 +474,54 @@ func seedData(db *gorm.DB) {
 		}
 		db.Create(&defaultUser)
 		fmt.Println("Seeded default admin user (admin / admin) successfully.")
+	}
+
+	// 11. Seed default Statistik if empty
+	db.Model(&entity.Statistik{}).Count(&count)
+	if count == 0 {
+		defaultStats := []entity.Statistik{
+			// Dosen
+			{Kategori: "dosen", UnitName: "Fakultas Kedokteran", UnitShort: "FK", Pns: 170, TetapNonPns: 125, Nidk: 342, Total: 637, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Kedokteran Gigi", UnitShort: "FKG", Pns: 42, TetapNonPns: 31, Nidk: 53, Total: 126, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Matematika dan Ilmu Pengetahuan Alam", UnitShort: "FMIPA", Pns: 110, TetapNonPns: 80, Nidk: 45, Total: 235, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Teknik", UnitShort: "FT", Pns: 150, TetapNonPns: 110, Nidk: 65, Total: 325, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Hukum", UnitShort: "FH", Pns: 65, TetapNonPns: 48, Nidk: 24, Total: 137, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Ekonomi dan Bisnis", UnitShort: "FEB", Pns: 130, TetapNonPns: 95, Nidk: 70, Total: 295, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Ilmu Pengetahuan Budaya", UnitShort: "FIB", Pns: 85, TetapNonPns: 62, Nidk: 30, Total: 177, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Psikologi", UnitShort: "FPsi", Pns: 45, TetapNonPns: 33, Nidk: 18, Total: 96, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Ilmu Sosial dan Politik", UnitShort: "FISIP", Pns: 95, TetapNonPns: 70, Nidk: 40, Total: 205, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Kesehatan Masyarakat", UnitShort: "FKM", Pns: 55, TetapNonPns: 40, Nidk: 22, Total: 117, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Ilmu Komputer", UnitShort: "FASILKOM", Pns: 52, TetapNonPns: 38, Nidk: 20, Total: 110, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Ilmu Keperawatan", UnitShort: "FIK", Pns: 35, TetapNonPns: 26, Nidk: 15, Total: 76, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Program Pendidikan Vokasi", UnitShort: "VOKASI", Pns: 25, TetapNonPns: 18, Nidk: 10, Total: 53, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Farmasi", UnitShort: "FF", Pns: 30, TetapNonPns: 22, Nidk: 12, Total: 64, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Fakultas Ilmu Administrasi", UnitShort: "FIA", Pns: 28, TetapNonPns: 20, Nidk: 11, Total: 59, UpdatedAt: time.Now()},
+			{Kategori: "dosen", UnitName: "Sekolah Pascasarjana Pembangunan Berkelanjutan", UnitShort: "SPPB", Pns: 12, TetapNonPns: 9, Nidk: 5, Total: 26, UpdatedAt: time.Now()},
+
+			// Tendik
+			{Kategori: "tendik", UnitName: "FK", UnitShort: "FK", Pns: 85, TetapNonPns: 240, Nidk: 0, Total: 325, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FKG", UnitShort: "FKG", Pns: 22, TetapNonPns: 60, Nidk: 0, Total: 82, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FMIPA", UnitShort: "FMIPA", Pns: 45, TetapNonPns: 120, Nidk: 0, Total: 165, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FT", UnitShort: "FT", Pns: 70, TetapNonPns: 180, Nidk: 0, Total: 250, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FH", UnitShort: "FH", Pns: 30, TetapNonPns: 80, Nidk: 0, Total: 110, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FEB", UnitShort: "FEB", Pns: 60, TetapNonPns: 150, Nidk: 0, Total: 210, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FIB", UnitShort: "FIB", Pns: 40, TetapNonPns: 110, Nidk: 0, Total: 150, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FPsi", UnitShort: "FPsi", Pns: 20, TetapNonPns: 50, Nidk: 0, Total: 70, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FISIP", UnitShort: "FISIP", Pns: 45, TetapNonPns: 120, Nidk: 0, Total: 165, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FKM", UnitShort: "FKM", Pns: 25, TetapNonPns: 70, Nidk: 0, Total: 95, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FASILKOM", UnitShort: "FASILKOM", Pns: 24, TetapNonPns: 65, Nidk: 0, Total: 89, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FIK", UnitShort: "FIK", Pns: 16, TetapNonPns: 45, Nidk: 0, Total: 61, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "PAU", UnitShort: "PAU", Pns: 110, TetapNonPns: 300, Nidk: 0, Total: 410, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "VOKASI", UnitShort: "VOKASI", Pns: 12, TetapNonPns: 35, Nidk: 0, Total: 47, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FF", UnitShort: "FF", Pns: 15, TetapNonPns: 40, Nidk: 0, Total: 55, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "FIA", UnitShort: "FIA", Pns: 14, TetapNonPns: 38, Nidk: 0, Total: 52, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "SPPB", UnitShort: "SPPB", Pns: 6, TetapNonPns: 18, Nidk: 0, Total: 24, UpdatedAt: time.Now()},
+			{Kategori: "tendik", UnitName: "RIK", UnitShort: "RIK", Pns: 8, TetapNonPns: 22, Nidk: 0, Total: 30, UpdatedAt: time.Now()},
+		}
+		for _, s := range defaultStats {
+			db.Create(&s)
+		}
+		fmt.Println("Seeded default statistik data successfully.")
 	}
 }
 
