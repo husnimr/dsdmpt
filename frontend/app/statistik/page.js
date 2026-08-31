@@ -162,13 +162,18 @@ export default function Statistik() {
       <div className="subpage-hero-wrapper">
         <section
           className="subpage-hero"
-          style={{ backgroundImage: `url(${getImageUrl(settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
+          style={{ backgroundImage: `url(${getImageUrl(settings.statistik_hero_image || settings.hero_image || '/uploads/ui_rectorate_hero.png')})` }}
         >
           <div className="subpage-hero-overlay" />
-          <div className="subpage-hero-content">
+          <div className="subpage-hero-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', zIndex: 2, padding: '0 1rem' }}>
             <h1 className="subpage-hero-title">
-              {activeTab === 'dosen' ? 'Statistik Dosen' : 'Tenaga Kependidikan'}
+              {settings.statistik_hero_title || (activeTab === 'dosen' ? 'Statistik Dosen' : 'Tenaga Kependidikan')}
             </h1>
+            {settings.statistik_hero_desc && (
+              <p className="subpage-hero-desc" style={{ color: 'rgba(255, 255, 255, 0.85)', marginTop: '0.75rem', fontSize: '1.05rem', maxWidth: '700px', fontWeight: '400', lineHeight: '1.5', textAlign: 'center' }}>
+                {settings.statistik_hero_desc}
+              </p>
+            )}
           </div>
         </section>
       </div>
