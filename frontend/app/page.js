@@ -13,6 +13,7 @@ import {
   X, 
   Menu, 
   Award,
+  ChevronLeft,
   ChevronRight,
   Calendar
 } from 'lucide-react';
@@ -27,6 +28,11 @@ const getImageUrl = (path) => {
   return path;
 };
 
+const stripHtml = (html) => {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').trim();
+};
+
 const slugify = (text) => {
   if (!text) return '';
   return text
@@ -35,6 +41,62 @@ const slugify = (text) => {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
 };
+
+const STATIC_FALLBACK_NEWS = [
+  {
+    id: 'f1',
+    title: 'UI Memperkuat Ekosistem Inovasi untuk Indonesia Berkelanjutan',
+    summary: 'Universitas Indonesia terus berkomitmen meningkatkan hilirisasi hasil riset guna memberikan dampak nyata bagi masyarakat dan industri.',
+    image_url: '/uploads/riset_inovasi.jpg',
+    published_at: '2026-08-12',
+    slug: 'ui-memperkuat-ekosistem-inovasi-untuk-indonesia-berkelanjutan'
+  }
+];
+
+const STATIC_FALLBACK_INFO = [
+  {
+    id: 'i1',
+    title: 'Pendaftaran Program Pelatihan Kepemimpinan Dosen & Tendik',
+    content: 'Direktorat SDM dan Pengembangan Talenta UI kembali membuka pendaftaran program pelatihan kepemimpinan untuk meningkatkan kompetensi manajerial.',
+    image_url: '/uploads/training_announcement.jpg'
+  }
+];
+
+const STACKED_VALUES_DATA = [
+  {
+    index: "01",
+    title: "Kejujuran, Keadilan & Keterbukaan",
+    description: "Landasan dasar integritas sivitas akademika Universitas Indonesia dalam bersikap, bertindak, dan membagikan informasi secara adil dan transparan.",
+    image: "/uploads/nilaidasar.jpg",
+    pills: [
+      { name: "Kejujuran", index: 1 },
+      { name: "Keadilan", index: 2 },
+      { name: "Keterbukaan", index: 3 }
+    ]
+  },
+  {
+    index: "02",
+    title: "Keberadaban, Kepedulian & Keterpercayaan",
+    description: "Menjunjung tinggi kesantunan etika sosial, kepekaan terhadap kebutuhan sesama, serta memelihara amanah dengan penuh komitmen.",
+    image: "/uploads/nilaidasar.jpg",
+    pills: [
+      { name: "Keberadaban", index: 4 },
+      { name: "Kepedulian", index: 5 },
+      { name: "Keterpercayaan", index: 6 }
+    ]
+  },
+  {
+    index: "03",
+    title: "Tanggung Jawab, Sinergi & Kebersamaan",
+    description: "Kesiapan menanggung dampak tindakan, berkolaborasi secara aktif, dan mengutamakan semangat gotong royong untuk visi bersama.",
+    image: "/uploads/nilaidasar.jpg",
+    pills: [
+      { name: "Tanggung Jawab", index: 7 },
+      { name: "Sinergi", index: 8 },
+      { name: "Kebersamaan", index: 9 }
+    ]
+  }
+];
 
 // Animated counter helper component
 const Counter = ({ target, duration = 1500, suffix = "", active = false }) => {
@@ -87,39 +149,42 @@ const InteractiveRotatingCircle = () => {
     {
       id: 0,
       number: "01",
-      title: "DAMPAK GLOBAL",
-      heading: "Dari Depok, melangkah ke dunia.",
-      description: "UI menghubungkan gagasan Indonesia dengan jejaring pengetahuan global untuk menjawab tantangan lintas batas.",
+      title: "STATISTIK PEGAWAI",
+      heading: "Statistik Dosen & Tenaga Kependidikan UI",
+      description: "Akses data statistik real-time mengenai profil dosen PNS, tetap non-PNS, NIDK, serta profil tenaga kependidikan di lingkungan Universitas Indonesia.",
+      link: "/statistik",
       stats: [
-        { label: "MITRA UNIVERSITAS DUNIA", value: "120+" },
-        { label: "NEGARA TUJUAN MOBILITAS", value: "32" },
-        { label: "UNIVERSITAS TERBAIK INDONESIA", value: "#1" }
+        { label: "DOSEN & PENELITI", value: "1.900+" },
+        { label: "TENAGA KEPENDIDIKAN", value: "2.000+" },
+        { label: "FAKULTAS/SEKOLAH", value: "17+" }
       ],
       angle: 0
     },
     {
       id: 1,
       number: "02",
-      title: "KEUNGGULAN AKADEMIK",
-      heading: "Pendidikan kelas dunia untuk talenta masa depan.",
-      description: "Menghasilkan lulusan yang kompetitif, berintegritas, dan siap memimpin transformasi di berbagai sektor industri.",
+      title: "GLOBAL TALENT",
+      heading: "Program Global Talent Universitas Indonesia",
+      description: "Mengembangkan talenta berstandar internasional melalui program mobilitas, pertukaran keahlian, dan kemitraan akademik global.",
+      link: "/global-talent",
       stats: [
-        { label: "PROGRAM STUDI S1-S3", value: "290+" },
-        { label: "DOSEN & PENELITI TETAP", value: "1.900+" },
-        { label: "AKREDITASI INTERNASIONAL", value: "85%" }
+        { label: "MITRA AKADEMIK GLOBAL", value: "450+" },
+        { label: "MAHASISWA INTERNASIONAL", value: "2.100+" },
+        { label: "PROGRAM STUDI S1-S3", value: "290+" }
       ],
       angle: 45
     },
     {
       id: 2,
       number: "03",
-      title: "SEJARAH & TRADISI",
-      heading: "Warisan kecemerlangan sejak tahun 1954.",
-      description: "Berdiri tegak sebagai pionir pendidikan tinggi nasional yang konsisten menjaga mutu akademik dan pengabdian masyarakat.",
+      title: "REKRUTMEN PEGAWAI",
+      heading: "Bergabung bersama Universitas Indonesia",
+      description: "Buka peluang karier akademis dan profesional terbaik Anda di kampus perjuangan. Temukan posisi rekrutmen dosen dan tendik terbaru.",
+      link: "/rekrutmen",
       stats: [
-        { label: "ALUMNI TERSEBAR", value: "340K+" },
-        { label: "TAHUN DEDIKASI", value: "70+" },
-        { label: "KLASTER PTN TERBAIK", value: "1" }
+        { label: "LOWONGAN DOSEN & TENDIK", value: "Tersedia" },
+        { label: "KUALIFIKASI TALENTA", value: "Unggul" },
+        { label: "PROSES SELEKSI", value: "Transparan" }
       ],
       angle: 90
     }
@@ -197,6 +262,12 @@ const InteractiveRotatingCircle = () => {
                       </div>
                     ))}
                   </div>
+                  
+                  <div style={{ marginTop: '2rem' }}>
+                    <a href={pt.link} className="btn-secondary">
+                      Selengkapnya
+                    </a>
+                  </div>
                 </div>
               );
             })}
@@ -258,6 +329,53 @@ export default function Home() {
 
   // Talent Programs State
   const [talentPrograms, setTalentPrograms] = useState([]);
+
+  const [newsTab, setNewsTab] = useState('berita');
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [informasi, setInformasi] = useState([]);
+
+  // Scroll progress for Core Values section unstacking effect
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = document.getElementById('core-values');
+      if (!el) return;
+      
+      const rect = el.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      // Trigger unstacking from the moment section enters viewport until it scrolls past half of its height
+      const startScroll = windowHeight; 
+      const endScroll = -100;
+      
+      const total = startScroll - endScroll;
+      const current = startScroll - rect.top;
+      
+      let progress = current / total;
+      progress = Math.max(0, Math.min(1, progress));
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    // Trigger initial calculation
+    setTimeout(handleScroll, 100);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const activeList = newsTab === 'berita' 
+    ? (news.length > 0 ? news : STATIC_FALLBACK_NEWS) 
+    : (informasi.length > 0 ? informasi : STATIC_FALLBACK_INFO);
+
+  const currentSlide = activeList[slideIndex] || activeList[0] || {};
+
+  const nextSlide = () => {
+    setSlideIndex((prev) => (prev + 1) % activeList.length);
+  };
+
+  const prevSlide = () => {
+    setSlideIndex((prev) => (prev - 1 + activeList.length) % activeList.length);
+  };
 
   const getTalentDateDetails = (dateStr) => {
     if (!dateStr) return { day: '--', monthAbbrev: '---' };
@@ -356,6 +474,15 @@ export default function Home() {
           const talentData = await talentRes.json();
           if (Array.isArray(talentData)) {
             setTalentPrograms(talentData);
+          }
+        }
+
+        // Fetch Informasi
+        const infoRes = await fetch(`${BACKEND_URL}/api/informasi`);
+        if (infoRes.ok) {
+          const infoData = await infoRes.json();
+          if (Array.isArray(infoData)) {
+            setInformasi(infoData);
           }
         }
 
@@ -459,7 +586,31 @@ export default function Home() {
       <InteractiveRotatingCircle />
 
       {/* About Section (Premium Interactive Showcase) */}
-      <section id="about" style={{ position: 'relative', overflow: 'hidden' }}>
+      <section id="about" style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#FAFBFD' }}>
+        {/* Background Decorations */}
+        <div className="about-deco-sphere-left">
+          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+            <circle cx="100" cy="100" r="99" stroke="rgba(10,30,56,0.18)" strokeWidth="0.8"/>
+            <path d="M100 1L100 199" stroke="rgba(10,30,56,0.18)" strokeWidth="0.8"/>
+            <path d="M1 100H199" stroke="rgba(10,30,56,0.18)" strokeWidth="0.8"/>
+            <path d="M100 1C135.5 30 160 60 160 100C160 140 135.5 170 100 199C64.5 170 40 140 40 100C40 60 64.5 30 100 1" stroke="rgba(10,30,56,0.18)" strokeWidth="0.8"/>
+            <path d="M100 1C150 40 180 70 180 100C180 130 150 160 100 199C50 160 20 130 20 100C20 70 50 40 100 1" stroke="rgba(10,30,56,0.12)" strokeWidth="0.6"/>
+            <path d="M1 100C30 135.5 60 160 100 160C140 160 170 135.5 199 100C170 64.5 140 40 100 40C60 40 30 64.5 1 100Z" stroke="rgba(10,30,56,0.18)" strokeWidth="0.8"/>
+            <path d="M1 100C40 150 70 180 100 180C130 180 160 150 199 100C160 50 130 20 100 20C70 20 40 50 1 100Z" stroke="rgba(10,30,56,0.12)" strokeWidth="0.6"/>
+          </svg>
+        </div>
+        <div className="about-deco-sphere-right"></div>
+        <div className="about-deco-wave">
+          <svg viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 'auto' }}>
+            <path d="M0,224L80,202.7C160,181,320,139,480,138.7C640,139,800,181,960,192C1120,203,1280,181,1360,170.7L1440,160L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z" fill="url(#gradient-about-wave)" opacity="0.08"/>
+            <defs>
+              <linearGradient id="gradient-about-wave" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#0A1E38"/>
+                <stop offset="100%" stopColor="#FFC72C"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
         <div className="container">
           <div className="about-grid">
             
@@ -542,11 +693,49 @@ export default function Home() {
       </section>
 
       {/* Core Values Section */}
-      <section id="core-values">
-        <div className="container values-grid">
+      <section id="core-values" style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#0A1E38', color: '#ffffff', padding: '6rem 0' }}>
+        {/* Animated Background Elements */}
+        <div className="values-deco-sphere-left">
+          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+            <circle cx="100" cy="100" r="99" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>
+            <path d="M100 1C135.5 30 160 60 160 100C160 140 135.5 170 100 199" stroke="rgba(255,255,255,0.08)" strokeWidth="0.8"/>
+            <path d="M1 100C30 135.5 60 160 100 160C140 160 170 135.5 199 100" stroke="rgba(255,255,255,0.05)" strokeWidth="0.6"/>
+          </svg>
+        </div>
+        <div className="values-deco-glow-right"></div>
+        <div className="values-deco-particles"></div>
+        <div className="values-deco-grid-overlay"></div>
+        
+        {/* Floating Motif Elements */}
+        <div className="values-deco-floating-item item-1">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth="1.5">
+            <line x1="20" y1="0" x2="20" y2="40" />
+            <line x1="0" y1="20" x2="40" y2="20" />
+          </svg>
+        </div>
+        <div className="values-deco-floating-item item-2">
+          <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5">
+            <circle cx="30" cy="30" r="28" strokeDasharray="5 5" />
+          </svg>
+        </div>
+        <div className="values-deco-floating-item item-3">
+          <svg width="46" height="46" viewBox="0 0 50 50" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5">
+            <rect x="5" y="5" width="40" height="40" transform="rotate(45 25 25)" />
+          </svg>
+        </div>
+        <div className="values-deco-floating-item item-4">
+          <svg width="70" height="70" viewBox="0 0 80 80" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5">
+            <polygon points="40,10 70,65 10,65" />
+          </svg>
+        </div>
+        <div className="values-deco-floating-item item-5">
+          <div className="values-deco-dots-matrix" />
+        </div>
+
+        <div className="container values-grid" style={{ position: 'relative', zIndex: 2 }}>
           <div className="values-content aos-init aos-fade-right">
             <h2>{settings.values_title || '9 Nilai Dasar Universitas Indonesia'}</h2>
-            <p>{settings.values_text || 'Demi mewujudkan visi UI...'}</p>
+            <p>{settings.values_text || 'Sembilan Nilai Dasar Universitas Indonesia (UI) menjadi tuntunan moral, etika, dan perilaku utama bagi seluruh sivitas akademika dalam mewujudkan tri dharma perguruan tinggi.'}</p>
             <a href="/informasi" className="btn-secondary" id="values-details-btn">
               Selengkapnya
             </a>
@@ -561,8 +750,23 @@ export default function Home() {
       </section>
 
       {/* Pengembangan Talenta & Jadwal Training Section */}
-      <section className="section-alt" id="home-talent-showcase" style={{ padding: '4.5rem 0', backgroundColor: '#F8FAFC' }}>
-        <div className="container">
+      <section className="section-alt aos-init aos-fade-up" id="home-talent-showcase" style={{ padding: '4.5rem 0 5.5rem 0', backgroundColor: '#F8FAFC' }}>
+        {/* Background Hiasan Profesional */}
+        <div className="talent-deco-sphere-left">
+          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+            <circle cx="100" cy="100" r="99" stroke="rgba(10,30,56,0.04)" strokeWidth="0.8"/>
+            <path d="M100 1C135.5 30 160 60 160 100C160 140 135.5 170 100 199" stroke="rgba(10,30,56,0.04)" strokeWidth="0.8"/>
+            <path d="M1 100C30 135.5 60 160 100 160C140 160 170 135.5 199 100" stroke="rgba(10,30,56,0.03)" strokeWidth="0.6"/>
+          </svg>
+        </div>
+        <div className="talent-deco-grid-right"></div>
+        <div className="talent-deco-wave-bottom">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 'auto' }}>
+            <path d="M0,96L120,80C240,64,480,32,720,32C960,32,1200,64,1320,80L1440,96L1440,120L1320,120C1200,120,960,120,720,120C480,120,240,120,120,120L0,120Z" fill="rgba(10,30,56,0.02)"/>
+          </svg>
+        </div>
+
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <h2 style={{ fontSize: '2.4rem', fontWeight: 800, color: '#0A1E38', marginBottom: '0.75rem', fontFamily: 'var(--font-heading)' }}>
@@ -576,11 +780,11 @@ export default function Home() {
           <div className="home-talent-dashboard-grid">
             
             {/* Left Column: Jadwal Pelatihan Mendatang */}
-            <div className="upcoming-training-panel">
+            <div className="upcoming-training-panel aos-init aos-fade-right" style={{ transitionDelay: '0.15s' }}>
               <div className="panel-header">
-                <h3>Jadwal Pelatihan Mendatang</h3>
+                <h3>Jadwal Pelatihan</h3>
                 <a href="/pengembangan-talenta/jadwal-training" className="see-all-link">
-                  Lihat Semua &rarr;
+                  Lihat Semua
                 </a>
               </div>
               
@@ -628,7 +832,7 @@ export default function Home() {
             </div>
 
             {/* Right Column: Portal Cards & Stats */}
-            <div className="talent-portal-sidebar">
+            <div className="talent-portal-sidebar aos-init aos-fade-left" style={{ transitionDelay: '0.3s' }}>
               
               {/* Top Card: Dark Blue Portal Link */}
               <div className="talent-portal-cta-card">
@@ -668,30 +872,124 @@ export default function Home() {
         </div>
       </section>
 
-      {/* News Section */}
-      <section className="section-alt" id="news">
-        <div className="container">
-          <div className="section-header aos-init aos-fade-up">
-            <h2>Berita</h2>
-          </div>
-          <div className="news-grid">
-            {news.map((item, idx) => (
-              <a href={`/berita/${item.slug || slugify(item.title)}`} key={item.id} className="news-card aos-init aos-fade-up" id={`news-card-${item.id}`} style={{ textDecoration: 'none', color: 'inherit', transitionDelay: `${idx * 0.08}s` }}>
-                <div className="news-img-wrapper">
-                  <img src={getImageUrl(item.image_url)} alt={item.title} className="news-img" />
+      {/* News & Information Slider Section */}
+      <section className="section-alt" id="news" style={{ padding: '5.5rem 0 3.5rem 0', backgroundColor: '#0A1E38', color: '#ffffff', position: 'relative', overflow: 'hidden' }}>
+        {/* Background Abstract Elements */}
+        <div className="news-deco-sphere-left">
+          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+            <circle cx="100" cy="100" r="99" stroke="rgba(255,255,255,0.18)" strokeWidth="0.8"/>
+            <path d="M100 1C135.5 30 160 60 160 100C160 140 135.5 170 100 199" stroke="rgba(255,255,255,0.18)" strokeWidth="0.8"/>
+            <path d="M1 100C30 135.5 60 160 100 160C140 160 170 135.5 199 100" stroke="rgba(255,255,255,0.12)" strokeWidth="0.6"/>
+          </svg>
+        </div>
+        <div className="news-deco-glow-right"></div>
+        <div className="news-deco-grid-center"></div>
+        
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          
+          <div className="news-slider-grid">
+            
+            {/* Left Column: Big Feature Image */}
+            <div className="slider-image-panel aos-init aos-fade-right">
+              <div className="slider-image-wrapper">
+                {activeList.map((item, idx) => (
+                  <img 
+                    key={item.id || idx}
+                    src={getImageUrl(item.image_url || '/uploads/riset_inovasi.jpg')} 
+                    alt={item.title || 'DSDMPT'} 
+                    className={`slider-main-img ${slideIndex === idx ? 'active' : ''}`} 
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column: Content & Controls */}
+            <div className="slider-content-panel aos-init aos-fade-left">
+              
+              {/* Category Switch Buttons (Anchor Links) */}
+              <div className="slider-tabs">
+                <a href="/berita" className="slider-tab-btn">
+                  Berita
+                </a>
+                <a href="/informasi" className="slider-tab-btn">
+                  Informasi
+                </a>
+              </div>
+
+              {/* Dynamic Slide Details */}
+              <div className="slider-body">
+                {activeList.map((item, idx) => (
+                  <div 
+                    key={item.id || idx} 
+                    className={`slider-text-block ${slideIndex === idx ? 'active' : ''}`}
+                  >
+                    <h2 className="slider-title">
+                      {item.title || 'Menggerakkan Kemajuan Bersama'}
+                    </h2>
+                    <p className="slider-excerpt">
+                      {stripHtml(item.summary || item.content || 'Akses pembaruan dan pengumuman resmi dari Direktorat SDM dan Pengembangan Talenta UI.')}
+                    </p>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+                      <a 
+                        href={`/berita/${item.slug || slugify(item.title)}`} 
+                        className="btn-secondary"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        Baca Selengkapnya
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Slider Bottom Panel: Arrow Next/Prev and Large Counter */}
+              <div className="slider-controls-row">
+                
+                {/* Navigation Arrows */}
+                <div className="slider-arrows">
+                  <button onClick={prevSlide} className="arrow-btn" aria-label="Sebelumnya">
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button onClick={nextSlide} className="arrow-btn" aria-label="Berikutnya">
+                    <ChevronRight size={20} />
+                  </button>
                 </div>
-                <div className="news-body">
-                  <span className="news-date">{formatDate(item.published_at)}</span>
-                  <h3 className="news-title">{item.title}</h3>
-                  <span className="btn-secondary" style={{ alignSelf: 'flex-start', fontSize: '0.8rem', padding: '0.45rem 1.25rem', marginTop: 'auto' }} id={`news-read-btn-${item.id}`}>
-                    Selengkapnya
+
+                {/* Big Counter */}
+                <div className="slider-counter">
+                  <span className="counter-current">
+                    {String(slideIndex + 1).padStart(2, '0')}
+                  </span>
+                  <span className="counter-total">
+                    / {String(activeList.length).padStart(2, '0')}
                   </span>
                 </div>
-              </a>
-            ))}
+
+              </div>
+
+            </div>
+
+            {/* Far Right Accent decoration - Circular text with arrow linking to news collection */}
+            <a href="/berita" className="circular-text-deco-wrapper" style={{ cursor: 'pointer', pointerEvents: 'auto', textDecoration: 'none' }}>
+              <div className="circular-arrow-icon">&rarr;</div>
+              <svg viewBox="0 0 100 100" className="circular-text-svg">
+                <path d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" id="circlePath" fill="none" />
+                <text fill="rgba(255,255,255,0.25)" fontSize="7" fontWeight="800" letterSpacing="2px">
+                  <textPath href="#circlePath">
+                    DSDMPT &bull; KUMPULAN BERITA &bull; DSDMPT &bull; BERITA &bull;
+                  </textPath>
+                </text>
+              </svg>
+            </a>
+
           </div>
+
         </div>
       </section>
+      
+      {/* White spacer block to isolate news section from footer */}
+      <div style={{ height: '4rem', backgroundColor: '#ffffff' }} />
 
       <Footer />
 

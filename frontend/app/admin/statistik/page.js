@@ -218,44 +218,6 @@ export default function AdminStatistikPage() {
         </div>
       )}
 
-      {/* Hero Header */}
-      <div className="stats-header-card">
-        <div className="header-card-content">
-          <div className="header-title-section">
-            <div className="header-icon-wrapper">
-              <BarChart2 size={24} />
-            </div>
-            <div>
-              <h2 className="header-main-title">Sinkronisasi Statistik Dosen & Tendik</h2>
-              <p className="header-sub-title">Kelola data statistik dosen dan tenaga kependidikan dari database BKD.</p>
-            </div>
-          </div>
-
-          <button 
-            type="button" 
-            className={`sync-btn ${syncing ? 'loading' : ''}`}
-            onClick={handleSync}
-            disabled={syncing}
-          >
-            <RefreshCw size={16} className={syncing ? 'spin-icon' : ''} />
-            <span>{syncing ? 'Mensinkronkan...' : 'Load Sinkron Data'}</span>
-          </button>
-        </div>
-
-        {/* Sync Info Badge */}
-        {lastUpdated ? (
-          <div className="sync-timestamp-badge">
-            <Calendar size={14} />
-            <span>Terakhir diperbarui per: <strong className="time-text">{lastUpdated}</strong></span>
-          </div>
-        ) : (
-          <div className="sync-timestamp-badge warning">
-            <AlertCircle size={14} />
-            <span>Data belum pernah disinkronkan. Klik tombol di atas untuk sinkronisasi.</span>
-          </div>
-        )}
-      </div>
-
       {/* HERO SECTION CARD */}
       <div className="admin-card" style={{ marginBottom: '2rem' }}>
         <div className="admin-card-header">
@@ -318,6 +280,44 @@ export default function AdminStatistikPage() {
             {savingHero ? 'Menyimpan...' : 'Simpan Perubahan'}
           </button>
         </div>
+      </div>
+
+      {/* Hero Header */}
+      <div className="stats-header-card">
+        <div className="header-card-content">
+          <div className="header-title-section">
+            <div className="header-icon-wrapper">
+              <BarChart2 size={24} />
+            </div>
+            <div>
+              <h2 className="header-main-title">Sinkronisasi Statistik Dosen & Tendik</h2>
+              <p className="header-sub-title">Kelola data statistik dosen dan tenaga kependidikan dari database BKD.</p>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            className={`sync-btn ${syncing ? 'loading' : ''}`}
+            onClick={handleSync}
+            disabled={syncing}
+          >
+            <RefreshCw size={16} className={syncing ? 'spin-icon' : ''} />
+            <span>{syncing ? 'Mensinkronkan...' : 'Load Sinkron Data'}</span>
+          </button>
+        </div>
+
+        {/* Sync Info Badge */}
+        {lastUpdated ? (
+          <div className="sync-timestamp-badge">
+            <Calendar size={14} />
+            <span>Terakhir diperbarui per: <strong className="time-text">{lastUpdated}</strong></span>
+          </div>
+        ) : (
+          <div className="sync-timestamp-badge warning">
+            <AlertCircle size={14} />
+            <span>Data belum pernah disinkronkan. Klik tombol di atas untuk sinkronisasi.</span>
+          </div>
+        )}
       </div>
 
       {/* Tabs Switcher */}
