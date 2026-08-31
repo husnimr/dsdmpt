@@ -250,8 +250,53 @@ export default function Home() {
   // Mobile menu
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // About Section Interactive Tab State
+  const [aboutTab, setAboutTab] = useState('profil');
+
   // Header scroll state
   const [scrolled, setScrolled] = useState(false);
+
+  // Talent Programs State
+  const [talentPrograms, setTalentPrograms] = useState([]);
+
+  const getTalentDateDetails = (dateStr) => {
+    if (!dateStr) return { day: '--', monthAbbrev: '---' };
+    const monthsAbbrev = [
+      'JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN',
+      'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'
+    ];
+    const match = dateStr.match(/^(\d+)\s+([A-Za-z]+)\s+(\d+)$/);
+    if (match) {
+      const day = match[1];
+      const monthName = match[2].toLowerCase();
+      let monthAbbrev = '---';
+      const indonesianMonths = [
+        'januari', 'februari', 'maret', 'april', 'mei', 'juni',
+        'juli', 'agustus', 'september', 'oktober', 'november', 'desember'
+      ];
+      const idx = indonesianMonths.indexOf(monthName);
+      if (idx !== -1) {
+        monthAbbrev = monthsAbbrev[idx];
+      } else {
+        monthAbbrev = monthName.substring(0, 3).toUpperCase();
+      }
+      return { day, monthAbbrev };
+    }
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) {
+      const parts = dateStr.split(' ');
+      if (parts.length >= 2) {
+        return { day: parts[0], monthAbbrev: parts[1].substring(0, 3).toUpperCase() };
+      }
+      return { day: '--', monthAbbrev: '---' };
+    }
+    return {
+      day: String(d.getDate()),
+      monthAbbrev: monthsAbbrev[d.getMonth()]
+    };
+  };
+
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -304,6 +349,15 @@ export default function Home() {
         if (!newsRes.ok) throw new Error('Gagal mengambil data berita.');
         const newsPayload = await newsRes.json();
         setNews(newsPayload.data || []);
+
+        // Fetch Talent Programs
+        const talentRes = await fetch(`${BACKEND_URL}/api/pengembangan-talenta`);
+        if (talentRes.ok) {
+          const talentData = await talentRes.json();
+          if (Array.isArray(talentData)) {
+            setTalentPrograms(talentData);
+          }
+        }
 
         setError(null);
       } catch (err) {
@@ -404,49 +458,85 @@ export default function Home() {
       {/* Interactive Rotating Circle Section */}
       <InteractiveRotatingCircle />
 
-      {/* About Section */}
-      <section id="about">
+      {/* About Section (Premium Interactive Showcase) */}
+      <section id="about" style={{ position: 'relative', overflow: 'hidden' }}>
         <div className="container">
           <div className="about-grid">
-            <div className="about-image-wrapper aos-init aos-fade-right">
-              <img 
-                src={getImageUrl(settings.about_image)} 
-                alt="Direktorat SDM UI Staff" 
-                className="about-image"
-              />
+            
+            {/* Left Column: Interactive Image Showcase */}
+            <div className="about-image-showcase aos-init aos-fade-right">
+              {/* Glowing Background Blob */}
+              <div className="about-glow-blob" />
+              
+              {/* Decorative Frame */}
+              <div className="about-image-frame">
+                <img 
+                  src={getImageUrl(settings.profil_image || settings.about_image || '/uploads/profile_group.jpg')} 
+                  alt="Direktorat SDM UI Staff" 
+                  className="about-image-main"
+                />
+                
+                {/* Decorative border layers */}
+                <div className="frame-border-decor" />
+              </div>
             </div>
-            <div className="about-content aos-init aos-fade-left" style={{ transitionDelay: '0.15s' }}>
+            
+            {/* Right Column: Interactive Content Tabs */}
+            <div className="about-interactive-content aos-init aos-fade-left" style={{ transitionDelay: '0.15s' }}>
+              <div className="section-overline">Tentang Direktorat</div>
               <h2>{settings.about_title || 'Tentang Direktorat SDM dan Pengembangan Talenta'}</h2>
-              <p>{settings.about_text || 'Direktorat SDM dan Pengembangan Talenta...'}</p>
-              <a href="/profil" className="btn-secondary" id="about-read-more-btn">
+              
+              {/* Interactive Tabs */}
+              <div className="about-tabs">
+                <button 
+                  className={`about-tab-btn ${aboutTab === 'profil' ? 'active' : ''}`}
+                  onClick={() => setAboutTab('profil')}
+                >
+                  Profil
+                </button>
+                <button 
+                  className={`about-tab-btn ${aboutTab === 'program-kerja' ? 'active' : ''}`}
+                  onClick={() => setAboutTab('program-kerja')}
+                >
+                  Program Kerja
+                </button>
+              </div>
+
+              {/* Tab Contents with smooth fade */}
+              <div className="about-tab-body">
+                {aboutTab === 'profil' && (
+                  <div className="tab-pane fade-in">
+                    <p>{settings.about_text || 'Direktorat SDM dan Pengembangan Talenta adalah salah satu Direktorat yang di bawah Wakil Rektor bidang Perencanaan, Keuangan, dan SDM. Menjadikan UI sebagai Pusat Talenta terbaik merupakan sasaran strategis yang diamanahkan kepada Direktorat SDM dan Pengembangan Talenta sebagaimana tertuang dalam Rencana Strategis (Renstra) Universitas Indonesia tahun 2024-2029.'}</p>
+                  </div>
+                )}
+                {aboutTab === 'program-kerja' && (
+                  <div className="tab-pane fade-in">
+                    <div className="about-program-kerja-grid">
+                      <div className="pk-mini-card">
+                        <div className="feat-dot" />
+                        <div className="pk-card-title">Pengembangan Kapasitas</div>
+                      </div>
+                      <div className="pk-mini-card">
+                        <div className="feat-dot" />
+                        <div className="pk-card-title">Akuisisi Talenta</div>
+                      </div>
+                      <div className="pk-mini-card">
+                        <div className="feat-dot" />
+                        <div className="pk-card-title">Merit System</div>
+                      </div>
+                      <div className="pk-mini-card">
+                        <div className="feat-dot" />
+                        <div className="pk-card-title">Optimasi Insentif</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <a href="/profil" className="btn-secondary" id="about-read-more-btn" style={{ marginTop: '2rem', alignSelf: 'flex-start' }}>
                 Selengkapnya
               </a>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Subdirectorates Section */}
-      <section className="section-alt" id="subdirectorate">
-        <div className="container">
-          <div className="section-header aos-init aos-fade-up">
-            <h2>Subdirektorat</h2>
-          </div>
-          <div className="subs-grid">
-            {subdirectorates.map((sub, idx) => (
-              <div 
-                key={sub.id} 
-                className="sub-card aos-init aos-fade-up"
-                onClick={() => setSelectedSub(sub)}
-                style={{ cursor: 'pointer', transitionDelay: `${idx * 0.1}s` }}
-                id={`sub-card-${sub.id}`}
-              >
-                <div className="sub-icon-wrapper">
-                  {getSubIcon(sub.icon)}
-                </div>
-                <h3>{sub.name}</h3>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -467,6 +557,114 @@ export default function Home() {
               alt="9 Nilai Dasar UI" 
             />
           </div>
+        </div>
+      </section>
+
+      {/* Pengembangan Talenta & Jadwal Training Section */}
+      <section className="section-alt" id="home-talent-showcase" style={{ padding: '4.5rem 0', backgroundColor: '#F8FAFC' }}>
+        <div className="container">
+          
+          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+            <h2 style={{ fontSize: '2.4rem', fontWeight: 800, color: '#0A1E38', marginBottom: '0.75rem', fontFamily: 'var(--font-heading)' }}>
+              Pengembangan Talenta
+            </h2>
+            <p style={{ color: '#576574', fontSize: '0.98rem', maxWidth: '680px', margin: '0 auto', lineHeight: 1.6 }}>
+              Tingkatkan kompetensi melalui program pelatihan yang dirancang khusus maupun umum untuk sivitas akademika UI.
+            </p>
+          </div>
+
+          <div className="home-talent-dashboard-grid">
+            
+            {/* Left Column: Jadwal Pelatihan Mendatang */}
+            <div className="upcoming-training-panel">
+              <div className="panel-header">
+                <h3>Jadwal Pelatihan Mendatang</h3>
+                <a href="/pengembangan-talenta/jadwal-training" className="see-all-link">
+                  Lihat Semua &rarr;
+                </a>
+              </div>
+              
+              <div className="training-list">
+                {talentPrograms.slice(0, 2).map((item) => {
+                  const { day, monthAbbrev } = getTalentDateDetails(item.date);
+                  return (
+                    <div key={item.id} className="training-item-card">
+                      <div className={`date-badge ${item.type}`}>
+                        <span className="badge-day">{day}</span>
+                        <span className="badge-month">{monthAbbrev}</span>
+                      </div>
+                      <div className="training-item-details">
+                        <span className={`type-tag ${item.type}`}>
+                          {item.type === 'internal' ? 'INTERNAL' : 'PUBLIK'}
+                        </span>
+                        <h4>{item.title}</h4>
+                        <div className="training-item-meta">
+                          <span className="meta-text" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '4px' }}>
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            {item.time || '09:00 - 15:00'}
+                          </span>
+                          <span className="meta-text" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '4px' }}>
+                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                              <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            {item.location}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {talentPrograms.length === 0 && (
+                  <div style={{ padding: '2rem 1.5rem', textAlign: 'center', color: '#576574', background: '#ffffff', borderRadius: '12px' }}>
+                    Belum ada jadwal pelatihan mendatang.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column: Portal Cards & Stats */}
+            <div className="talent-portal-sidebar">
+              
+              {/* Top Card: Dark Blue Portal Link */}
+              <div className="talent-portal-cta-card">
+                <div className="cta-icon-overlay" />
+                <h3>Pengembangan Talenta</h3>
+                <p>Akses modul pembelajaran dan sertifikasi untuk pengembangan karir Anda.</p>
+                <a href="/pengembangan-talenta" className="cta-action-btn">
+                  Lihat
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginLeft: '6px' }}>
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                </a>
+              </div>
+              
+              {/* Bottom Row: Stats Cards */}
+              <div className="talent-stats-row">
+                <div className="stat-box-card">
+                  <span className="stat-box-value">
+                    {talentPrograms.filter(p => p.type === 'internal').length || 24}
+                  </span>
+                  <span className="stat-box-label">INTERNAL</span>
+                </div>
+                <div className="stat-box-card">
+                  <span className="stat-box-value">
+                    {talentPrograms.filter(p => p.type === 'public').length || 12}
+                  </span>
+                  <span className="stat-box-label">PUBLIK</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
       </section>
 
