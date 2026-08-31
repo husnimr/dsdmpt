@@ -99,7 +99,7 @@ const STACKED_VALUES_DATA = [
 ];
 
 // Animated counter helper component
-const Counter = ({ target, duration = 1500, suffix = "", active = false }) => {
+const Counter = ({ target, duration = 1500, suffix = "", active = false, delay = 0 }) => {
   const [count, setCount] = useState(0);
   const countRef = useRef(null);
 
@@ -109,6 +109,8 @@ const Counter = ({ target, duration = 1500, suffix = "", active = false }) => {
       return;
     }
     let startTime = null;
+    let timerId = null;
+
     const step = (timestamp) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
@@ -125,13 +127,23 @@ const Counter = ({ target, duration = 1500, suffix = "", active = false }) => {
       }
     };
     
-    countRef.current = window.requestAnimationFrame(step);
+    const startCount = () => {
+      countRef.current = window.requestAnimationFrame(step);
+    };
+
+    if (delay > 0) {
+      timerId = setTimeout(startCount, delay);
+    } else {
+      startCount();
+    }
+
     return () => {
+      if (timerId) clearTimeout(timerId);
       if (countRef.current) {
         window.cancelAnimationFrame(countRef.current);
       }
     };
-  }, [target, duration, active]);
+  }, [target, duration, active, delay]);
 
   // Format with thousand separator if needed (e.g. 18.400)
   const formatNumber = (num) => {
@@ -569,10 +581,18 @@ export default function Home() {
                 style={{ '--delay': stat.delay, '--reveal-delay': stat.rd }}
               >
                 <div className="stat-pin-wrapper">
+                  <div className="stat-meteor" />
                   <div className="stat-pin-glow" />
                   <div className="stat-pin-line" />
                 </div>
-                <div className="stat-value"><Counter target={stat.t} suffix={stat.suf || ''} active={heroRevealed} /></div>
+                <div className="stat-value">
+                  <Counter 
+                    target={stat.t} 
+                    suffix={stat.suf || ''} 
+                    active={heroRevealed} 
+                    delay={parseFloat(stat.delay) * 1000 + 750} 
+                  />
+                </div>
                 <div className="stat-label">{stat.l}</div>
                 <div className="stat-sub">{stat.s}</div>
               </div>
@@ -764,6 +784,33 @@ export default function Home() {
           <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 'auto' }}>
             <path d="M0,96L120,80C240,64,480,32,720,32C960,32,1200,64,1320,80L1440,96L1440,120L1320,120C1200,120,960,120,720,120C480,120,240,120,120,120L0,120Z" fill="rgba(10,30,56,0.02)"/>
           </svg>
+        </div>
+        <div className="talent-deco-grid-overlay"></div>
+
+        {/* Floating Motif Elements */}
+        <div className="talent-deco-floating-item t-item-1">
+          <svg width="35" height="35" viewBox="0 0 40 40" fill="none" stroke="rgba(10,30,56,0.07)" strokeWidth="1.5">
+            <line x1="20" y1="0" x2="20" y2="40" />
+            <line x1="0" y1="20" x2="40" y2="20" />
+          </svg>
+        </div>
+        <div className="talent-deco-floating-item t-item-2">
+          <svg width="50" height="50" viewBox="0 0 60 60" fill="none" stroke="rgba(10,30,56,0.06)" strokeWidth="1.5">
+            <circle cx="30" cy="30" r="28" strokeDasharray="4 4" />
+          </svg>
+        </div>
+        <div className="talent-deco-floating-item t-item-3">
+          <svg width="40" height="40" viewBox="0 0 50 50" fill="none" stroke="rgba(10,30,56,0.05)" strokeWidth="1.5">
+            <rect x="5" y="5" width="40" height="40" transform="rotate(45 25 25)" />
+          </svg>
+        </div>
+        <div className="talent-deco-floating-item t-item-4">
+          <svg width="60" height="60" viewBox="0 0 80 80" fill="none" stroke="rgba(10,30,56,0.04)" strokeWidth="1.5">
+            <polygon points="40,12 68,60 12,60" />
+          </svg>
+        </div>
+        <div className="talent-deco-floating-item t-item-5">
+          <div className="values-deco-dots-matrix" style={{ opacity: 0.08 }} />
         </div>
 
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
