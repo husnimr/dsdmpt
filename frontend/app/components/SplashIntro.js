@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 const BACKEND_URL = 'http://localhost:8081';
 
 const AKSES_LINKS = [
-  { label: 'Sistem SDM',   href: 'https://hris.ui.ac.id',                id: 'splash-link-sdm' },
+  // { label: 'Sistem SDM',   href: 'https://hris.ui.ac.id',                id: 'splash-link-sdm' },
   { label: 'HRIS UI',      href: 'https://hris.ui.ac.id',                id: 'splash-link-hris' },
   { label: 'SIPEG UI',     href: 'https://sipeg.ui.ac.id',               id: 'splash-link-sipeg' },
   { label: 'SISTER',       href: 'https://sister.kemdiktisaintek.go.id', id: 'splash-link-sister' },
@@ -114,8 +114,8 @@ export default function SplashIntro({ onEnter }) {
 
   /* ── Surrounding splash fades while morph happens ── */
   const getSplashStyle = () => ({
-    opacity:      phase === 'fading' || phase === 'done' ? 0 : 1,
-    transition:   phase === 'fading' ? 'opacity 0.5s ease' : 'none',
+    opacity:      (phase === 'fading' || phase === 'done') ? 0 : 1,
+    transition:   (phase === 'fading' || phase === 'done') ? 'opacity 0s ease' : 'none',
     pointerEvents: phase !== 'idle' ? 'none' : 'auto',
   });
 
