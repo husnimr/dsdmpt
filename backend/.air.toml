@@ -1,0 +1,16 @@
+# air config for dsdmpt
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  bin = "./tmp/main.exe"
+  cmd = "go build -mod=mod -o ./tmp/main.exe ./cmd/api/main.go"
+  delay = 1000
+  entrypoint = ["./tmp/main.exe"]
+  exclude_dir = ["assets", "tmp", "vendor", "testdata"]
+  include_ext = ["go", "tpl", "tmpl", "html"]
+
+  [build.windows]
+    bin = "tmp\\main.exe"
+    cmd = "go build -mod=mod -o ./tmp/main.exe ./cmd/api/main.go"
+    entrypoint = ["tmp\\main.exe"]
