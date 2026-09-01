@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const BACKEND_URL = 'http://localhost:8081';
 
@@ -20,6 +20,7 @@ export default function SplashIntro({ onEnter }) {
   const [portalRect, setPortalRect]     = useState(null);  // {left, top, width, height} viewport px
 
   const portholeRef = useRef(null);
+  const handlePortalClickRef = useRef(null);
 
   /* ── Measure porthole for bolt placement ── */
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function SplashIntro({ onEnter }) {
   /* ── Portal click ──
      Smooth morph: circle at porthole position → full-viewport rectangle
      border-radius 50% → 0% via CSS transition on left/top/width/height */
-  const handlePortalClick = () => {
+  const handlePortalClick = useCallback(() => {
     if (phase !== 'idle') return;
 
     if (portholeRef.current) {
@@ -53,7 +54,24 @@ export default function SplashIntro({ onEnter }) {
 
     // Done — hand off to home
     setTimeout(() => { setPhase('done'); onEnter(); }, 1200);
-  };
+  }, [phase, onEnter]);
+
+  useEffect(() => {
+    handlePortalClickRef.current = handlePortalClick;
+  }, [handlePortalClick]);
+
+  /* ── 15-second Silent Auto Enter Timer (Background) ── */
+  useEffect(() => {
+    if (phase !== 'idle') return;
+
+    const timer = setTimeout(() => {
+      if (handlePortalClickRef.current) {
+        handlePortalClickRef.current();
+      }
+    }, 15000);
+
+    return () => clearTimeout(timer);
+  }, [phase]);
 
   /* ── Overlay style: the "iris morph" layer ── */
   const getOverlayStyle = () => {

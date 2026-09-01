@@ -56,7 +56,7 @@ const STATIC_FALLBACK_NEWS = [
 const STATIC_FALLBACK_INFO = [
   {
     id: 'i1',
-    title: 'Pendaftaran Program Pelatihan Kepemimpinan Dosen & Tendik',
+    title: 'Pendaftaran Program Talenta Kepemimpinan Dosen & Tendik',
     content: 'Direktorat SDM dan Pengembangan Talenta UI kembali membuka pendaftaran program pelatihan kepemimpinan untuk meningkatkan kompetensi manajerial.',
     image_url: '/uploads/training_announcement.jpg'
   }
@@ -305,9 +305,21 @@ const UI_NILAI_DASAR = [
 ];
 
 export default function Home() {
-  // ── Splash shows on every page load (no sessionStorage) ──
-  const [splashDone, setSplashDone] = useState(false);
-  const handleSplashEnter = () => setSplashDone(true);
+  // ── Splash Intro: hanya muncul pertama kali (disimpan di sessionStorage agar refresh tidak muncul lagi) ──
+  const [splashDone, setSplashDone] = useState(true);
+
+  useEffect(() => {
+    const hasSeen = sessionStorage.getItem('dsdmpt_splash_seen');
+    if (!hasSeen) {
+      setSplashDone(false);
+      sessionStorage.setItem('dsdmpt_splash_seen', 'true');
+    }
+  }, []);
+
+  const handleSplashEnter = () => {
+    sessionStorage.setItem('dsdmpt_splash_seen', 'true');
+    setSplashDone(true);
+  };
 
   // ── Hero reveal: gradient + stats animate in after 500ms ──
   const [heroRevealed, setHeroRevealed] = useState(false);
@@ -829,7 +841,7 @@ export default function Home() {
             {/* Left Column: Jadwal Pelatihan Mendatang */}
             <div className="upcoming-training-panel aos-init aos-fade-right" style={{ transitionDelay: '0.15s' }}>
               <div className="panel-header">
-                <h3>Jadwal Pelatihan</h3>
+                <h3>Jadwal Training</h3>
                 <a href="/pengembangan-talenta/jadwal-training" className="see-all-link">
                   Lihat Semua
                 </a>
@@ -872,7 +884,7 @@ export default function Home() {
                 
                 {talentPrograms.length === 0 && (
                   <div style={{ padding: '2rem 1.5rem', textAlign: 'center', color: '#576574', background: '#ffffff', borderRadius: '12px' }}>
-                    Belum ada jadwal pelatihan mendatang.
+                    Belum ada jadwal training mendatang.
                   </div>
                 )}
               </div>
