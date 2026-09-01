@@ -3,7 +3,6 @@ package config
 import (
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/joho/godotenv"
 )
@@ -19,27 +18,18 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
-	wd, _ := os.Getwd()
-	envPath := filepath.Join(wd, ".env")
-
-	if err := godotenv.Load(envPath); err != nil {
-		log.Printf("Warning: Gagal load .env dari %s: %v", envPath, err)
+	// Load file .env jika ada
+	if err := godotenv.Load(); err != nil {
+		log.Println("Info: Membaca konfigurasi dari environment variables")
 	}
 
 	return &Config{
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "5432"),
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", "postgres123"),
-		DBName:     getEnv("DB_NAME", "dsdmpt"),
-		JWTSecret:  getEnv("JWT_SECRET", "rahasia_super_aman_dsdmpt_2026_!@#"),
-		Port:       getEnv("PORT", "8081"),
+		DBHost:     os.Getenv("DB_HOST"),
+		DBPort:     os.Getenv("DB_PORT"),
+		DBUser:     os.Getenv("DB_USER"),
+		DBPassword: os.Getenv("DB_PASSWORD"),
+		DBName:     os.Getenv("DB_NAME"),
+		JWTSecret:  os.Getenv("JWT_SECRET"),
+		Port:       os.Getenv("PORT"),
 	}
-}
-
-func getEnv(key, fallback string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return fallback
 }
