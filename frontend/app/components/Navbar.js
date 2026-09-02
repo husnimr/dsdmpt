@@ -13,13 +13,16 @@ const getImageUrl = (path) => {
 };
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const isHome = pathname === '/';
+
   const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(!isHome);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState({ news: [], talenta: [], informasi: [] });
   const [isSearching, setIsSearching] = useState(false);
-  const pathname = usePathname();
 
   const slugify = (text) => {
     if (!text) return '';
@@ -31,10 +34,34 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (isHome) {
+        // Di homepage: navbar tersembunyi saat di hero (konten pertama), 
+        // dan muncul secara mulus saat masuk/scroll ke konten kedua
+        const triggerThreshold = window.innerHeight * 0.65;
+        if (currentScrollY > triggerThreshold) {
+          setVisible(true);
+          setScrolled(true);
+        } else {
+          setVisible(false);
+          setScrolled(false);
+          setMobileMenuOpen(false);
+        }
+      } else {
+        setVisible(true);
+        setScrolled(currentScrollY > 50);
+      }
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [isHome]);
 
   // Debounced search logic
   useEffect(() => {
@@ -89,7 +116,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+      <nav className={`navbar ${scrolled ? 'scrolled' : ''} ${!visible ? 'nav-hidden' : 'nav-visible'}`}>
         <div className="container navbar-container">
           <a href="/" className="logo-container" id="nav-logo">
             <img 
@@ -135,46 +162,31 @@ export default function Navbar() {
                 );
               })}
             </ul>
+          </div>
 
+          {/* Right Actions Group (Search Icon + Mobile Hamburger Button) */}
+          <div className="nav-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <button 
               className="navbar-search-btn"
               onClick={() => setIsSearchOpen(true)}
               title="Cari Informasi..."
-              style={{
-                color: '#0A1E38',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '8px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(10, 30, 56, 0.04)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(242, 201, 76, 0.15)';
-                e.currentTarget.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(10, 30, 56, 0.04)';
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
+              aria-label="Cari Informasi"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </button>
-          </div>
 
-          <button 
-            className="mobile-menu-btn" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            id="mobile-menu-toggle"
-            aria-label="Toggle Menu"
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+            <button 
+              className="mobile-menu-btn" 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              id="mobile-menu-toggle"
+              aria-label="Toggle Menu"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -390,8 +402,8 @@ export default function Navbar() {
       )}
 
 
-      {mobileMenuOpen && (
-        <div style={{ position: 'fixed', top: '72px', left: 0, width: '100%', backgroundColor: '#FFFFFF', boxShadow: '0 10px 15px rgba(0,0,0,0.1)', zIndex: 999, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {mobileMenuOpen && visible && (
+        <div style={{ position: 'fixed', top: scrolled ? '64px' : '72px', left: 0, width: '100%', backgroundColor: '#FFFFFF', boxShadow: '0 10px 15px rgba(0,0,0,0.1)', zIndex: 999, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {menuItems.map((item) => {
             if (item.dropdown) {
               return (

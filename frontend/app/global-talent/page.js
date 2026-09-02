@@ -80,16 +80,16 @@ export default function GlobalTalent() {
       <main>
         
         {/* Section 1: Intro */}
-        <section style={{ padding: '2rem 0', backgroundColor: '#FFFFFF' }}>
-          <div className="container" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.9fr', gap: '3.5rem', alignItems: 'center' }}>
-            <div style={{ borderRadius: '12px', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', border: '1px solid #E2E8F0' }}>
+        <section style={{ padding: '2.5rem 0', backgroundColor: '#FFFFFF' }}>
+          <div className="container global-talent-intro-grid">
+            <div className="global-talent-img-box">
               <img 
                 src={getImageUrl(settings.global_talent_image || '/uploads/global.jpg')} 
                 alt="Universitas Indonesia Rectorate" 
                 style={{ width: '100%', height: 'auto', display: 'block' }}
               />
             </div>
-            <div>
+            <div className="global-talent-text-box">
               <p 
                 style={{ fontSize: '0.98rem', lineHeight: '1.8', color: '#2C3A47', margin: 0 }}
                 dangerouslySetInnerHTML={{ 

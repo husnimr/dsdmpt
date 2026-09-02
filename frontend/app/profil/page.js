@@ -367,6 +367,7 @@ export default function ProfilPage() {
 
           {activeTab === 'struktur' && (
             <div className="struktur-organisasi-container" style={{ padding: '1rem 0 4rem 0' }}>
+              <div className="struktur-organisasi-inner">
               {(() => {
                 let structureData = null;
                 if (settings.profil_struktur_organisasi_json) {
@@ -849,6 +850,7 @@ export default function ProfilPage() {
                   </>
                 );
               })()}
+              </div>
             </div>
           )}
 

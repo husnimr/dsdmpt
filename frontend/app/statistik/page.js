@@ -233,8 +233,8 @@ export default function Statistik() {
               </div>
 
               {/* Table Section */}
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
+                <table style={{ width: '100%', minWidth: '650px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#0A1E38', color: '#ffffff', fontWeight: 'bold' }}>
                       <th style={{ padding: '1.2rem 1.5rem' }}>No</th>
@@ -302,8 +302,8 @@ export default function Statistik() {
               </div>
 
               {/* Table Section */}
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
+                <table style={{ width: '100%', minWidth: '650px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#0A1E38', color: '#ffffff', fontWeight: 'bold' }}>
                       <th style={{ padding: '1.2rem 1.5rem' }}>No</th>

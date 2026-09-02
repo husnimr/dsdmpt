@@ -782,6 +782,21 @@ export default function JadwalTrainingPage() {
           font-style: italic;
         }
 
+        @media (max-width: 900px) {
+          .intro-grid {
+            grid-template-columns: 1fr;
+            gap: 1.75rem;
+          }
+          .intro-p {
+            text-align: left;
+            font-size: 0.92rem;
+          }
+          .schedule-panel-card {
+            padding: 1.5rem;
+            margin-top: 2.25rem;
+          }
+        }
+
         @media (max-width: 991px) {
           .training-grid {
             grid-template-columns: repeat(2, 1fr);
