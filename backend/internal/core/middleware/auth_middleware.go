@@ -31,9 +31,32 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 			return
 		}
 
+		// Validasi Hak Akses: Superadmin, Role DSDMPT Admin, atau Modul "dsdmpt"
+		hasAccess := false
+		if claims.Role == "superadmin" || claims.DsdmptRole == "admin" {
+			hasAccess = true
+		} else {
+			for _, m := range claims.Modules {
+				if m == "dsdmpt" {
+					hasAccess = true
+					break
+				}
+			}
+		}
+
+		if !hasAccess {
+			utils.ErrorResponse(c, 403, "Anda tidak memiliki hak akses ke sistem DSDMPT")
+			c.Abort()
+			return
+		}
+
 		c.Set("user_id", claims.UserID)
 		c.Set("username", claims.Username)
+		c.Set("email", claims.Email)
+		c.Set("full_name", claims.FullName)
 		c.Set("role", claims.Role)
+		c.Set("dsdmpt_role", claims.DsdmptRole)
+		c.Set("modules", claims.Modules)
 
 		c.Next()
 	}

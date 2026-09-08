@@ -7,9 +7,16 @@ import (
 )
 
 type Claims struct {
-	UserID   int    `json:"user_id"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
+	UserID       int      `json:"user_id,omitempty"`
+	Username     string   `json:"username"`
+	Email        string   `json:"email,omitempty"`
+	FullName     string   `json:"full_name,omitempty"`
+	KodeFakultas string   `json:"kode_fakultas,omitempty"`
+	Role         string   `json:"role"`
+	BkdRole      string   `json:"bkd_role,omitempty"`
+	ExecRole     string   `json:"executive_role,omitempty"`
+	DsdmptRole   string   `json:"dsdmpt_role,omitempty"`
+	Modules      []string `json:"modules,omitempty"`
 	jwt.RegisteredClaims
 }
 

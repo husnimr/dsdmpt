@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, LogIn, Lock, User } from 'lucide-react';
 
-const BACKEND_URL = 'http://localhost:8081';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL || 'http://localhost:3000';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -11,14 +12,25 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showLegacyForm, setShowLegacyForm] = useState(false);
 
   useEffect(() => {
     // If already logged in, redirect to admin
-    const token = localStorage.getItem('admin_token');
+    const getCookie = (name) => {
+      if (typeof document === 'undefined') return null;
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : null;
+    };
+    const token = localStorage.getItem('admin_token') || getCookie('token');
     if (token) {
       window.location.href = '/admin/dashboard';
     }
   }, []);
+
+  const handleSSOLogin = () => {
+    const callbackUrl = window.location.origin + '/admin/dashboard';
+    window.location.href = `${PORTAL_URL}/login?callback=${encodeURIComponent(callbackUrl)}`;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,7 +87,7 @@ export default function AdminLoginPage() {
           <div className="login-form-wrapper">
             <div className="login-form-header">
               <h2>Log In Admin</h2>
-              <p>Masuk untuk mengelola website DSDMPT.</p>
+              <p>Masuk menggunakan akun SSO UI untuk mengelola website DSDMPT.</p>
             </div>
 
             {error && (
@@ -85,62 +97,89 @@ export default function AdminLoginPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="login-form">
-              <div className="login-field">
-                <label htmlFor="username">Username</label>
-                <div className="login-input-icon-wrap">
-                  <span className="login-input-icon"><User size={18} /></span>
-                  <input
-                    id="username"
-                    type="text"
-                    placeholder="Masukkan username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    autoFocus
-                  />
-                </div>
-              </div>
-
-              <div className="login-field">
-                <label htmlFor="password">Password</label>
-                <div className="login-input-icon-wrap">
-                  <span className="login-input-icon"><Lock size={18} /></span>
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Masukkan password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    style={{ paddingRight: '2.8rem' }}
-                  />
-                  <button
-                    type="button"
-                    className="login-password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
+            {/* SSO Primary Action */}
+            <div className="sso-container">
               <button
-                type="submit"
-                className="login-submit-btn"
-                disabled={loading}
+                type="button"
+                onClick={handleSSOLogin}
+                className="login-submit-btn sso-btn"
               >
-                {loading ? (
-                  <span className="login-spinner" />
-                ) : (
-                  <>
-                    <LogIn size={18} />
-                    Masuk
-                  </>
-                )}
+                <LogIn size={20} />
+                <span>Masuk dengan SSO UI</span>
               </button>
-            </form>
+              <p className="sso-hint">
+                Autentikasi terpusat melalui Keycloak & Portal SDM UI.
+              </p>
+            </div>
+
+            {/* Optional legacy login accordion */}
+            <div className="legacy-login-toggle-wrap">
+              <button 
+                type="button" 
+                className="legacy-toggle-btn"
+                onClick={() => setShowLegacyForm(!showLegacyForm)}
+              >
+                {showLegacyForm ? 'Sembunyikan Form Manual' : 'Login Manual Akun Lokal'}
+              </button>
+            </div>
+
+            {showLegacyForm && (
+              <form onSubmit={handleSubmit} className="login-form animate-in fade-in duration-200">
+                <div className="login-field">
+                  <label htmlFor="username">Username</label>
+                  <div className="login-input-icon-wrap">
+                    <span className="login-input-icon"><User size={18} /></span>
+                    <input
+                      id="username"
+                      type="text"
+                      placeholder="Masukkan username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="login-field">
+                  <label htmlFor="password">Password</label>
+                  <div className="login-input-icon-wrap">
+                    <span className="login-input-icon"><Lock size={18} /></span>
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Masukkan password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      style={{ paddingRight: '2.8rem' }}
+                    />
+                    <button
+                      type="button"
+                      className="login-password-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="login-submit-btn"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="login-spinner" />
+                  ) : (
+                    <>
+                      <LogIn size={18} />
+                      Masuk Manual
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>
@@ -380,6 +419,51 @@ export default function AdminLoginPage() {
         }
         @keyframes spin {
           to { transform: rotate(360deg); }
+        }
+
+        .sso-container {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          margin-bottom: 1.5rem;
+        }
+        .sso-btn {
+          background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+          padding: 1rem 1.5rem;
+          font-size: 1rem;
+          border-radius: 14px;
+          box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+          cursor: pointer;
+        }
+        .sso-btn:hover {
+          background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.35);
+        }
+        .sso-hint {
+          font-size: 0.8rem;
+          color: #94A3B8;
+          text-align: center;
+          margin: 0;
+        }
+        .legacy-login-toggle-wrap {
+          text-align: center;
+          margin-top: 1rem;
+          margin-bottom: 1rem;
+          border-top: 1px dashed #E2E8F0;
+          padding-top: 1rem;
+        }
+        .legacy-toggle-btn {
+          background: none;
+          border: none;
+          font-size: 0.8rem;
+          color: #64748B;
+          font-weight: 700;
+          cursor: pointer;
+          text-decoration: underline;
+        }
+        .legacy-toggle-btn:hover {
+          color: #0F172A;
         }
 
         @media (max-width: 768px) {

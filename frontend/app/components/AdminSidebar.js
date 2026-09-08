@@ -49,7 +49,13 @@ export default function AdminSidebar({ activePage, collapsed }) {
   const handleConfirmLogout = () => {
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_user');
-    window.location.href = '/admin/login';
+    if (typeof document !== 'undefined') {
+      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+    const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || 'http://localhost:3000';
+    const redirectAfterLogout = `${portalUrl}/login`;
+    const ssoLogoutUrl = `https://login.ui.ac.id/realms/main/protocol/openid-connect/logout?post_logout_redirect_uri=${encodeURIComponent(redirectAfterLogout)}&client_id=stellardsdm`;
+    window.location.href = ssoLogoutUrl;
   };
 
   const handleCancelLogout = () => {

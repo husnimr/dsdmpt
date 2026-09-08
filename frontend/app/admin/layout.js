@@ -2,22 +2,76 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
-import { Menu, User as UserIcon } from 'lucide-react';
+import { Menu, ShieldAlert, Loader2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export default function AdminLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [user, setUser] = useState(null);
+  const [hasAccess, setHasAccess] = useState(null); // null = checking, true = allowed, false = 403
   const pathname = usePathname();
 
   useEffect(() => {
-    const userData = localStorage.getItem('admin_user');
-    if (userData) {
+    // 1. Cek token dari query parameter (?token=xxx) jika diarahkan dari portal
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get('token');
+
+    // 2. Cek token dari Cookie browser ('token')
+    const getCookie = (name) => {
+      if (typeof document === 'undefined') return null;
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : null;
+    };
+    const tokenFromCookie = getCookie('token');
+
+    const activeToken = tokenFromUrl || tokenFromCookie || localStorage.getItem('admin_token');
+
+    if (activeToken) {
       try {
-        setUser(JSON.parse(userData));
-      } catch (err) {}
+        const parts = activeToken.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+          const userObj = {
+            id: payload.user_id || 1,
+            name: payload.full_name || payload.username || 'Admin',
+            username: payload.username,
+            email: payload.email,
+            role: payload.dsdmpt_role || payload.role || 'user',
+            modules: payload.modules || [],
+          };
+
+          localStorage.setItem('admin_token', activeToken);
+          localStorage.setItem('admin_user', JSON.stringify(userObj));
+          setUser(userObj);
+
+          // Cek apakah user berhak mengakses DSDMPT
+          const isSuperadmin = payload.role === 'superadmin';
+          const isDsdmptAdmin = payload.dsdmpt_role === 'admin' || (payload.modules && payload.modules.includes('dsdmpt'));
+
+          if (isSuperadmin || isDsdmptAdmin) {
+            setHasAccess(true);
+          } else {
+            setHasAccess(false);
+          }
+
+          // Bersihkan parameter token di URL agar rapi
+          if (tokenFromUrl) {
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+          }
+          return;
+        }
+      } catch (err) {
+        console.error('Error decoding SSO token:', err);
+      }
     }
-  }, []);
+
+    // Jika tidak ada token sama sekali dan bukan di /admin/login, redirect ke SSO Portal
+    if (!activeToken && pathname !== '/admin/login' && pathname !== '/admin/login/') {
+      const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || 'http://localhost:3000';
+      window.location.href = `${portalUrl}/login?callback=${encodeURIComponent(window.location.href)}`;
+    }
+  }, [pathname]);
 
   const getPageTitle = () => {
     if (pathname.includes('/admin/dashboard')) return 'Dashboard';
@@ -50,6 +104,131 @@ export default function AdminLayout({ children }) {
   // Do not render dashboard/sidebar wrapper inside login page
   if (pathname === '/admin/login' || pathname === '/admin/login/') {
     return <>{children}</>;
+  }
+
+  // Tampilan jika sedang memvalidasi token
+  if (hasAccess === null) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <Loader2 size={32} className="animate-spin text-slate-700" style={{ animation: 'spin 1s linear infinite' }} />
+          <span style={{ fontSize: '0.85rem', color: '#64748B', fontWeight: 600 }}>Memverifikasi hak akses...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Tampilan jika AKSES DITOLAK (403 Forbidden)
+  if (hasAccess === false) {
+    const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || 'http://localhost:3000';
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'radial-gradient(circle at 10% 20%, rgba(241, 245, 249, 0.9) 0%, rgba(226, 232, 240, 0.9) 100%)',
+        padding: '1.5rem',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      }}>
+        <div style={{
+          maxWidth: '480px',
+          width: '100%',
+          background: '#ffffff',
+          borderRadius: '24px',
+          padding: '2.5rem',
+          boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.12)',
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1.25rem'
+        }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '20px',
+            background: '#FEE2E2',
+            color: '#DC2626',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <ShieldAlert size={36} />
+          </div>
+
+          <div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '0.5rem' }}>
+              Akses Ditolak (403)
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: '#64748B', lineHeight: 1.6 }}>
+              Halo <strong>{user?.name || user?.username}</strong>, akun Anda ({user?.email}) terdaftar sebagai <strong>{user?.role || 'User Biasa'}</strong> dan tidak memiliki hak akses Administrator untuk modul <strong>DSDMPT</strong>.
+            </p>
+          </div>
+
+          <div style={{
+            width: '100%',
+            padding: '1rem',
+            background: '#F8FAFC',
+            borderRadius: '16px',
+            border: '1px solid #E2E8F0',
+            fontSize: '0.8rem',
+            color: '#475569',
+            lineHeight: 1.5,
+            textAlign: 'left'
+          }}>
+            <strong style={{ color: '#0F172A', display: 'block', marginBottom: '0.25rem' }}>💡 Perlu Hak Akses?</strong>
+            Silakan hubungi Superadmin Portal SDM untuk mengaktifkan modul DSDMPT pada akun Anda.
+          </div>
+
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+            <a
+              href={portalUrl}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '0.85rem',
+                background: '#0F172A',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                boxSizing: 'border-box'
+              }}
+            >
+              Kembali ke Portal SDM UI
+            </a>
+
+            <button
+              onClick={() => {
+                localStorage.removeItem('admin_token');
+                localStorage.removeItem('admin_user');
+                if (typeof document !== 'undefined') {
+                  document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                }
+                const redirectAfterLogout = `${portalUrl}/login`;
+                const ssoLogoutUrl = `https://login.ui.ac.id/realms/main/protocol/openid-connect/logout?post_logout_redirect_uri=${encodeURIComponent(redirectAfterLogout)}&client_id=stellardsdm`;
+                window.location.href = ssoLogoutUrl;
+              }}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                background: '#F1F5F9',
+                color: '#475569',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                borderRadius: '12px',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              Ganti Akun / Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
