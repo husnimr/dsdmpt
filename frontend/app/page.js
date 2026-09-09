@@ -156,7 +156,25 @@ const Counter = ({ target, duration = 1500, suffix = "", active = false, delay =
 // Interactive Rotating Circle Component
 const InteractiveRotatingCircle = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [rotationAngle, setRotationAngle] = useState(0);
+  const [sectionRevealed, setSectionRevealed] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setSectionRevealed(true);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const points = [
     {
@@ -165,8 +183,7 @@ const InteractiveRotatingCircle = () => {
       title: "GLOBAL TALENT",
       heading: "Pengembangan SDM Berkelanjutan & Berdaya Saing Global",
       description: "Mewujudkan Universitas Indonesia sebagai Pusat Talenta unggul melalui tata kelola SDM yang profesional, adaptif, serta berintegritas tinggi. Kami berkomitmen mendukung mobilitas akademik, pengembangan kapasitas berkelanjutan, dan penguatan merit sistem demi mendorong kemajuan pendidikan serta riset berkelas dunia.",
-      link: "/profil",
-      angle: 0
+      link: "/profil"
     },
     {
       id: 1,
@@ -174,8 +191,7 @@ const InteractiveRotatingCircle = () => {
       title: "LAYANAN SDM",
       heading: "Layanan Kepegawaian Digital, Efisien & Transparan",
       description: "Memberikan kemudahan serta kenyamanan akses bagi seluruh dosen dan tenaga kependidikan dalam mengurus administrasi kepegawaian. Melalui integrasi portal digital DSDMPT, proses mutasi, layanan BKD, kenaikan pangkat, hingga sertifikasi dapat dilakukan secara efisien, akuntabel, dan tepat waktu.",
-      link: "/subdirektorat",
-      angle: 72
+      link: "/subdirektorat"
     },
     {
       id: 2,
@@ -183,8 +199,7 @@ const InteractiveRotatingCircle = () => {
       title: "PENGEMBANGAN",
       heading: "Pelatihan & Peningkatan Kompetensi SDM UI",
       description: "Menyediakan beragam program pengembangan kapasitas, workshop kepemimpinan, pelatihan teknologi, hingga program sertifikasi profesi. Kami terus memfasilitasi upskilling dan reskilling dosen serta tendik agar senantiasa siap menghadapi tantangan era transformasi digital.",
-      link: "/pengembangan-talenta",
-      angle: 144
+      link: "/pengembangan-talenta"
     },
     {
       id: 3,
@@ -192,8 +207,7 @@ const InteractiveRotatingCircle = () => {
       title: "BERITA",
       heading: "Informasi & Berita Terkini Seputar SDM UI",
       description: "Sajikan publikasi berita resmi, liputan kegiatan strategis, serta pengumuman penting Direktorat SDM dan Pengembangan Talenta. Dapatkan pembaruan tepercaya mengenai kebijakan terbaru, penghargaan pegawai, dan agenda kegiatan di lingkungan Universitas Indonesia.",
-      link: "/berita",
-      angle: 216
+      link: "/berita"
     },
     {
       id: 4,
@@ -201,78 +215,75 @@ const InteractiveRotatingCircle = () => {
       title: "INFORMASI",
       heading: "Portal Dokumen & Layanan Informasi Pegawai",
       description: "Pusat akses dokumen resmi, panduan teknis BKD, modul pelatihan, surat edaran, serta pemahaman 9 Nilai Dasar Universitas Indonesia. Seluruh informasi disajikan secara transparan dan mudah diunduh untuk mendukung kelancaran tugas harian civitas akademika UI.",
-      link: "/informasi",
-      angle: 288
+      link: "/informasi"
     }
   ];
 
-  const handleSelectPoint = (newIndex) => {
-    if (newIndex === activeIndex) return;
-
-    // Perhitungan perubahan sudut terpendek (shortest angular path)
-    let diff = points[newIndex].angle - points[activeIndex].angle;
-    if (diff > 180) diff -= 360;
-    if (diff < -180) diff += 360;
-
-    setRotationAngle((prev) => prev - diff);
-    setActiveIndex(newIndex);
+  const getRelIndex = (index, currentActive) => {
+    let rel = (index - currentActive + 5) % 5;
+    if (rel > 2) rel -= 5;
+    return rel;
   };
 
   return (
-    <section className="interactive-circle-section">
-      <div className="container">
-        
-        {/* Mobile Top Heading */}
-        <h2 className="main-heading mobile-top-heading">
-          Kampus yang menggerakkan <span className="text-highlight">kemajuan.</span>
-        </h2>
+    <section ref={sectionRef} className={`interactive-circle-section ${sectionRevealed ? 'revealed' : ''}`}>
+      {/* Mobile Top Heading */}
+      <h2 className="main-heading mobile-top-heading">
+        Kampus yang menggerakkan <span className="text-highlight">kemajuan.</span>
+      </h2>
 
-        <div className="interactive-grid">
-        
-          {/* Left Side: Interactive Circle */}
-          <div className="circle-visualization-container">
-            <div className="circle-track-wrapper">
-              {/* The actual rotating dark circle line */}
-              <div 
-                className="rotating-dark-ring" 
-                style={{ 
-                  transform: `rotate(${rotationAngle}deg)`,
-                  transition: 'transform 1.2s cubic-bezier(0.25, 1, 0.5, 1)' 
-                }}
-              >
-                {/* Outer border glow line */}
-                <div className="ring-line"></div>
-                <div className="ring-dashed-orbit"></div>
+      <div className="interactive-full-wrapper">
+      
+        {/* Left Side: Wheel flush to left edge of screen */}
+        <div className="circle-visualization-container">
+          <div className="circle-track-wrapper">
+            <div className="rotating-dark-ring">
+              {/* Outer golden yellow ring line */}
+              <div className="ring-line"></div>
+              <div className="ring-dashed-orbit"></div>
+              
+              {/* The 5 interactive points on continuous wheel */}
+              {points.map((pt, index) => {
+                const isActive = activeIndex === index;
+                const rel = getRelIndex(index, activeIndex);
+                const nodeAngle = rel * 35; // -70deg, -35deg, 0deg, +35deg, +70deg
+
+                let distClass = 'dist-0';
+                if (rel === 0) {
+                  distClass = 'dist-0';
+                } else if (Math.abs(rel) === 1) {
+                  distClass = 'dist-1';
+                } else {
+                  distClass = 'dist-2';
+                }
+
+                const ptTransform = `rotate(${nodeAngle}deg) translate(var(--orbit-radius, 259px)) rotate(${-nodeAngle}deg)`;
                 
-                {/* The interactive points / buttons */}
-                {points.map((pt, index) => {
-                  const isActive = activeIndex === index;
-                  const ptTransform = `rotate(${pt.angle}deg) translate(var(--ring-radius, 280px)) rotate(${-pt.angle - rotationAngle}deg)`;
-                  
-                  return (
-                    <button
-                      key={pt.id}
-                      className={`circle-dot-button ${isActive ? 'active' : ''}`}
-                      style={{ 
-                        transform: ptTransform,
-                        transition: 'background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, transform 1.2s cubic-bezier(0.25, 1, 0.5, 1)'
-                      }}
-                      onClick={() => handleSelectPoint(index)}
-                    >
-                      <span className="dot-number">{pt.number}</span>
-                      <span className="dot-title">{pt.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
+                return (
+                  <button
+                    key={pt.id}
+                    className={`circle-dot-button ${isActive ? 'active' : ''} ${distClass}`}
+                    style={{ 
+                      transform: ptTransform,
+                      transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease'
+                    }}
+                    onClick={() => setActiveIndex(index)}
+                  >
+                    <span className="dot-number">{pt.number}</span>
+                    <span className="dot-title">{pt.title}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
+        </div>
 
-          {/* Right Side: Dynamic Content */}
-          <div className="dynamic-info-container">
-            <h2 className="main-heading desktop-heading">
-              Kampus yang menggerakkan <br />
-              <span className="text-highlight">kemajuan.</span>
+        {/* Right Side: Dynamic Content in White Floating Card */}
+        <div className="dynamic-info-container">
+          <div className="interactive-feature-card">
+
+            <h2 className="main-heading desktop-heading" style={{ fontSize: '2.3rem', lineHeight: 1.25, marginBottom: '1.5rem', fontWeight: 800, textAlign: 'center' }}>
+              Kampus yang menggerakkan <span className="text-highlight">kemajuan.</span>
             </h2>
             
             <div className="content-card-holder">
@@ -285,23 +296,23 @@ const InteractiveRotatingCircle = () => {
                 >
                   <div className="section-badge">{pt.title}</div>
                   <h3 className="sub-heading">{pt.heading}</h3>
-                  <p className="description-text">{pt.description}</p>
+                  <p className="description-text" title={pt.description}>{pt.description}</p>
 
-                  <div style={{ marginTop: '2rem' }}>
-                    <a href={pt.link} className="btn-secondary">
+                  <div className="circle-action-wrapper">
+                    <a href={pt.link} className="btn-secondary circle-action-btn">
                       Selengkapnya
                     </a>
                   </div>
                 </div>
               );
             })}
+            </div>
           </div>
         </div>
 
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
 };
 
 // UI 9 Core Values Data
@@ -590,6 +601,30 @@ export default function Home() {
         id="hero-section"
       >
         <div className={`hero-gradient-overlay${heroRevealed ? ' revealed' : ''}`} />
+
+        {/* Top Sky Header: DSDMPT (left) & Unggul Impactful (right) */}
+        <div className={`hero-sky-overlay${heroRevealed ? ' revealed' : ''}`}>
+          <div className="hero-sky-container">
+            <div className="sky-brand-block sky-brand-left">
+              <div className="sky-title-wrapper">
+                <span className="sky-brand-title shimmer-text">DSDMPT</span>
+                <span className="sparkle-star s1">✦</span>
+                <span className="sparkle-star s2">✨</span>
+              </div>
+              <span className="sky-brand-sub">Direktorat Sumber Daya Manusia &amp; Pengembangan Talenta</span>
+            </div>
+
+            <div className="sky-brand-block sky-brand-right">
+              <div className="sky-title-wrapper">
+                <span className="sky-brand-title shimmer-text">Unggul Impactful</span>
+                <span className="sparkle-star s3">✦</span>
+                <span className="sparkle-star s4">✨</span>
+              </div>
+              <span className="sky-brand-sub">Universitas Indonesia</span>
+            </div>
+          </div>
+        </div>
+
         <div className="hero-statistics-container">
           <div className="hero-statistics-grid">
 

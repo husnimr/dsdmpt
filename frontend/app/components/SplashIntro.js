@@ -451,7 +451,7 @@ export default function SplashIntro({ onEnter }) {
                 onMouseLeave={() => setHovered(false)}
                 style={{ cursor: phase === 'idle' ? 'pointer' : 'default' }}
                 id="splash-porthole"
-                title="Klik untuk masuk ke portal"
+                title='Masuk'
               >
                 {/* Thick gold ring */}
                 <div className="splash-porthole-ring" />
