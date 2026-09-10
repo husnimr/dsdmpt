@@ -219,10 +219,28 @@ const InteractiveRotatingCircle = () => {
     }
   ];
 
+  const [nodeAngles, setNodeAngles] = useState([0, 35, 70, 290, 325]);
+
   const getRelIndex = (index, currentActive) => {
     let rel = (index - currentActive + 5) % 5;
     if (rel > 2) rel -= 5;
     return rel;
+  };
+
+  const handlePointClick = (clickedIndex) => {
+    setActiveIndex(clickedIndex);
+    const baseMap = { 0: 0, 1: 35, 2: 70, '-2': 290, '-1': 325 };
+
+    setNodeAngles((prevAngles) => {
+      return prevAngles.map((prevAngle, i) => {
+        const rel = getRelIndex(i, clickedIndex);
+        let base = baseMap[rel];
+        let diff = (base - prevAngle) % 360;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+        return prevAngle + diff;
+      });
+    });
   };
 
   return (
@@ -246,7 +264,7 @@ const InteractiveRotatingCircle = () => {
               {points.map((pt, index) => {
                 const isActive = activeIndex === index;
                 const rel = getRelIndex(index, activeIndex);
-                const nodeAngle = rel * 35; // -70deg, -35deg, 0deg, +35deg, +70deg
+                const nodeAngle = nodeAngles[index];
 
                 let distClass = 'dist-0';
                 if (rel === 0) {
@@ -265,9 +283,9 @@ const InteractiveRotatingCircle = () => {
                     className={`circle-dot-button ${isActive ? 'active' : ''} ${distClass}`}
                     style={{ 
                       transform: ptTransform,
-                      transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease'
+                      transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, width 0.4s ease, height 0.4s ease'
                     }}
-                    onClick={() => setActiveIndex(index)}
+                    onClick={() => handlePointClick(index)}
                   >
                     <span className="dot-number">{pt.number}</span>
                     <span className="dot-title">{pt.title}</span>
@@ -812,7 +830,7 @@ export default function Home() {
       </section>
 
       {/* Core Values Section */}
-      <section id="core-values" style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#0A1E38', color: '#ffffff', padding: '6rem 0' }}>
+      <section id="core-values" style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#0A1E38', color: '#ffffff', padding: '6rem 0 11rem 0' }}>
         {/* Animated Background Elements */}
         <div className="values-deco-sphere-left">
           <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
@@ -865,6 +883,21 @@ export default function Home() {
               alt="9 Nilai Dasar UI" 
             />
           </div>
+        </div>
+        {/* Wave Effect Bottom SVG transition to Talent Development (#F8FAFC) */}
+        <div className="values-deco-wave-bottom" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 3, pointerEvents: 'none' }}>
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', width: '100%', height: 'auto' }}>
+            <path d="M0,32L60,42.7C120,53,240,75,360,80C480,85,600,75,720,64C840,53,960,43,1080,48C1200,53,1320,75,1380,85.3L1440,96L1440,120L1380,120C1320,120,1200,120,1080,120C960,120,840,120,720,120C600,120,480,120,360,120C240,120,120,120,60,120L0,120Z" fill="#F8FAFC"></path>
+          </svg>
+        </div>
+
+        {/* Decorative Floating Sparkle Elements on Wave Boundary */}
+        <div className="values-wave-float-item float-1">✦</div>
+        <div className="values-wave-float-item float-2">✨</div>
+        <div className="values-wave-float-item float-3">
+          <svg width="45" height="45" viewBox="0 0 45 45" fill="none" stroke="rgba(242,201,76,0.35)" strokeWidth="1.2">
+            <circle cx="22.5" cy="22.5" r="20" strokeDasharray="4 4" />
+          </svg>
         </div>
       </section>
 
@@ -1134,8 +1167,28 @@ export default function Home() {
         </div>
       </section>
       
-      {/* White spacer block to isolate news section from footer */}
-      <div style={{ height: '4rem', backgroundColor: '#ffffff' }} />
+      {/* ── News Photo Strip Marquee Banner (between News & Footer) ── */}
+      <div className="news-photo-strip-container">
+        <div className="news-photo-strip-marquee">
+          <div className="news-strip-track">
+            {([...(news.length > 0 ? news : STATIC_FALLBACK_NEWS), ...(news.length > 0 ? news : STATIC_FALLBACK_NEWS), ...(news.length > 0 ? news : STATIC_FALLBACK_NEWS)]).map((item, idx) => (
+              <a
+                key={`${item.id || idx}-${idx}`}
+                href={item.slug ? `/berita/${item.slug}` : `/berita`}
+                className="news-strip-card"
+                title={item.title}
+              >
+                <img 
+                  src={getImageUrl(item.image_url || '/uploads/riset_inovasi.jpg')} 
+                  alt={item.title} 
+                  className="news-strip-img"
+                  onError={(e) => { e.target.src = '/uploads/riset_inovasi.jpg'; }}
+                />
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <Footer />
 

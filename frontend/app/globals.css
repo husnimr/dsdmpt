@@ -247,17 +247,17 @@ section { padding: 4rem 0; }
   background: linear-gradient(
     110deg,
     #FFFFFF 0%,
-    #FFFFFF 20%,
-    #0b1728 40%,
-    #0E1E38 50%,
-    #1E3A8A 60%,
-    #FFFFFF 80%,
+    #FFFFFF 25%,
+    #38BDF8 42%,
+    #60A5FA 50%,
+    #38BDF8 58%,
+    #FFFFFF 75%,
     #FFFFFF 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 12px rgba(11, 23, 40, 0.4));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 16px rgba(56, 189, 248, 0.6));
   animation: shimmerSweep 4.5s linear infinite;
   transition: filter 0.4s ease;
 }
@@ -737,7 +737,7 @@ section { padding: 4rem 0; }
   text-align: center;
 }
 
-/* Node 1: 1 Step Above / Below (Upper & Lower) */
+/* Node 1: 1 Step Above / Below (Pushed BACKWARD behind active node) */
 .circle-dot-button.dist-1 {
   width: 106px;
   height: 106px;
@@ -769,7 +769,7 @@ section { padding: 4rem 0; }
   text-align: center;
 }
 
-/* Node 2: 2 Steps Above / Below (Topmost & Bottommost unclipped nodes) */
+/* Node 2: 2 Steps Above / Below (Pushed further BACKWARD) */
 .circle-dot-button.dist-2 {
   width: 90px;
   height: 90px;
@@ -4295,6 +4295,124 @@ main div[style*="overflow: hidden"][style*="border: 1px solid #E2E8F0"] {
   50% { transform: translateY(-15px) rotate(8deg); }
   100% { transform: translateY(10px) rotate(-5deg); }
 }
+
+
+
+/* ── NEWS PHOTO STRIP MARQUEE BANNER (BETWEEN NEWS & FOOTER) ── */
+.news-photo-strip-container {
+  position: relative;
+  width: 100%;
+  background: #061222;
+  padding: 0.6rem 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(242, 201, 76, 0.25);
+  border-bottom: 1px solid rgba(242, 201, 76, 0.25);
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.5);
+}
+
+.news-photo-strip-marquee {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  position: relative;
+}
+
+.news-strip-track {
+  display: flex;
+  gap: 0.4rem; /* Tight spacing between photo cards */
+  width: max-content;
+  animation: marqueeNewsScroll 30s linear infinite;
+  padding-left: 0;
+}
+
+.news-photo-strip-marquee:hover .news-strip-track {
+  animation-play-state: paused;
+}
+
+.news-strip-card {
+  position: relative;
+  width: 220px;
+  height: 135px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+              border-color 0.4s ease, 
+              box-shadow 0.4s ease, 
+              z-index 0.2s ease;
+  display: block;
+  z-index: 1;
+}
+
+.news-strip-card:hover {
+  z-index: 20;
+  transform: translateY(-4px) scale(1.12);
+  border-color: #F2C94C;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(242, 201, 76, 0.45);
+}
+
+.news-strip-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease, filter 0.4s ease;
+}
+
+.news-strip-card:hover .news-strip-img {
+  transform: scale(1.08);
+  filter: brightness(1.12) contrast(1.05);
+}
+
+@keyframes marqueeNewsScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+  .news-strip-track {
+    gap: 0.3rem;
+  }
+  .news-strip-card {
+    width: 165px;
+    height: 105px;
+  }
+}
+
+
+/* ── CORE VALUES WAVE TRANSITION & DECORATION SYSTEM ── */
+.values-wave-float-item {
+  position: absolute;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.values-wave-float-item.float-1 {
+  bottom: 45px;
+  left: 15%;
+  color: #F2C94C;
+  font-size: 1.6rem;
+  filter: drop-shadow(0 0 10px rgba(242, 201, 76, 0.6));
+  animation: abstractFloat 5s ease-in-out infinite alternate;
+}
+
+.values-wave-float-item.float-2 {
+  bottom: 60px;
+  right: 18%;
+  color: #D8B237;
+  font-size: 1.4rem;
+  filter: drop-shadow(0 0 8px rgba(216, 178, 55, 0.5));
+  animation: abstractFloat 7s ease-in-out infinite alternate-reverse;
+}
+
+.values-wave-float-item.float-3 {
+  bottom: 25px;
+  right: 8%;
+  animation: rotateRing 30s linear infinite;
+}
+
+
 
 
 
