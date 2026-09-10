@@ -369,8 +369,16 @@ export default function Home() {
   // Mobile menu
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // About Section Interactive Tab State
+  // About Section Interactive Tab & Mouse Parallax State
   const [aboutTab, setAboutTab] = useState('profil');
+  const [aboutMouse, setAboutMouse] = useState({ x: 0, y: 0 });
+
+  const handleAboutMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width / 2) / 30;
+    const y = (e.clientY - rect.top - rect.height / 2) / 30;
+    setAboutMouse({ x, y });
+  };
 
   // Header scroll state
   const [scrolled, setScrolled] = useState(false);
@@ -665,110 +673,141 @@ export default function Home() {
       {/* Interactive Rotating Circle Section */}
       <InteractiveRotatingCircle />
 
-      {/* About Section (Premium Interactive Showcase) */}
-      <section id="about" style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#FAFBFD' }}>
-        {/* Background Decorations */}
-        <div className="about-deco-sphere-left">
-          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-            <circle cx="100" cy="100" r="99" stroke="rgba(10,30,56,0.18)" strokeWidth="0.8"/>
-            <path d="M100 1L100 199" stroke="rgba(10,30,56,0.18)" strokeWidth="0.8"/>
-            <path d="M1 100H199" stroke="rgba(10,30,56,0.18)" strokeWidth="0.8"/>
-            <path d="M100 1C135.5 30 160 60 160 100C160 140 135.5 170 100 199C64.5 170 40 140 40 100C40 60 64.5 30 100 1" stroke="rgba(10,30,56,0.18)" strokeWidth="0.8"/>
-            <path d="M100 1C150 40 180 70 180 100C180 130 150 160 100 199C50 160 20 130 20 100C20 70 50 40 100 1" stroke="rgba(10,30,56,0.12)" strokeWidth="0.6"/>
-            <path d="M1 100C30 135.5 60 160 100 160C140 160 170 135.5 199 100C170 64.5 140 40 100 40C60 40 30 64.5 1 100Z" stroke="rgba(10,30,56,0.18)" strokeWidth="0.8"/>
-            <path d="M1 100C40 150 70 180 100 180C130 180 160 150 199 100C160 50 130 20 100 20C70 20 40 50 1 100Z" stroke="rgba(10,30,56,0.12)" strokeWidth="0.6"/>
+      {/* About Section: 3-Part Elegant Showcase Card Grid */}
+      <section 
+        id="about" 
+        onMouseMove={handleAboutMouseMove}
+        style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#FAFBFD', padding: '2rem 0 8rem 0' }}
+      >
+        {/* Interactive Abstract Background System */}
+        <div className="about-abstract-container">
+          {/* Glowing Blurring Orbs with Parallax */}
+          <div 
+            className="about-orb about-orb-1" 
+            style={{ transform: `translate(${aboutMouse.x * -1.2}px, ${aboutMouse.y * -1.2}px)` }} 
+          />
+          <div 
+            className="about-orb about-orb-2" 
+            style={{ transform: `translate(${aboutMouse.x * 1.5}px, ${aboutMouse.y * 1.5}px)` }} 
+          />
+          <div 
+            className="about-orb about-orb-3" 
+            style={{ transform: `translate(${aboutMouse.x * -0.8}px, ${aboutMouse.y * 0.8}px)` }} 
+          />
+
+          {/* Rotating Geometric SVG Wireframes with Parallax */}
+          <svg 
+            className="about-ring-1" 
+            viewBox="0 0 400 400" 
+            fill="none" 
+            style={{ transform: `translate(${aboutMouse.x * -0.5}px, ${aboutMouse.y * -0.5}px)` }}
+          >
+            <circle cx="200" cy="200" r="195" stroke="rgba(14,30,56,0.08)" strokeWidth="1.2" strokeDasharray="8 8" />
+            <circle cx="200" cy="200" r="150" stroke="rgba(216,178,55,0.18)" strokeWidth="1" strokeDasharray="15 6" />
+            <circle cx="200" cy="200" r="105" stroke="rgba(14,30,56,0.05)" strokeWidth="1" />
+            <circle cx="200" cy="5" r="4" fill="#D8B237" />
+            <circle cx="395" cy="200" r="4" fill="#0E1E38" opacity="0.3" />
           </svg>
-        </div>
-        <div className="about-deco-sphere-right"></div>
-        <div className="about-deco-wave">
-          <svg viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 'auto' }}>
-            <path d="M0,224L80,202.7C160,181,320,139,480,138.7C640,139,800,181,960,192C1120,203,1280,181,1360,170.7L1440,160L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z" fill="url(#gradient-about-wave)" opacity="0.08"/>
-            <defs>
-              <linearGradient id="gradient-about-wave" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#0A1E38"/>
-                <stop offset="100%" stopColor="#FFC72C"/>
-              </linearGradient>
-            </defs>
+
+          <svg 
+            className="about-ring-2" 
+            viewBox="0 0 400 400" 
+            fill="none" 
+            style={{ transform: `translate(${aboutMouse.x * 0.7}px, ${aboutMouse.y * 0.7}px)` }}
+          >
+            <circle cx="200" cy="200" r="180" stroke="rgba(216,178,55,0.15)" strokeWidth="1.5" strokeDasharray="12 12" />
+            <circle cx="200" cy="200" r="120" stroke="rgba(14,30,56,0.08)" strokeWidth="1" strokeDasharray="4 8" />
+            <circle cx="200" cy="20" r="5" fill="#F2C94C" />
           </svg>
+
+          {/* Floating Abstract Motif Items */}
+          <div className="about-float-item about-float-1" style={{ transform: `translate(${aboutMouse.x * -1}px, ${aboutMouse.y * -1}px)` }}>
+            ✦
+          </div>
+          <div className="about-float-item about-float-2" style={{ transform: `translate(${aboutMouse.x * 1.3}px, ${aboutMouse.y * 1.3}px)` }}>
+            <div className="about-dots-matrix" />
+          </div>
+          <div className="about-float-item about-float-3" style={{ transform: `translate(${aboutMouse.x * -0.6}px, ${aboutMouse.y * 0.9}px)` }}>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="4" y="4" width="24" height="24" rx="4" transform="rotate(45 16 16)" />
+            </svg>
+          </div>
         </div>
+
         <div className="container">
-          <div className="about-grid">
-            
-            {/* Left Column: Interactive Image Showcase */}
-            <div className="about-image-showcase aos-init aos-fade-right">
-              {/* Glowing Background Blob */}
-              <div className="about-glow-blob" />
-              
-              {/* Decorative Frame */}
-              <div className="about-image-frame">
+          
+          {/* Section Header */}
+          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+            <div className="section-overline" style={{ fontSize: '0.75rem', fontWeight: '800', letterSpacing: '2px', color: '#cda232', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+              Tentang Direktorat
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.4rem', fontWeight: '800', color: '#0E1E38', margin: '0' }}>
+              SDM dan Pengembangan Talenta
+            </h2>
+          </div>
+
+          {/* 3-Part Showcase Grid */}
+          <div className="about-showcase-grid">
+
+            {/* Card 1: Profil (Paling Besar + Foto) */}
+            <a href="/profil" className="showcase-card showcase-card-main">
+              <div className="showcase-img-container">
                 <img 
                   src={getImageUrl(settings.profil_image || settings.about_image || '/uploads/profile_group.jpg')} 
-                  alt="Direktorat SDM UI Staff" 
-                  className="about-image-main"
+                  alt="Profil Direktorat SDM UI" 
+                  className="showcase-img"
                 />
-                
-                {/* Decorative border layers */}
-                <div className="frame-border-decor" />
+                <div className="showcase-img-overlay" />
               </div>
-            </div>
-            
-            {/* Right Column: Interactive Content Tabs */}
-            <div className="about-interactive-content aos-init aos-fade-left" style={{ transitionDelay: '0.15s' }}>
-              <div className="section-overline">Tentang Direktorat</div>
-              <h2>{settings.about_title || 'Tentang Direktorat SDM dan Pengembangan Talenta'}</h2>
-              
-              {/* Interactive Tabs */}
-              <div className="about-tabs">
-                <button 
-                  className={`about-tab-btn ${aboutTab === 'profil' ? 'active' : ''}`}
-                  onClick={() => setAboutTab('profil')}
-                >
-                  Profil
-                </button>
-                <button 
-                  className={`about-tab-btn ${aboutTab === 'program-kerja' ? 'active' : ''}`}
-                  onClick={() => setAboutTab('program-kerja')}
-                >
-                  Program Kerja
-                </button>
+              <div className="showcase-card-content">
+                <div className="showcase-badge">PROFIL DIREKTORAT</div>
+                <h3 className="showcase-title">Profil DSDMPT Universitas Indonesia</h3>
+                <p className="showcase-desc">
+                  {settings.about_text ? (settings.about_text.substring(0, 140) + '...') : 'Menjadikan UI sebagai Pusat Talenta unggul melalui tata kelola SDM yang profesional, adaptif, serta berintegritas tinggi.'}
+                </p>
+                <div className="showcase-action">
+                  BACA PROFIL <ArrowRight size={16} />
+                </div>
               </div>
+            </a>
 
-              {/* Tab Contents with smooth fade */}
-              <div className="about-tab-body">
-                {aboutTab === 'profil' && (
-                  <div className="tab-pane fade-in">
-                    <p>{settings.about_text || 'Direktorat SDM dan Pengembangan Talenta adalah salah satu Direktorat yang di bawah Wakil Rektor bidang Perencanaan, Keuangan, dan SDM. Menjadikan UI sebagai Pusat Talenta terbaik merupakan sasaran strategis yang diamanahkan kepada Direktorat SDM dan Pengembangan Talenta sebagaimana tertuang dalam Rencana Strategis (Renstra) Universitas Indonesia tahun 2024-2029.'}</p>
-                  </div>
-                )}
-                {aboutTab === 'program-kerja' && (
-                  <div className="tab-pane fade-in">
-                    <div className="about-program-kerja-grid">
-                      <div className="pk-mini-card">
-                        <div className="feat-dot" />
-                        <div className="pk-card-title">Pengembangan Kapasitas</div>
-                      </div>
-                      <div className="pk-mini-card">
-                        <div className="feat-dot" />
-                        <div className="pk-card-title">Akuisisi Talenta</div>
-                      </div>
-                      <div className="pk-mini-card">
-                        <div className="feat-dot" />
-                        <div className="pk-card-title">Merit System</div>
-                      </div>
-                      <div className="pk-mini-card">
-                        <div className="feat-dot" />
-                        <div className="pk-card-title">Optimasi Insentif</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+            {/* Card 2: Struktur Organisasi (Navy Card, Agak Mengecil) */}
+            <a href="/profil" className="showcase-card showcase-card-navy">
+              <div className="showcase-card-inner">
+                <div className="showcase-badge">STRUKTUR ORGANISASI</div>
+                <h3 className="showcase-title">Bagan &amp; Struktur Organisasi</h3>
+                <p className="showcase-desc">
+                  Bagan tata kelola dan susunan subdirektorat DSDMPT Universitas Indonesia.
+                </p>
               </div>
-              
-              <a href="/profil" className="btn-secondary" id="about-read-more-btn" style={{ marginTop: '2rem', alignSelf: 'flex-start' }}>
-                Selengkapnya
-              </a>
-            </div>
+              <div className="showcase-action">
+                LIHAT STRUKTUR <ArrowRight size={16} />
+              </div>
+            </a>
+
+            {/* Card 3: Pimpinan Direktorat (Golden Card, Mengecil Lagi) */}
+            <a href="/profil" className="showcase-card showcase-card-gold">
+              <div className="showcase-card-inner">
+                <div className="showcase-badge">PIMPINAN DIREKTORAT</div>
+                <h3 className="showcase-title">Jajaran Pimpinan &amp; Manajemen</h3>
+                <p className="showcase-desc">
+                  Mengenal jajaran pimpinan dan tim manajemen DSDMPT Universitas Indonesia.
+                </p>
+              </div>
+              <div className="showcase-action">
+                LIHAT PIMPINAN <ArrowRight size={16} />
+              </div>
+            </a>
+
           </div>
+
+        </div>
+
+        {/* Wave Effect Bottom SVG transition to Core Values (#0A1E38) */}
+        <div className="about-deco-wave">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', width: '100%', height: 'auto' }}>
+            <path d="M0,32L60,42.7C120,53,240,75,360,80C480,85,600,75,720,64C840,53,960,43,1080,48C1200,53,1320,75,1380,85.3L1440,96L1440,120L1380,120C1320,120,1200,120,1080,120C960,120,840,120,720,120C600,120,480,120,360,120C240,120,120,120,60,120L0,120Z" fill="#0A1E38"></path>
+          </svg>
         </div>
       </section>
 
