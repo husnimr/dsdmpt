@@ -264,7 +264,7 @@ const InteractiveRotatingCircle = () => {
               {points.map((pt, index) => {
                 const isActive = activeIndex === index;
                 const rel = getRelIndex(index, activeIndex);
-                const nodeAngle = nodeAngles[index];
+                const nodeAngle = (nodeAngles && nodeAngles[index] !== undefined) ? nodeAngles[index] : (index * 35);
 
                 let distClass = 'dist-0';
                 if (rel === 0) {
@@ -620,12 +620,44 @@ export default function Home() {
       <Navbar />
 
 
-      {/* Hero Section — image fills viewport, gradient + stats reveal after 1.5s */}
+      {/* Hero Section — background video or image fallback with smooth overlay */}
       <section
         className="hero"
-        style={{ backgroundImage: `url(${getImageUrl('/uploads/opening_building.png')})` }}
         id="hero-section"
       >
+        {/* Background Media (Video or Fallback Image) */}
+        {settings?.hero_video_url ? (
+          <video
+            ref={(el) => { if (el) el.playbackRate = 0.75; }}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="hero-bg-video"
+            poster={getImageUrl(settings?.hero_image_url || '/uploads/opening_building.png')}
+          >
+            <source src={getImageUrl(settings.hero_video_url)} type="video/mp4" />
+          </video>
+        ) : (
+          <video
+            ref={(el) => { if (el) el.playbackRate = 0.75; }}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="hero-bg-video"
+            poster={getImageUrl('/uploads/opening_building.png')}
+          >
+            <source src={getImageUrl('/uploads/opening_building.mp4')} type="video/mp4" />
+            <source src={getImageUrl('/uploads/opening_building.webm')} type="video/webm" />
+            <img
+              src={getImageUrl('/uploads/opening_building.png')}
+              alt="Building Hero Background"
+              className="hero-bg-fallback-img"
+            />
+          </video>
+        )}
+
         <div className={`hero-gradient-overlay${heroRevealed ? ' revealed' : ''}`} />
 
         {/* Top Sky Header: DSDMPT (left) & Unggul Impactful (right) */}
@@ -755,7 +787,7 @@ export default function Home() {
         <div className="container">
           
           {/* Section Header */}
-          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+          <div className="aos-init aos-perspective-up" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div className="section-overline" style={{ fontSize: '0.75rem', fontWeight: '800', letterSpacing: '2px', color: '#cda232', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
               Tentang Direktorat
             </div>
@@ -768,7 +800,7 @@ export default function Home() {
           <div className="about-showcase-grid">
 
             {/* Card 1: Profil (Paling Besar + Foto) */}
-            <a href="/profil" className="showcase-card showcase-card-main">
+            <a href="/profil" className="showcase-card showcase-card-main aos-init aos-perspective-up" style={{ transitionDelay: '0.1s' }}>
               <div className="showcase-img-container">
                 <img 
                   src={getImageUrl(settings.profil_image || settings.about_image || '/uploads/profile_group.jpg')} 
@@ -790,7 +822,7 @@ export default function Home() {
             </a>
 
             {/* Card 2: Struktur Organisasi (Navy Card, Agak Mengecil) */}
-            <a href="/profil" className="showcase-card showcase-card-navy">
+            <a href="/profil" className="showcase-card showcase-card-navy aos-init aos-perspective-up" style={{ transitionDelay: '0.25s' }}>
               <div className="showcase-card-inner">
                 <div className="showcase-badge">STRUKTUR ORGANISASI</div>
                 <h3 className="showcase-title">Bagan &amp; Struktur Organisasi</h3>
@@ -804,7 +836,7 @@ export default function Home() {
             </a>
 
             {/* Card 3: Pimpinan Direktorat (Golden Card, Mengecil Lagi) */}
-            <a href="/profil" className="showcase-card showcase-card-gold">
+            <a href="/profil" className="showcase-card showcase-card-gold aos-init aos-perspective-up" style={{ transitionDelay: '0.4s' }}>
               <div className="showcase-card-inner">
                 <div className="showcase-badge">PIMPINAN DIREKTORAT</div>
                 <h3 className="showcase-title">Jajaran Pimpinan &amp; Manajemen</h3>
@@ -870,14 +902,14 @@ export default function Home() {
         </div>
 
         <div className="container values-grid" style={{ position: 'relative', zIndex: 2 }}>
-          <div className="values-content aos-init aos-fade-right">
+          <div className="values-content aos-init aos-slide-rotate">
             <h2>{settings.values_title || '9 Nilai Dasar Universitas Indonesia'}</h2>
             <p>{settings.values_text || 'Sembilan Nilai Dasar Universitas Indonesia (UI) menjadi tuntunan moral, etika, dan perilaku utama bagi seluruh sivitas akademika dalam mewujudkan tri dharma perguruan tinggi.'}</p>
             <a href="/informasi" className="btn-secondary" id="values-details-btn">
               Selengkapnya
             </a>
           </div>
-          <div className="values-image-wrapper aos-init aos-fade-left" style={{ transitionDelay: '0.15s' }}>
+          <div className="values-image-wrapper aos-init aos-flip-3d" style={{ transitionDelay: '0.2s' }}>
             <img 
               src={getImageUrl('/uploads/nilaidasar.jpg')} 
               alt="9 Nilai Dasar UI" 
@@ -902,7 +934,7 @@ export default function Home() {
       </section>
 
       {/* Pengembangan Talenta & Jadwal Training Section */}
-      <section className="section-alt aos-init aos-fade-up" id="home-talent-showcase" style={{ padding: '4.5rem 0 5.5rem 0', backgroundColor: '#F8FAFC' }}>
+      <section className="section-alt" id="home-talent-showcase" style={{ padding: '4.5rem 0 5.5rem 0', backgroundColor: '#F8FAFC' }}>
         {/* Background Hiasan Profesional */}
         <div className="talent-deco-sphere-left">
           <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
@@ -947,7 +979,7 @@ export default function Home() {
 
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           
-          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+          <div className="aos-init aos-elastic-scale" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <h2 className="section-title-center">
               Pengembangan Talenta
             </h2>
@@ -959,7 +991,7 @@ export default function Home() {
           <div className="home-talent-dashboard-grid">
             
             {/* Left Column: Jadwal Pelatihan Mendatang */}
-            <div className="upcoming-training-panel aos-init aos-fade-right" style={{ transitionDelay: '0.15s' }}>
+            <div className="upcoming-training-panel aos-init aos-slide-rotate" style={{ transitionDelay: '0.15s' }}>
               <div className="panel-header">
                 <h3>Jadwal Training</h3>
                 <a href="/pengembangan-talenta/jadwal-training" className="see-all-link">
@@ -985,7 +1017,7 @@ export default function Home() {
                           <span className="meta-text" style={{ display: 'inline-flex', alignItems: 'center' }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '4px' }}>
                               <circle cx="12" cy="12" r="10"></circle>
-                              <polyline points="12 6 12 12 16 14"></polyline>
+                              <polyline points="12 6 12 16 14"></polyline>
                             </svg>
                             {item.time || '09:00 - 15:00'}
                           </span>
@@ -1011,7 +1043,7 @@ export default function Home() {
             </div>
 
             {/* Right Column: Portal Cards & Stats */}
-            <div className="talent-portal-sidebar aos-init aos-fade-left" style={{ transitionDelay: '0.3s' }}>
+            <div className="talent-portal-sidebar aos-init aos-perspective-up" style={{ transitionDelay: '0.3s' }}>
               
               {/* Top Card: Dark Blue Portal Link */}
               <div className="talent-portal-cta-card">
@@ -1069,7 +1101,7 @@ export default function Home() {
           <div className="news-slider-grid">
             
             {/* Left Column: Big Feature Image */}
-            <div className="slider-image-panel aos-init aos-fade-right">
+            <div className="slider-image-panel aos-init aos-flip-3d">
               <div className="slider-image-wrapper">
                 {activeList.map((item, idx) => (
                   <img 
@@ -1083,7 +1115,7 @@ export default function Home() {
             </div>
 
             {/* Right Column: Content & Controls */}
-            <div className="slider-content-panel aos-init aos-fade-left">
+            <div className="slider-content-panel aos-init aos-slide-rotate" style={{ transitionDelay: '0.2s' }}>
               
               {/* Category Switch Buttons (Anchor Links) */}
               <div className="slider-tabs">
