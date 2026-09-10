@@ -618,20 +618,19 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   background: linear-gradient(
     180deg,
     #091321 0%,
-    #0B182B 6%,
-    #0E213B 15%,
-    #142B4B 26%,
-    #1F3A60 38%,
-    #2E4C76 50%,
-    #44628E 62%,
-    #617FA7 72%,
-    #879FC2 82%,
-    #B2C5DE 90%,
-    #DCE5F1 95%,
-    #F0F4F8 98%,
-    #F8FAFC 100%
+    #0B182B 12%,
+    #0E213B 25%,
+    #142B4B 38%,
+    #1F3A60 50%,
+    #2E4C76 62%,
+    #4D6B97 72%,
+    #7B96BC 80%,
+    #ADC1DB 87%,
+    #D6E2F0 93%,
+    #EBF1F8 97%,
+    #FAFBFD 100%
   );
-  padding: 2.8rem 0 4rem 0;
+  padding: 2.8rem 0 3.5rem 0;
   overflow: hidden;
   width: 100%;
 }

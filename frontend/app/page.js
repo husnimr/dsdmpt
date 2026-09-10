@@ -727,7 +727,7 @@ export default function Home() {
       <section 
         id="about" 
         onMouseMove={handleAboutMouseMove}
-        style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#FAFBFD', padding: '2rem 0 8rem 0' }}
+        style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#FAFBFD', padding: '1rem 0 8rem 0' }}
       >
         {/* Interactive Abstract Background System */}
         <div className="about-abstract-container">
