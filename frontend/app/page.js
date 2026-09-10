@@ -245,6 +245,56 @@ const InteractiveRotatingCircle = () => {
 
   return (
     <section ref={sectionRef} className={`interactive-circle-section ${sectionRevealed ? 'revealed' : ''}`}>
+      {/* Background Abstract Decorative Waves & Orbs (Extends continuously into About section) */}
+      <div className="circle-bg-decorations">
+        {/* Soft Glowing Background Orb */}
+        <div className="circle-bg-orb" />
+        
+        {/* Elegant Curved Flowing Ribbon Wave SVG (Crosses into section below) */}
+        <svg className="circle-bg-wave-svg" viewBox="0 0 1440 900" fill="none" preserveAspectRatio="none" style={{ height: '140%', pointerEvents: 'none' }}>
+          <path 
+            d="M-100,180 C250,50 600,420 1050,220 C1250,120 1380,360 1550,480" 
+            stroke="url(#waveGradient1)" 
+            strokeWidth="4" 
+            strokeLinecap="round"
+          />
+          <path 
+            d="M-100,220 C280,90 620,460 1080,260 C1280,150 1400,400 1580,520" 
+            stroke="url(#waveGradient2)" 
+            strokeWidth="2.2" 
+            strokeDasharray="8 10"
+          />
+          <path 
+            d="M-50,140 C320,20 700,380 1150,180 C1320,80 1450,320 1620,440" 
+            stroke="rgba(255,255,255,0.12)" 
+            strokeWidth="1.2"
+          />
+          <defs>
+            <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
+              <stop offset="60%" stopColor="rgba(255,255,255,0.22)" />
+              <stop offset="100%" stopColor="rgba(216,178,55,0.15)" />
+            </linearGradient>
+            <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="rgba(242,201,76,0.45)" />
+              <stop offset="70%" stopColor="rgba(216,178,55,0.25)" />
+              <stop offset="100%" stopColor="rgba(14,30,56,0.05)" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* Floating 3D Geometric Icosahedron Shape (Like Reference Image Right Side) */}
+        <div className="circle-bg-float-shape">
+          <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
+            <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" stroke="rgba(255,255,255,0.25)" strokeWidth="1.2" fill="rgba(255,255,255,0.04)" />
+            <line x1="50" y1="10" x2="50" y2="90" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
+            <line x1="10" y1="30" x2="90" y2="70" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
+            <line x1="10" y1="70" x2="90" y2="30" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
+            <polygon points="50,10 70,45 50,90 30,45" stroke="rgba(255,255,255,0.22)" strokeWidth="1" fill="rgba(255,255,255,0.05)" />
+          </svg>
+        </div>
+      </div>
+
       {/* Mobile Top Heading */}
       <h2 className="main-heading mobile-top-heading">
         Kampus yang menggerakkan <span className="text-highlight">kemajuan.</span>
@@ -729,57 +779,42 @@ export default function Home() {
         onMouseMove={handleAboutMouseMove}
         style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#FAFBFD', padding: '1rem 0 8rem 0' }}
       >
-        {/* Interactive Abstract Background System */}
+        {/* Interactive Abstract Background System (Exact Match with White 3D Reference Image) */}
         <div className="about-abstract-container">
-          {/* Glowing Blurring Orbs with Parallax */}
-          <div 
-            className="about-orb about-orb-1" 
-            style={{ transform: `translate(${aboutMouse.x * -1.2}px, ${aboutMouse.y * -1.2}px)` }} 
-          />
-          <div 
-            className="about-orb about-orb-2" 
-            style={{ transform: `translate(${aboutMouse.x * 1.5}px, ${aboutMouse.y * 1.5}px)` }} 
-          />
-          <div 
-            className="about-orb about-orb-3" 
-            style={{ transform: `translate(${aboutMouse.x * -0.8}px, ${aboutMouse.y * 0.8}px)` }} 
-          />
+          {/* 1. Top-Left 3D White Shaded Sphere */}
+          <div className="ref-sphere ref-sphere-top-left" style={{ transform: `translate(${aboutMouse.x * -1.2}px, ${aboutMouse.y * -1.2}px)` }} />
 
-          {/* Rotating Geometric SVG Wireframes with Parallax */}
-          <svg 
-            className="about-ring-1" 
-            viewBox="0 0 400 400" 
-            fill="none" 
-            style={{ transform: `translate(${aboutMouse.x * -0.5}px, ${aboutMouse.y * -0.5}px)` }}
-          >
-            <circle cx="200" cy="200" r="195" stroke="rgba(14,30,56,0.08)" strokeWidth="1.2" strokeDasharray="8 8" />
-            <circle cx="200" cy="200" r="150" stroke="rgba(216,178,55,0.18)" strokeWidth="1" strokeDasharray="15 6" />
-            <circle cx="200" cy="200" r="105" stroke="rgba(14,30,56,0.05)" strokeWidth="1" />
-            <circle cx="200" cy="5" r="4" fill="#D8B237" />
-            <circle cx="395" cy="200" r="4" fill="#0E1E38" opacity="0.3" />
+          {/* 2. Mid-Left Small 3D White Sphere */}
+          <div className="ref-sphere ref-sphere-mid-left" style={{ transform: `translate(${aboutMouse.x * 1.5}px, ${aboutMouse.y * 1.5}px)` }} />
+
+          {/* 3. Top-Right Soft White Organic Teardrop Liquid Blob */}
+          <div className="ref-liquid-blob" style={{ transform: `translate(${aboutMouse.x * 0.8}px, ${aboutMouse.y * -0.8}px)` }} />
+
+          {/* 4. Bottom-Left Curved White Flow Ribbon Wave SVG */}
+          <svg className="ref-wave-svg" viewBox="0 0 1000 400" fill="none" preserveAspectRatio="none" style={{ transform: `translate(${aboutMouse.x * -0.5}px, ${aboutMouse.y * 0.5}px)` }}>
+            <path d="M-100,280 C200,80 500,380 900,160 C1050,80 1150,220 1200,280" stroke="rgba(235, 240, 248, 0.9)" strokeWidth="18" strokeLinecap="round" />
+            <path d="M-100,290 C220,100 520,390 920,170 C1070,90 1170,230 1220,290" stroke="rgba(255, 255, 255, 0.95)" strokeWidth="6" strokeLinecap="round" />
           </svg>
 
-          <svg 
-            className="about-ring-2" 
-            viewBox="0 0 400 400" 
-            fill="none" 
-            style={{ transform: `translate(${aboutMouse.x * 0.7}px, ${aboutMouse.y * 0.7}px)` }}
-          >
-            <circle cx="200" cy="200" r="180" stroke="rgba(216,178,55,0.15)" strokeWidth="1.5" strokeDasharray="12 12" />
-            <circle cx="200" cy="200" r="120" stroke="rgba(14,30,56,0.08)" strokeWidth="1" strokeDasharray="4 8" />
-            <circle cx="200" cy="20" r="5" fill="#F2C94C" />
-          </svg>
+          {/* 5. Bottom-Right 3D Shaded White Icosahedron Crystal */}
+          <div className="ref-icosahedron-crystal" style={{ transform: `translate(${aboutMouse.x * 1.1}px, ${aboutMouse.y * 1.1}px)` }}>
+            <svg width="75" height="75" viewBox="0 0 100 100" fill="none">
+              <polygon points="50,5 92,28 92,72 50,95 8,72 8,28" fill="#F4F6F9" stroke="#CBD5E1" strokeWidth="1.5" />
+              <polygon points="50,5 50,95 8,72" fill="#E2E8F0" opacity="0.9" />
+              <polygon points="50,5 92,28 50,95" fill="#FFFFFF" opacity="0.95" />
+              <polygon points="50,5 72,48 50,95 28,48" fill="#CBD5E1" opacity="0.65" />
+              <line x1="8" y1="28" x2="92" y2="72" stroke="#94A3B8" strokeWidth="1.2" />
+              <line x1="8" y1="72" x2="92" y2="28" stroke="#94A3B8" strokeWidth="1.2" />
+            </svg>
+          </div>
 
-          {/* Floating Abstract Motif Items */}
+          {/* Golden Sparkle Motif */}
           <div className="about-float-item about-float-1" style={{ transform: `translate(${aboutMouse.x * -1}px, ${aboutMouse.y * -1}px)` }}>
             ✦
           </div>
-          <div className="about-float-item about-float-2" style={{ transform: `translate(${aboutMouse.x * 1.3}px, ${aboutMouse.y * 1.3}px)` }}>
-            <div className="about-dots-matrix" />
-          </div>
-          <div className="about-float-item about-float-3" style={{ transform: `translate(${aboutMouse.x * -0.6}px, ${aboutMouse.y * 0.9}px)` }}>
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <rect x="4" y="4" width="24" height="24" rx="4" transform="rotate(45 16 16)" />
+          <div className="about-float-item about-float-diamond" style={{ transform: `translate(${aboutMouse.x * 0.9}px, ${aboutMouse.y * 0.9}px)` }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D8B237" strokeWidth="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2" transform="rotate(45 12 12)" />
             </svg>
           </div>
         </div>
