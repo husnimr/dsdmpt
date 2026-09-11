@@ -690,7 +690,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .interactive-full-wrapper {
   display: grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 3.5rem;
   align-items: center;
   justify-content: flex-start;
@@ -708,22 +708,22 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   justify-content: flex-start;
   align-items: center;
   position: relative;
-  height: 620px;
-  width: 380px;
-  overflow: hidden;
+  height: 520px;
+  width: 320px;
+  overflow: visible;
   margin-left: 0;
 }
 
 .circle-track-wrapper {
   position: relative;
-  width: 560px;
-  height: 560px;
-  min-width: 560px;
-  min-height: 560px;
+  width: 470px;
+  height: 470px;
+  min-width: 470px;
+  min-height: 470px;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
-  --ring-radius: 280px;
-  --orbit-radius: 259px; /* Exact middle line of the 42px yellow track */
+  --ring-radius: 235px;
+  --orbit-radius: 217px; /* Exact middle line of the 36px yellow track */
 }
 
 /* Wheel Ring flush left - center of ring is at left: 0 of screen */
@@ -734,15 +734,15 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   transform-origin: center center;
-  left: -280px;
-  top: 15px; /* Shifted up 65px so active center circle aligns 100% parallel with content card */
+  left: -235px;
+  top: 15px; /* Shifted up so active center circle aligns parallel with content card */
 }
 
 /* Visual ring helper line - Golden Yellow Wheel Arc */
 .ring-line {
   position: absolute;
   inset: 0;
-  border: 42px solid #F2C94C;
+  border: 36px solid #F2C94C;
   border-radius: 50%;
   pointer-events: none;
   box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 35px rgba(242, 201, 76, 0.35);
@@ -750,7 +750,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .ring-dashed-orbit {
   position: absolute;
-  inset: 21px; /* Exactly at 259px radius */
+  inset: 18px; /* Exactly at 217px radius */
   border: 2px dashed rgba(255, 255, 255, 0.8);
   border-radius: 50%;
   pointer-events: none;
@@ -764,17 +764,17 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem;
+  padding: 0.6rem;
   cursor: pointer;
   transform-origin: center center;
 }
 
-/* Node 0: Active Center (150px, Perfectly centered over yellow track & unclipped) */
+/* Node 0: Active Center (132px, Perfectly centered over yellow track & unclipped) */
 .circle-dot-button.dist-0 {
-  width: 150px;
-  height: 150px;
-  left: calc(50% - 75px);
-  top: calc(50% - 75px);
+  width: 132px;
+  height: 132px;
+  left: calc(50% - 66px);
+  top: calc(50% - 66px);
   background-color: #ffffff;
   border: 4px solid #F2C94C;
   color: #0E1E38;
@@ -785,7 +785,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .circle-dot-button.dist-0 .dot-number {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: 1.85rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: #D8B237;
   line-height: 1;
@@ -793,20 +793,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 .circle-dot-button.dist-0 .dot-title {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 800;
   color: #0E1E38;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
   text-align: center;
 }
 
 /* Node 1: 1 Step Above / Below (Pushed BACKWARD behind active node) */
 .circle-dot-button.dist-1 {
-  width: 106px;
-  height: 106px;
-  left: calc(50% - 53px);
-  top: calc(50% - 53px);
+  width: 94px;
+  height: 94px;
+  left: calc(50% - 47px);
+  top: calc(50% - 47px);
   background-color: rgba(255, 255, 255, 0.88);
   border: 2px solid rgba(242, 201, 76, 0.65);
   color: #576574;
@@ -817,28 +817,28 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .circle-dot-button.dist-1 .dot-number {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #D8B237;
   line-height: 1;
-  margin-bottom: 0.12rem;
+  margin-bottom: 0.1rem;
 }
 
 .circle-dot-button.dist-1 .dot-title {
-  font-size: 0.45rem;
+  font-size: 0.42rem;
   font-weight: 700;
   color: #0E1E38;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
   text-align: center;
 }
 
 /* Node 2: 2 Steps Above / Below (Pushed further BACKWARD) */
 .circle-dot-button.dist-2 {
-  width: 90px;
-  height: 90px;
-  left: calc(50% - 45px);
-  top: calc(50% - 45px);
+  width: 80px;
+  height: 80px;
+  left: calc(50% - 40px);
+  top: calc(50% - 40px);
   background-color: rgba(255, 255, 255, 0.78);
   border: 2px solid rgba(242, 201, 76, 0.45);
   color: #576574;
@@ -849,14 +849,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .circle-dot-button.dist-2 .dot-number {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #D8B237;
   line-height: 1;
 }
 
 .circle-dot-button.dist-2 .dot-title {
-  font-size: 0.4rem;
+  font-size: 0.38rem;
   font-weight: 600;
   color: #576574;
   letter-spacing: 0.4px;
@@ -2752,7 +2752,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .slider-controls-row {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.25rem;
   margin-top: 1rem;
 }
 
@@ -2812,17 +2812,23 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   margin-left: 0.4rem;
 }
 
-/* Circular Text Decors (Yonsei overlay style) */
+/* Circular Text Decors (Top Right Corner of Section) */
 .circular-text-deco-wrapper {
   position: absolute;
-  right: -5%;
-  top: 15%;
-  width: 140px;
-  height: 140px;
+  top: -20px;
+  right: 0;
+  width: 130px;
+  height: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
+  pointer-events: auto;
+  z-index: 10;
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.circular-text-deco-wrapper:hover {
+  transform: scale(1.1);
 }
 
 .circular-text-svg {
@@ -2834,11 +2840,16 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .circular-arrow-icon {
   position: absolute;
   color: #ffffff;
-  font-size: 2rem;
+  font-size: 1.8rem;
   transform: rotate(-45deg);
   font-weight: 300;
   pointer-events: none;
   z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.circular-text-deco-wrapper:hover .circular-arrow-icon {
+  transform: rotate(-45deg) translate(2px, -2px);
 }
 
 @keyframes spinDecoText {

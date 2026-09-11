@@ -196,7 +196,7 @@ const InteractiveRotatingCircle = () => {
     {
       id: 2,
       number: "03",
-      title: "PENGEMBANGAN",
+      title: "PENGEMBANGAN TALENTA",
       heading: "Pelatihan & Peningkatan Kompetensi SDM UI",
       description: "Menyediakan beragam program pengembangan kapasitas, workshop kepemimpinan, pelatihan teknologi, hingga program sertifikasi profesi. Kami terus memfasilitasi upskilling dan reskilling dosen serta tendik agar senantiasa siap menghadapi tantangan era transformasi digital.",
       link: "/pengembangan-talenta"
@@ -1133,6 +1133,19 @@ export default function Home() {
         
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           
+          {/* Top Right Accent decoration - Circular text with arrow linking to news collection */}
+          <a href="/berita" className="circular-text-deco-wrapper" style={{ cursor: 'pointer', pointerEvents: 'auto', textDecoration: 'none' }} title="Lihat Kumpulan Berita">
+            <div className="circular-arrow-icon">&rarr;</div>
+            <svg viewBox="0 0 100 100" className="circular-text-svg">
+              <path d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" id="circlePath" fill="none" />
+              <text fill="rgba(255,255,255,0.4)" fontSize="7" fontWeight="800" letterSpacing="2px">
+                <textPath href="#circlePath">
+                  DSDMPT &bull; KUMPULAN BERITA &bull; DSDMPT &bull; BERITA &bull;
+                </textPath>
+              </text>
+            </svg>
+          </a>
+
           <div className="news-slider-grid">
             
             {/* Left Column: Big Feature Image */}
@@ -1189,20 +1202,15 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Slider Bottom Panel: Arrow Next/Prev and Large Counter */}
+              {/* Slider Bottom Panel: Arrow Next/Prev with Counter in Between */}
               <div className="slider-controls-row">
                 
-                {/* Navigation Arrows */}
-                <div className="slider-arrows">
-                  <button onClick={prevSlide} className="arrow-btn" aria-label="Sebelumnya">
-                    <ChevronLeft size={20} />
-                  </button>
-                  <button onClick={nextSlide} className="arrow-btn" aria-label="Berikutnya">
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
+                {/* Prev Button */}
+                <button onClick={prevSlide} className="arrow-btn" aria-label="Sebelumnya">
+                  <ChevronLeft size={20} />
+                </button>
 
-                {/* Big Counter */}
+                {/* Counter in Between */}
                 <div className="slider-counter">
                   <span className="counter-current">
                     {String(slideIndex + 1).padStart(2, '0')}
@@ -1212,22 +1220,14 @@ export default function Home() {
                   </span>
                 </div>
 
+                {/* Next Button */}
+                <button onClick={nextSlide} className="arrow-btn" aria-label="Berikutnya">
+                  <ChevronRight size={20} />
+                </button>
+
               </div>
 
             </div>
-
-            {/* Far Right Accent decoration - Circular text with arrow linking to news collection */}
-            <a href="/berita" className="circular-text-deco-wrapper" style={{ cursor: 'pointer', pointerEvents: 'auto', textDecoration: 'none' }}>
-              <div className="circular-arrow-icon">&rarr;</div>
-              <svg viewBox="0 0 100 100" className="circular-text-svg">
-                <path d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" id="circlePath" fill="none" />
-                <text fill="rgba(255,255,255,0.25)" fontSize="7" fontWeight="800" letterSpacing="2px">
-                  <textPath href="#circlePath">
-                    DSDMPT &bull; KUMPULAN BERITA &bull; DSDMPT &bull; BERITA &bull;
-                  </textPath>
-                </text>
-              </svg>
-            </a>
 
           </div>
 
